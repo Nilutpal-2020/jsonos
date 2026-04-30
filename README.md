@@ -1,47 +1,139 @@
-# Svelte + TS + Vite
+# JSON OS
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+A browser-based JSON workbench. View, edit, validate, format, repair, query
+(JSONPath), transform, diff, and share JSON — all locally in your browser.
 
-## Recommended IDE Setup
+- **Tree · text · table** views, switch independently per column
+- **Multi-column workspace** (up to 3) with drag-to-resize columns
+- **JSON Schema** validation (Ajv, lazy-loaded)
+- **JSONPath** runner
+- **Side-by-side compare** (auto-arranges columns from the Compare panel)
+- **API client** with response history persisted locally
+- **Read-only share links** via a Cloudflare Worker (or Vercel function)
+- **CSV export** from the table view
+- **Light · dark · system** themes
+- **Local-first**: parsing, validation, and storage all happen in the browser
+  (Web Worker for hot paths, IndexedDB for persistence)
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+## Tech stack
 
-## Need an official Svelte framework?
+- Svelte 5 (runes) + Vite 8 + TypeScript
+- CodeMirror 6 (text view, themed via CSS vars)
+- @tanstack/virtual-core (tree + table virtualization)
+- jsonc-parser (parse with offsets / paths), Ajv (schema), jsonpath-plus
+- idb-keyval (IndexedDB) · Comlink (Web Worker RPC)
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+## Run locally
 
-## Technical considerations
-
-**Why use this over SvelteKit?**
-
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
-
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
-
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
-
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
-
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
-
-**Why include `.vscode/extensions.json`?**
-
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
-
-**Why enable `allowJs` in the TS template?**
-
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
-
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+```bash
+npm install
+npm run dev          # http://localhost:5173
+npm run build        # production build → dist/
+npm run preview      # serve the production build
+npm run check        # svelte-check + tsc
 ```
+
+## Environment variables
+
+Copy `.env.example` → `.env` and fill in for your deploy:
+
+| Var | Purpose |
+| --- | --- |
+| `VITE_PUBLIC_URL` | Public origin (no trailing slash). Used in canonical / OG / sitemap / JSON-LD at build time. |
+| `VITE_SHARE_API`  | Endpoint of the share API. Defaults to `/api`. Set to absolute URL when the share API lives elsewhere. |
+
+## Deploy to Vercel
+
+The repo is Vercel-ready: `vercel.json` configures the build, SPA fallback,
+caching headers, and security headers. The Vite build outputs to `dist/`.
+
+```bash
+# Option 1: from the dashboard
+# - Import the repo in Vercel
+# - Framework preset: Vite (auto-detected)
+# - Add env vars: VITE_PUBLIC_URL (required for SEO),
+#   optional VITE_SHARE_API
+# - Deploy
+
+# Option 2: CLI
+npm i -g vercel
+vercel               # follow prompts; first deploy creates the project
+vercel --prod        # ship a production deploy
+```
+
+After deploy, set `VITE_PUBLIC_URL` in the Vercel project's env vars
+(Production + Preview). Redeploy so the build picks it up — it's substituted
+into `index.html`, `robots.txt`, and `sitemap.xml` by the Vite plugin.
+
+### Share API: pick one
+
+The frontend's `Share` button POSTs to `VITE_SHARE_API` (default `/api`).
+Two ready paths:
+
+**A. Cloudflare Worker (recommended; default)**
+The worker in [`worker/`](worker/) is self-contained, KV-backed, rate-limited,
+and TTL-based. Deploy:
+
+```bash
+cd worker
+npm install
+npx wrangler login
+npx wrangler kv namespace create SHARES
+npx wrangler kv namespace create SHARES --preview
+# paste returned ids into worker/wrangler.toml
+npx wrangler deploy
+```
+
+Then in Vercel, set `VITE_SHARE_API=https://jsonos-share.<sub>.workers.dev/api`
+(replace with the URL `wrangler deploy` printed). Add your Vercel origin to
+`ALLOWED_ORIGINS` in `worker/wrangler.toml` and redeploy the worker.
+
+**B. All-in-one Vercel (Edge function + Vercel KV)**
+Templates live in [`examples/vercel-api/`](examples/vercel-api/). To enable:
+
+```bash
+mkdir -p api/share
+mv examples/vercel-api/share.ts        api/share.ts
+mv examples/vercel-api/_share-id.ts    api/share/[id].ts
+npm install @vercel/kv
+```
+
+Then in Vercel: Storage → create a KV store and link it to the project. Set
+`ALLOWED_ORIGINS` env var (comma-separated origins; e.g. `https://your-domain.com`).
+Push to redeploy. Leave `VITE_SHARE_API` unset (defaults to `/api`).
+
+## SEO
+
+`index.html` ships with:
+
+- Title + description with target keywords
+- Open Graph (title, description, image, URL, locale, dimensions)
+- Twitter Card (summary_large_image)
+- Canonical link
+- JSON-LD `SoftwareApplication` structured data
+- `theme-color` per `prefers-color-scheme`
+- Inline FOUC-prevention CSS that respects `data-theme`
+- Apple touch icon, mask icon, web app manifest
+
+`public/robots.txt` and `public/sitemap.xml` are generated at build time with
+`VITE_PUBLIC_URL` substituted in (see the `publicAssetsTokenSubstitute` plugin
+in [`vite.config.ts`](vite.config.ts)).
+
+After your first deploy, submit `https://your-domain/sitemap.xml` to Google
+Search Console and Bing Webmaster Tools.
+
+## Keyboard shortcuts
+
+| Shortcut | Action |
+| --- | --- |
+| `⌘Z` / `⌘⇧Z` | Undo / redo |
+| `⌘S` | Download active doc |
+| `⌘/` | Format |
+| `⌘\` | Toggle side panel |
+| `⌘⇧W` | Toggle text wrap |
+| `⌘T` | New doc (auto-incremented `untitled.json`) |
+| `⌘1` / `⌘2` / `⌘3` | Focus column 1 / 2 / 3 |
+
+## License
+
+MIT.

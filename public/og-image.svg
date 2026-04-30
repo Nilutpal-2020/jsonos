@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0c0f14"/>
+      <stop offset="1" stop-color="#131720"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5b9eff"/>
+      <stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Faint grid -->
+  <g stroke="#2a313e" stroke-width="1" opacity="0.5">
+    <path d="M0 110 H1200"/>
+    <path d="M0 220 H1200"/>
+    <path d="M0 330 H1200"/>
+    <path d="M0 440 H1200"/>
+    <path d="M0 550 H1200"/>
+  </g>
+
+  <!-- Logo -->
+  <g transform="translate(80,80)">
+    <rect width="120" height="120" rx="26" fill="url(#brand)"/>
+    <g fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M44 30c-9 0-13 4.5-13 12v11.5c0 5.5-2.6 8-7.4 8 4.8 0 7.4 2.5 7.4 8V81c0 7.5 4 12 13 12"/>
+      <path d="M76 30c9 0 13 4.5 13 12v11.5c0 5.5 2.6 8 7.4 8-4.8 0-7.4 2.5-7.4 8V81c0 7.5-4 12-13 12"/>
+    </g>
+    <circle cx="60" cy="60" r="5.5" fill="#ffffff"/>
+  </g>
+
+  <!-- Wordmark -->
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif" fill="#e8ecf2">
+    <text x="80" y="320" font-size="120" font-weight="800" letter-spacing="-3">JSON OS</text>
+    <text x="80" y="380" font-size="32" fill="#8b95a5" font-weight="500">Browser-based JSON workbench</text>
+  </g>
+
+  <!-- Feature pills -->
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+     font-size="22" fill="#b9dcff">
+    <g transform="translate(80,460)">
+      <rect width="200" height="48" rx="10" fill="#1a1f2a" stroke="#2a313e"/>
+      <text x="22" y="32">tree · text · table</text>
+    </g>
+    <g transform="translate(296,460)">
+      <rect width="180" height="48" rx="10" fill="#1a1f2a" stroke="#2a313e"/>
+      <text x="22" y="32">JSON Schema</text>
+    </g>
+    <g transform="translate(492,460)">
+      <rect width="160" height="48" rx="10" fill="#1a1f2a" stroke="#2a313e"/>
+      <text x="22" y="32">JSONPath</text>
+    </g>
+    <g transform="translate(668,460)">
+      <rect width="180" height="48" rx="10" fill="#1a1f2a" stroke="#2a313e"/>
+      <text x="22" y="32">Side-by-side</text>
+    </g>
+    <g transform="translate(864,460)">
+      <rect width="180" height="48" rx="10" fill="#1a1f2a" stroke="#2a313e"/>
+      <text x="22" y="32">Local-first</text>
+    </g>
+  </g>
+
+  <!-- Footer line -->
+  <text x="80" y="570" font-family="ui-sans-serif, system-ui, sans-serif"
+        font-size="22" fill="#8b95a5">View · edit · validate · query · transform · share</text>
+</svg>

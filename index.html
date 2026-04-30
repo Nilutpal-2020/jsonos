@@ -2,12 +2,105 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+    <!-- Primary meta -->
+    <title>JSON OS — Browser-based JSON workbench (viewer, editor, validator)</title>
+    <meta name="description" content="JSON OS is a fast, local-first JSON workbench. View, edit, validate, format, repair, query (JSONPath), transform, diff, and share JSON in your browser. Tree, text, and table views with multi-column workspace." />
+    <meta name="keywords" content="json editor, json viewer, json formatter, json validator, json schema, jsonpath, json beautifier, json minifier, json compare, json diff, online json tool, json transform, json table, json tree" />
+    <meta name="author" content="JSON OS" />
+    <meta name="application-name" content="JSON OS" />
+    <meta name="generator" content="Vite + Svelte" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="theme-color" content="#131720" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)" />
+    <meta name="color-scheme" content="dark light" />
+    <link rel="canonical" href="%VITE_PUBLIC_URL%/" />
+
+    <!-- Icons / manifest -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>JSON OS</title>
+    <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
+    <link rel="mask-icon" href="/favicon.svg" color="#5b9eff" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="JSON OS" />
+    <meta property="og:title" content="JSON OS — Browser-based JSON workbench" />
+    <meta property="og:description" content="View, edit, validate, query, transform, and share JSON locally in your browser. Tree · text · table views, multi-column workspace, JSON Schema, JSONPath, side-by-side compare." />
+    <meta property="og:url" content="%VITE_PUBLIC_URL%/" />
+    <meta property="og:image" content="%VITE_PUBLIC_URL%/og-image.svg" />
+    <meta property="og:image:type" content="image/svg+xml" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="JSON OS — JSON workbench with tree, text, and table views" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="JSON OS — Browser-based JSON workbench" />
+    <meta name="twitter:description" content="View, edit, validate, query, transform, and share JSON locally in your browser." />
+    <meta name="twitter:image" content="%VITE_PUBLIC_URL%/og-image.svg" />
+    <meta name="twitter:image:alt" content="JSON OS — JSON workbench" />
+
+    <!-- Performance hints -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Prevent FOUC + set the page background to match the theme before JS runs -->
+    <style>
+      html { background: #0c0f14; color-scheme: dark light; }
+      @media (prefers-color-scheme: light) { html { background: #f5f7fa; } }
+      html[data-theme="dark"]  { background: #0c0f14; }
+      html[data-theme="light"] { background: #f5f7fa; }
+      body { margin: 0; }
+      #app { min-height: 100vh; }
+    </style>
+
+    <!-- Structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "JSON OS",
+        "alternateName": "jsonos",
+        "applicationCategory": "DeveloperApplication",
+        "applicationSubCategory": "JSONEditor",
+        "operatingSystem": "Web",
+        "browserRequirements": "Requires modern browser with ES2022 support",
+        "description": "Browser-based JSON workbench for viewing, editing, validating, querying (JSONPath), transforming, diffing, and sharing JSON. Tree, text, and table views with multi-column workspace and local-first processing.",
+        "url": "%VITE_PUBLIC_URL%/",
+        "image": "%VITE_PUBLIC_URL%/og-image.svg",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "featureList": [
+          "JSON viewer and editor",
+          "Tree, text, and table views",
+          "Multi-column workspace (up to 3)",
+          "JSON Schema validation (Ajv)",
+          "JSONPath query runner",
+          "Format, minify, repair, sort keys",
+          "Side-by-side compare / diff",
+          "CSV export",
+          "Read-only share links",
+          "API client with response history",
+          "Local-first, runs in the browser"
+        ]
+      }
+    </script>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <noscript>
+        <div style="padding:24px;font:14px/1.5 system-ui,sans-serif;max-width:560px;margin:48px auto;color:#e8ecf2">
+          <h1 style="margin:0 0 8px">JSON OS</h1>
+          <p>This app needs JavaScript. Enable it to view, edit, and validate JSON in your browser.</p>
+        </div>
+      </noscript>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

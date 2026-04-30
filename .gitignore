@@ -65,3 +65,11 @@ core-dump*
 
 
 implementation-plan.md
+
+# Local env (commit only .env.example)
+.env
+.env.local
+.env.*.local
+
+# Vercel
+.vercel

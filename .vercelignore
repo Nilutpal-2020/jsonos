@@ -1,0 +1,11 @@
+node_modules
+dist
+.git
+.vscode
+.svelte-kit
+worker
+implementation-plan.md
+CLAUDE.md
+*.log
+.env
+.env.local

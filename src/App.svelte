@@ -45,10 +45,14 @@
   });
 
   function onKey(e: KeyboardEvent) {
+    // If a focused widget already handled it (CodeMirror keymap with
+    // Prec.highest, native form controls), don't double-fire.
+    if (e.defaultPrevented) return;
     const meta = e.metaKey || e.ctrlKey;
     if (!meta) return;
-    if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); doc.undo(); }
-    else if ((e.key === 'z' && e.shiftKey) || e.key === 'y') { e.preventDefault(); doc.redo(); }
+    const key = e.key.toLowerCase();
+    if (key === 'z' && !e.shiftKey) { e.preventDefault(); doc.undo(); }
+    else if ((key === 'z' && e.shiftKey) || key === 'y') { e.preventDefault(); doc.redo(); }
     else if (e.key === 's') { e.preventDefault(); doc.download(); }
     else if (e.key === '/' || (e.shiftKey && e.key === 'F')) { e.preventDefault(); doc.format(2); }
     else if (e.key === '\\') { e.preventDefault(); panelOpen = !panelOpen; }

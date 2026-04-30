@@ -1,9 +1,10 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { EditorState, Compartment } from '@codemirror/state';
+  import { EditorState, Compartment, Prec } from '@codemirror/state';
   import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter, drawSelection } from '@codemirror/view';
-  import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+  import { defaultKeymap } from '@codemirror/commands';
   import { searchKeymap, highlightSelectionMatches, search } from '@codemirror/search';
+  import { createSearchPanel } from './search-panel';
   import { json } from '@codemirror/lang-json';
   import { bracketMatching, indentOnInput, foldGutter, foldKeymap, HighlightStyle, syntaxHighlighting } from '@codemirror/language';
   import { lintGutter, linter, type Diagnostic } from '@codemirror/lint';
@@ -119,14 +120,20 @@
         drawSelection(),
         bracketMatching(),
         indentOnInput(),
-        history(),
         highlightSelectionMatches(),
-        search({ top: true }),
+        search({ top: true, createPanel: createSearchPanel }),
         json(),
         lintGutter(),
         lintComp.of(makeLinter(doc)),
         wrapComp.of(ui.wrap ? EditorView.lineWrapping : []),
-        keymap.of([...defaultKeymap, ...historyKeymap, ...foldKeymap, ...searchKeymap]),
+        // High-priority undo/redo bound to the store, so editor focus doesn't
+        // route Cmd+Z / Cmd+Y to a competing CodeMirror history.
+        Prec.highest(keymap.of([
+          { key: 'Mod-z',       run: () => { boundDoc?.undo(); return true; } },
+          { key: 'Mod-Shift-z', run: () => { boundDoc?.redo(); return true; } },
+          { key: 'Mod-y',       run: () => { boundDoc?.redo(); return true; } },
+        ])),
+        keymap.of([...defaultKeymap, ...foldKeymap, ...searchKeymap]),
         EditorView.updateListener.of((u) => {
           if (u.docChanged && !setting) {
             boundDoc?.setText(u.state.doc.toString());
@@ -179,4 +186,119 @@
   }
   :global(.cm-editor) { height: 100%; }
   :global(.cm-editor.cm-focused) { outline: none; }
+
+  /* Custom search panel — see views/search-panel.ts */
+  :global(.cm-panels) {
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+  }
+  :global(.jx-search) {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px 8px;
+    font: 12px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  :global(.jx-row) {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  :global(.jx-row-replace) { display: none; padding-left: 24px; }
+  :global(.jx-search.jx-open .jx-row-replace) { display: flex; }
+
+  :global(.jx-disclose) {
+    background: transparent;
+    border: 0;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0 2px;
+    line-height: 0;
+    border-radius: var(--radius);
+    flex-shrink: 0;
+  }
+  :global(.jx-disclose:hover) { color: var(--fg); background: var(--row-hover); }
+
+  :global(.jx-input) {
+    flex: 1 1 200px;
+    min-width: 80px;
+    background: var(--surface);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px 8px;
+    font: inherit;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    outline: none;
+    transition: border-color 80ms, box-shadow 80ms;
+  }
+  :global(.jx-input:focus) {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--ring);
+  }
+
+  :global(.jx-pill) {
+    flex-shrink: 0;
+    background: var(--surface);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 3px 7px;
+    cursor: pointer;
+    font: 11px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-weight: 600;
+    min-width: 26px;
+    text-align: center;
+    transition: background 80ms, color 80ms, border-color 80ms;
+  }
+  :global(.jx-pill:hover) { color: var(--fg); border-color: var(--muted); }
+  :global(.jx-pill.on) {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border-color: var(--accent);
+  }
+
+  :global(.jx-icon) {
+    flex-shrink: 0;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    padding: 4px;
+    cursor: pointer;
+    line-height: 0;
+    transition: background 80ms, color 80ms, border-color 80ms;
+  }
+  :global(.jx-icon:hover) {
+    color: var(--fg);
+    background: var(--row-hover);
+    border-color: var(--border);
+  }
+  :global(.jx-icon.jx-close:hover) { color: var(--err); }
+
+  :global(.jx-count) {
+    flex-shrink: 0;
+    color: var(--muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    padding: 0 6px;
+    min-width: 48px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  :global(.jx-count.empty) { color: var(--err); }
+
+  :global(.jx-btn) {
+    flex-shrink: 0;
+    background: var(--surface);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px 10px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    transition: background 80ms, border-color 80ms;
+  }
+  :global(.jx-btn:hover) { background: var(--row-hover-strong); border-color: var(--muted); }
 </style>

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# Don't index shared documents (each has a unique ?share= ID).
+Disallow: /*?share=
+Disallow: /*&share=
+
+Sitemap: %VITE_PUBLIC_URL%/sitemap.xml
