@@ -29,6 +29,117 @@
   let shape = $derived(inspectTable(focusedValue));
   let arrayPaths = $derived(active.parse.value === undefined ? [] : findArrayPaths(active.parse.value));
 
+  // Sort + filter state (per-doc-per-focus-path)
+  type SortDir = 'asc' | 'desc';
+  interface ViewState {
+    sortCol: string | null;
+    sortDir: SortDir;
+    filters: Record<string, string>;
+    showFilters: boolean;
+  }
+  const viewByKey = new Map<string, ViewState>();
+  let viewBump = $state(0);
+  function viewKey(): string { return active.id + '@' + JSON.stringify(getFocus()); }
+  function getView(): ViewState {
+    const k = viewKey();
+    let v = viewByKey.get(k);
+    if (!v) {
+      v = { sortCol: null, sortDir: 'asc', filters: {}, showFilters: false };
+      viewByKey.set(k, v);
+    }
+    return v;
+  }
+  function bumpView() { viewBump++; }
+
+  function cycleSort(col: string) {
+    const v = getView();
+    if (v.sortCol !== col) { v.sortCol = col; v.sortDir = 'asc'; }
+    else if (v.sortDir === 'asc') { v.sortDir = 'desc'; }
+    else { v.sortCol = null; }
+    bumpView();
+  }
+  function setFilter(col: string, text: string) {
+    const v = getView();
+    if (text) v.filters[col] = text;
+    else delete v.filters[col];
+    bumpView();
+  }
+  function toggleFilters() {
+    const v = getView();
+    v.showFilters = !v.showFilters;
+    if (!v.showFilters) v.filters = {};
+    bumpView();
+  }
+  function clearAllFilters() {
+    const v = getView();
+    v.filters = {};
+    v.sortCol = null;
+    bumpView();
+  }
+
+  // Type-aware comparator for mixed JSON values.
+  function typeRank(v: JsonValue): number {
+    if (v === null) return 0;
+    if (typeof v === 'boolean') return 1;
+    if (typeof v === 'number') return 2;
+    if (typeof v === 'string') return 3;
+    if (Array.isArray(v)) return 5;
+    return 4;
+  }
+  function cmp(a: JsonValue, b: JsonValue): number {
+    const ra = typeRank(a), rb = typeRank(b);
+    if (ra !== rb) return ra - rb;
+    if (typeof a === 'number' && typeof b === 'number') return a - b;
+    if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
+    if (typeof a === 'boolean' && typeof b === 'boolean') return Number(a) - Number(b);
+    return JSON.stringify(a).localeCompare(JSON.stringify(b));
+  }
+
+  function cellOf(rowVal: JsonValue, col: string): JsonValue {
+    if (col === '$') return rowVal;
+    if (rowVal && typeof rowVal === 'object' && !Array.isArray(rowVal)) {
+      return ((rowVal as Record<string, JsonValue>)[col]) ?? null;
+    }
+    return null;
+  }
+
+  function passesFilters(rowVal: JsonValue, filters: Record<string, string>): boolean {
+    for (const [col, q] of Object.entries(filters)) {
+      const cell = cellOf(rowVal, col);
+      const s = cell === null ? 'null' : (typeof cell === 'object' ? JSON.stringify(cell) : String(cell));
+      if (!s.toLowerCase().includes(q.toLowerCase())) return false;
+    }
+    return true;
+  }
+
+  // viewIndices: positions into the underlying array, in display order.
+  let viewIndices = $derived.by<number[]>(() => {
+    void viewBump;
+    const arr = focusedValue as JsonValue[] | undefined;
+    if (!Array.isArray(arr) || arr.length === 0) return [];
+    if (shape.kind !== 'object-array' && shape.kind !== 'scalar-array') return [];
+    const v = getView();
+    const filterCol = shape.kind === 'scalar-array' ? '$' : null;
+    const activeFilters: Record<string, string> = filterCol
+      ? (v.filters['$'] ? { '$': v.filters['$'] } : {})
+      : v.filters;
+    const filtered: number[] = [];
+    for (let i = 0; i < arr.length; i++) {
+      if (!Object.keys(activeFilters).length || passesFilters(arr[i], activeFilters)) {
+        filtered.push(i);
+      }
+    }
+    if (v.sortCol) {
+      const col = v.sortCol;
+      const dir = v.sortDir === 'asc' ? 1 : -1;
+      filtered.sort((ia, ib) => dir * cmp(cellOf(arr[ia], col), cellOf(arr[ib], col)));
+    }
+    return filtered;
+  });
+
+  let viewLen = $derived(viewIndices.length);
+  let view = $derived.by(() => { void viewBump; return getView(); });
+
   // virtualization
   let scrollEl = $state<HTMLDivElement | undefined>();
   let virtual = $state<Virtualizer<HTMLDivElement, HTMLDivElement> | null>(null);
@@ -41,7 +152,7 @@
 
   onMount(() => {
     virtual = new Virtualizer<HTMLDivElement, HTMLDivElement>({
-      count: shape.length,
+      count: viewLen,
       getScrollElement: () => scrollEl ?? null,
       estimateSize: () => ROW_HEIGHT,
       overscan: 10,
@@ -60,10 +171,10 @@
 
   $effect(() => {
     if (!virtual) return;
-    void shape;
+    void viewLen;
     virtual.setOptions({
       ...virtual.options,
-      count: shape.length,
+      count: viewLen,
     });
     virtual._willUpdate();
     virtualItems = virtual.getVirtualItems();
@@ -172,6 +283,13 @@
       </span>
       <span class="spacer"></span>
       {#if shape.kind === 'object-array' || shape.kind === 'scalar-array'}
+        {#if viewLen !== shape.length}
+          <span class="meta dim">({viewLen} after filter)</span>
+        {/if}
+        <button class:on={view.showFilters} onclick={toggleFilters} title="Toggle column filters">⚙ Filter</button>
+        {#if view.sortCol || Object.keys(view.filters).length}
+          <button onclick={clearAllFilters} title="Clear sort + filters">Reset</button>
+        {/if}
         <button onclick={addRow} title="Append row">+ Row</button>
       {/if}
     </div>
@@ -200,23 +318,72 @@
           <div class="cell idx">#</div>
           {#if shape.kind === 'object-array'}
             {#each shape.columns as col}
-              <div class="cell col" style:width="{COL_WIDTH}px" title={col}>{col}</div>
+              <button
+                class="cell col sortable"
+                style:width="{COL_WIDTH}px"
+                title="Sort by {col}"
+                onclick={() => cycleSort(col)}
+              >
+                <span class="col-name">{col}</span>
+                <span class="sort-ind">
+                  {#if view.sortCol === col}{view.sortDir === 'asc' ? '▲' : '▼'}{:else}∙{/if}
+                </span>
+              </button>
             {/each}
           {:else}
-            <div class="cell col" style:width="{COL_WIDTH}px">value</div>
+            <button
+              class="cell col sortable"
+              style:width="{COL_WIDTH}px"
+              onclick={() => cycleSort('$')}
+            >
+              <span class="col-name">value</span>
+              <span class="sort-ind">
+                {#if view.sortCol === '$'}{view.sortDir === 'asc' ? '▲' : '▼'}{:else}∙{/if}
+              </span>
+            </button>
           {/if}
           <div class="cell actions"></div>
         </div>
 
+        <!-- Filter row (optional) -->
+        {#if view.showFilters}
+          <div class="row filter-row" style:height="{ROW_HEIGHT}px">
+            <div class="cell idx"></div>
+            {#if shape.kind === 'object-array'}
+              {#each shape.columns as col}
+                <div class="cell" style:width="{COL_WIDTH}px">
+                  <input
+                    class="filter-input"
+                    placeholder="filter…"
+                    value={view.filters[col] ?? ''}
+                    oninput={(e) => setFilter(col, (e.currentTarget as HTMLInputElement).value)}
+                  />
+                </div>
+              {/each}
+            {:else}
+              <div class="cell" style:width="{COL_WIDTH}px">
+                <input
+                  class="filter-input"
+                  placeholder="filter…"
+                  value={view.filters['$'] ?? ''}
+                  oninput={(e) => setFilter('$', (e.currentTarget as HTMLInputElement).value)}
+                />
+              </div>
+            {/if}
+            <div class="cell actions"></div>
+          </div>
+        {/if}
+
         <!-- Virtual rows -->
         <div class="virt" style:height="{totalSize}px">
           {#each virtualItems as vi (vi.index)}
-            {@const row = vi.index}
-            {@const rowVal = (focusedValue as JsonValue[])[row]}
+            {@const realIndex = viewIndices[vi.index]}
+            {@const row = realIndex}
+            {@const rowVal = (focusedValue as JsonValue[])[realIndex]}
             <div class="row data"
                  style:transform="translateY({vi.start}px)"
                  style:height="{ROW_HEIGHT}px">
-              <div class="cell idx">{row}</div>
+              <div class="cell idx">{realIndex}</div>
               {#if shape.kind === 'object-array'}
                 {@const obj = rowVal as Record<string, JsonValue>}
                 {#each shape.columns as col}
@@ -381,6 +548,48 @@
     background: var(--surface-2);
   }
   .cell.col { font-weight: 600; }
+  .cell.col.sortable {
+    background: var(--surface-2);
+    color: var(--muted);
+    border: 0;
+    border-right: 1px solid var(--border);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .cell.col.sortable:hover { background: var(--row-hover-strong); color: var(--fg); }
+  .col-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sort-ind { color: var(--accent); font-size: 10px; flex-shrink: 0; }
+  .filter-row {
+    position: sticky;
+    top: 28px;
+    z-index: 1;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .filter-input {
+    width: 100%;
+    background: var(--surface-2);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 2px 6px;
+    font: inherit;
+    font-weight: normal;
+    outline: none;
+  }
+  .filter-input:focus { border-color: var(--accent); }
+  .meta.dim { font-size: 11px; }
+  .head button.on {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border-color: var(--accent);
+  }
   .cell.actions {
     flex: 1;
     border-right: 0;
