@@ -1,12 +1,12 @@
 <script lang="ts">
   import { doc } from '../core/store.svelte';
+  import { ui } from '../core/ui-prefs.svelte';
+  import ThemeToggle from './ThemeToggle.svelte';
 
-  type Mode = 'text' | 'tree' | 'split' | 'table';
   let {
-    mode = $bindable('split' as Mode),
     panelOpen = $bindable(false),
     onShare,
-  }: { mode: Mode; panelOpen: boolean; onShare: () => void } = $props();
+  }: { panelOpen: boolean; onShare: () => void } = $props();
 
   let fileInput: HTMLInputElement;
   let repairError = $state('');
@@ -74,14 +74,15 @@
     {doc.name}{doc.dirty ? ' •' : ''}
   </div>
 
-  <div class="sep"></div>
+  <button
+    class="panel-toggle"
+    class:on={ui.wrap}
+    onclick={() => ui.toggleWrap()}
+    title="Toggle text wrap (⌘⇧W)"
+    aria-pressed={ui.wrap}
+  >⤶</button>
 
-  <div class="group seg">
-    <button class:active={mode === 'text'} onclick={() => mode = 'text'}>Text</button>
-    <button class:active={mode === 'split'} onclick={() => mode = 'split'}>Split</button>
-    <button class:active={mode === 'tree'} onclick={() => mode = 'tree'}>Tree</button>
-    <button class:active={mode === 'table'} onclick={() => mode = 'table'}>Table</button>
-  </div>
+  <ThemeToggle />
 
   <button class="panel-toggle" class:on={panelOpen} onclick={() => panelOpen = !panelOpen} title="Toggle side panel (⌘\\)">
     {panelOpen ? '⊟' : '⊞'}
@@ -102,36 +103,36 @@
     border-bottom: 1px solid var(--border);
     font-size: 13px;
   }
-  .group { display: flex; gap: 2px; }
-  .seg button { border-radius: 0; }
-  .seg button:first-child { border-radius: 4px 0 0 4px; }
-  .seg button:last-child  { border-radius: 0 4px 4px 0; }
-  .seg button.active {
-    background: var(--accent);
-    color: var(--accent-fg);
-    border-color: var(--accent);
-  }
-  .sep { width: 1px; height: 18px; background: var(--border); }
+  .group { display: flex; gap: 4px; }
+  .sep { width: 1px; height: 20px; background: var(--border); }
   .spacer { flex: 1; }
   .filename {
-    color: var(--muted);
+    color: var(--fg);
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 12px;
     max-width: 280px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    padding: 4px 8px;
+    border-radius: var(--radius);
+    background: var(--surface);
+    border: 1px solid var(--border);
   }
   button {
     background: var(--surface);
     color: var(--fg);
     border: 1px solid var(--border);
-    padding: 4px 10px;
-    border-radius: 4px;
+    padding: 4px 11px;
+    border-radius: var(--radius);
     cursor: pointer;
     font: inherit;
+    font-size: 12px;
+    line-height: 1.4;
+    transition: background 80ms, border-color 80ms, color 80ms;
   }
-  button:hover { background: var(--row-hover); }
+  button:hover { background: var(--row-hover-strong); border-color: var(--muted); }
+  button:active { background: var(--accent-soft); }
   .panel-toggle {
     margin-left: 4px;
     font-size: 14px;

@@ -7,6 +7,16 @@ const HISTORY_LIMIT = 200;
 const PARSE_DEBOUNCE_MS = 80;
 const SAVE_DEBOUNCE_MS = 400;
 const ACTIVE_KEY = 'activeDocId';
+const SLOTS_KEY = 'slots';
+const SLOT_FRACTIONS_KEY = 'slotFractions';
+export const MAX_SLOTS = 3;
+const MIN_SLOT_FR = 0.2;
+
+export type SlotView = 'text' | 'tree' | 'table';
+export interface Slot {
+  docId: string;
+  view: SlotView;
+}
 
 interface HistoryEntry {
   text: string;
@@ -210,43 +220,187 @@ export class DocStore {
 
 class WorkspaceStore {
   docs = $state<DocStore[]>([new DocStore()]);
-  activeId = $state<string | null>(null);
+  slots = $state<Slot[]>([]);
+  slotFractions = $state<number[]>([1]);
+  focusedSlotIndex = $state(0);
   ready = $state(false);
 
-  active = $derived<DocStore>(
-    this.docs.find((d) => d.id === this.activeId) ?? this.docs[0],
-  );
+  /** Doc shown in the focused slot — what the toolbar / shortcuts target. */
+  active = $derived<DocStore>(this.slotDoc(this.focusedSlotIndex) ?? this.docs[0]);
 
   constructor() {
-    this.activeId = this.docs[0].id;
+    this.slots = [{ docId: this.docs[0].id, view: 'text' }];
+    this.slotFractions = [1];
+  }
+
+  /** Adjust slotFractions length to match slots; fill new slots with 1. */
+  private normalizeFractions() {
+    const want = this.slots.length;
+    if (this.slotFractions.length === want) return;
+    const next = this.slotFractions.slice(0, want);
+    while (next.length < want) next.push(1);
+    this.slotFractions = next;
+  }
+
+  setSlotFractions(next: number[]) {
+    if (next.length !== this.slots.length) return;
+    if (next.some((f) => !Number.isFinite(f) || f < MIN_SLOT_FR)) return;
+    this.slotFractions = next;
+    this.persistSlots();
+  }
+
+  resetSlotFractions() {
+    this.slotFractions = this.slots.map(() => 1);
+    this.persistSlots();
+  }
+
+  slotDoc(slotIdx: number): DocStore | undefined {
+    const s = this.slots[slotIdx];
+    if (!s) return undefined;
+    return this.docs.find((d) => d.id === s.docId);
   }
 
   async init() {
     const ids = await persist.listIds();
-    if (ids.length === 0) {
-      this.ready = true;
-      return;
+    let docs: DocStore[] = this.docs;
+    if (ids.length > 0) {
+      const loaded = await Promise.all(ids.map((id) => persist.load(id)));
+      const restored = loaded.filter((d): d is PersistedDoc => !!d).map((d) => new DocStore(d));
+      restored.sort((a, b) => a.name.localeCompare(b.name));
+      if (restored.length > 0) docs = restored;
     }
-    const loaded = await Promise.all(ids.map((id) => persist.load(id)));
-    const docs = loaded.filter((d): d is PersistedDoc => !!d).map((d) => new DocStore(d));
-    docs.sort((a, b) => a.name.localeCompare(b.name));
-    if (docs.length > 0) {
-      this.docs = docs;
+    // Dedupe duplicate names left over from earlier versions.
+    const seen = new Map<string, number>();
+    for (const d of docs) {
+      const count = seen.get(d.name) ?? 0;
+      if (count > 0) {
+        const m = d.name.match(/^(.*?)(\.[^.]+)?$/);
+        const stem = m?.[1] ?? d.name;
+        const ext = m?.[2] ?? '';
+        d.name = `${stem}${count}${ext}`;
+        (d as any).scheduleSave?.(0);
+      }
+      seen.set(d.name, count + 1);
+    }
+    this.docs = docs;
+
+    // Restore slots if persisted, else start with one slot on a sensible doc
+    const savedSlots = await persist.getMeta<Slot[]>(SLOTS_KEY);
+    const validSlots = (savedSlots ?? [])
+      .filter((s) => docs.some((d) => d.id === s.docId))
+      .slice(0, MAX_SLOTS);
+    if (validSlots.length > 0) {
+      this.slots = validSlots;
+    } else {
       const last = await persist.getMeta<string>(ACTIVE_KEY);
-      this.activeId = (last && docs.some((d) => d.id === last)) ? last : docs[0].id;
+      const startId = (last && docs.some((d) => d.id === last)) ? last : docs[0].id;
+      this.slots = [{ docId: startId, view: 'text' }];
     }
+
+    const savedFractions = await persist.getMeta<number[]>(SLOT_FRACTIONS_KEY);
+    if (
+      savedFractions
+      && savedFractions.length === this.slots.length
+      && savedFractions.every((f) => Number.isFinite(f) && f >= MIN_SLOT_FR)
+    ) {
+      this.slotFractions = savedFractions;
+    } else {
+      this.slotFractions = this.slots.map(() => 1);
+    }
+
+    this.focusedSlotIndex = 0;
     this.ready = true;
   }
 
+  /** Click a tab: if doc is shown in a slot, focus it; else replace focused slot's doc. */
   setActive(id: string) {
-    this.activeId = id;
+    const idx = this.slots.findIndex((s) => s.docId === id);
+    if (idx >= 0) {
+      this.focusedSlotIndex = idx;
+    } else if (this.slots[this.focusedSlotIndex]) {
+      const next = this.slots.slice();
+      next[this.focusedSlotIndex] = { ...next[this.focusedSlotIndex], docId: id };
+      this.slots = next;
+    } else {
+      this.slots = [{ docId: id, view: 'text' }];
+      this.focusedSlotIndex = 0;
+    }
+    this.persistSlots();
     persist.setMeta(ACTIVE_KEY, id).catch(() => {});
   }
 
-  newDoc(text = '', name = 'untitled.json'): DocStore {
+  focusSlot(idx: number) {
+    if (idx < 0 || idx >= this.slots.length) return;
+    this.focusedSlotIndex = idx;
+    const id = this.slots[idx].docId;
+    persist.setMeta(ACTIVE_KEY, id).catch(() => {});
+  }
+
+  setSlotView(idx: number, view: SlotView) {
+    if (!this.slots[idx]) return;
+    const next = this.slots.slice();
+    next[idx] = { ...next[idx], view };
+    this.slots = next;
+    this.persistSlots();
+  }
+
+  /** Add a new slot (next to focused) showing a given doc, defaulting to focused doc. */
+  addSlot(docId?: string, view: SlotView = 'text') {
+    if (this.slots.length >= MAX_SLOTS) return;
+    const id = docId ?? this.active?.id ?? this.docs[0].id;
+    const insertAt = this.focusedSlotIndex + 1;
+    const next = [...this.slots.slice(0, insertAt), { docId: id, view }, ...this.slots.slice(insertAt)];
+    this.slots = next;
+    const fr = this.slotFractions.slice();
+    fr.splice(insertAt, 0, 1);
+    this.slotFractions = fr;
+    this.focusedSlotIndex = insertAt;
+    this.persistSlots();
+  }
+
+  /** Replace slots with [A, B] showing the same view; useful for diff side-by-side. */
+  openSideBySide(idA: string, idB: string, view: SlotView = 'text') {
+    if (idA === idB) {
+      this.setActive(idA);
+      return;
+    }
+    if (!this.docs.find((d) => d.id === idA) || !this.docs.find((d) => d.id === idB)) return;
+    this.slots = [
+      { docId: idA, view },
+      { docId: idB, view },
+    ];
+    this.slotFractions = [1, 1];
+    this.focusedSlotIndex = 0;
+    this.persistSlots();
+  }
+
+  closeSlot(idx: number) {
+    if (this.slots.length <= 1) return; // always keep at least one slot
+    const next = this.slots.slice();
+    next.splice(idx, 1);
+    this.slots = next;
+    const fr = this.slotFractions.slice();
+    fr.splice(idx, 1);
+    this.slotFractions = fr;
+    if (this.focusedSlotIndex >= next.length) this.focusedSlotIndex = next.length - 1;
+    this.persistSlots();
+  }
+
+  /** Find the lowest available untitled name (untitled.json, untitled1.json, ...). */
+  private nextUntitledName(): string {
+    const used = new Set(this.docs.map((d) => d.name));
+    if (!used.has('untitled.json')) return 'untitled.json';
+    for (let i = 1; i < 10000; i++) {
+      const candidate = `untitled${i}.json`;
+      if (!used.has(candidate)) return candidate;
+    }
+    return `untitled-${Date.now()}.json`;
+  }
+
+  newDoc(text = '', name?: string): DocStore {
     const d = new DocStore();
     d.text = text;
-    d.name = name;
+    d.name = name ?? this.nextUntitledName();
     this.docs = [...this.docs, d];
     this.setActive(d.id);
     return d;
@@ -257,21 +411,41 @@ class WorkspaceStore {
     if (idx < 0) return;
     this.docs = this.docs.filter((d) => d.id !== id);
     await persist.remove(id);
+
     if (this.docs.length === 0) {
       const fresh = new DocStore();
       this.docs = [fresh];
-      this.activeId = fresh.id;
-    } else if (this.activeId === id) {
-      const next = this.docs[Math.min(idx, this.docs.length - 1)];
-      if (next) this.setActive(next.id);
+      this.slots = [{ docId: fresh.id, view: 'text' }];
+      this.focusedSlotIndex = 0;
+      this.persistSlots();
+      return;
     }
+
+    // Repoint any slots that were showing the closed doc.
+    // Prefer a doc not already shown elsewhere, so we don't end up with two columns
+    // unintentionally showing the same thing. Fall back to nearest-by-index otherwise.
+    const shownElsewhere = new Set(
+      this.slots.filter((s) => s.docId !== id).map((s) => s.docId),
+    );
+    const notShown = this.docs.find((d) => !shownElsewhere.has(d.id));
+    const fallback = notShown ?? this.docs[Math.min(idx, this.docs.length - 1)];
+    const next = this.slots.map((s) => s.docId === id ? { ...s, docId: fallback.id } : s);
+    this.slots = next;
+    if (this.focusedSlotIndex >= this.slots.length) this.focusedSlotIndex = this.slots.length - 1;
+    this.persistSlots();
   }
 
   rename(id: string, name: string) {
     const d = this.docs.find((x) => x.id === id);
     if (!d) return;
     d.name = name;
-    d['scheduleSave' as keyof DocStore] && (d as any).scheduleSave(0);
+    (d as any).scheduleSave?.(0);
+  }
+
+  private persistSlots() {
+    this.normalizeFractions();
+    persist.setMeta(SLOTS_KEY, this.slots).catch(() => {});
+    persist.setMeta(SLOT_FRACTIONS_KEY, this.slotFractions).catch(() => {});
   }
 }
 

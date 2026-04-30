@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { workspace } from '../core/store.svelte';
+  import { workspace, type SlotView } from '../core/store.svelte';
   import { diffJson } from '../core/diff';
 
   let active = $derived(workspace.active);
   let peerId = $state<string>('');
+  let sideBySideView = $state<SlotView>('text');
 
   let candidates = $derived(workspace.docs.filter((d) => d.id !== active.id));
   let peer = $derived(candidates.find((d) => d.id === peerId));
@@ -18,6 +19,11 @@
     if (s === undefined) return 'undefined';
     return s.length > 80 ? s.slice(0, 77) + '…' : s;
   }
+
+  function openSideBySide() {
+    if (!peer) return;
+    workspace.openSideBySide(active.id, peer.id, sideBySideView);
+  }
 </script>
 
 <div class="diff">
@@ -29,6 +35,17 @@
         <option value={d.id}>{d.name}</option>
       {/each}
     </select>
+  </div>
+
+  <div class="actions" class:disabled={!peer}>
+    <span class="label">Open as columns:</span>
+    <div class="seg">
+      <button class:on={sideBySideView === 'text'} onclick={() => sideBySideView = 'text'}>Text</button>
+      <button class:on={sideBySideView === 'tree'} onclick={() => sideBySideView = 'tree'}>Tree</button>
+    </div>
+    <button class="primary" onclick={openSideBySide} disabled={!peer} title="Replace slots with this pair">
+      Open side-by-side ↔
+    </button>
   </div>
 
   <div class="body">
@@ -82,6 +99,45 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+    font-size: 11px;
+  }
+  .actions.disabled .label, .actions.disabled .seg button { opacity: 0.5; }
+  .label { color: var(--muted); }
+  .seg { display: flex; }
+  .seg button {
+    background: var(--surface);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    cursor: pointer;
+    font: inherit;
+  }
+  .seg button:first-child { border-radius: 3px 0 0 3px; }
+  .seg button:last-child  { border-radius: 0 3px 3px 0; }
+  .seg button + button { border-left: 0; }
+  .seg button.on {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border-color: var(--accent);
+  }
+  .actions .primary {
+    margin-left: auto;
+    background: var(--accent);
+    color: var(--accent-fg);
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+    padding: 3px 10px;
+    cursor: pointer;
+    font: inherit;
+  }
+  .actions .primary:disabled { opacity: 0.5; cursor: not-allowed; }
   .head select {
     background: var(--surface-2);
     color: var(--fg);

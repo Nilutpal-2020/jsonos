@@ -89,7 +89,8 @@
 <style>
   .backdrop {
     position: fixed; inset: 0;
-    background: rgba(0,0,0,0.5);
+    background: color-mix(in oklab, var(--bg) 30%, transparent);
+    backdrop-filter: blur(4px);
     display: flex; align-items: center; justify-content: center;
     z-index: 100;
   }
@@ -97,9 +98,9 @@
     width: min(520px, 92vw);
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     color: var(--fg);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    box-shadow: var(--shadow);
   }
   .head {
     display: flex;

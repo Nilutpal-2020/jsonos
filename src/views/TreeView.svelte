@@ -1,11 +1,13 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { Virtualizer, observeElementRect, observeElementOffset, elementScroll, type VirtualItem } from '@tanstack/virtual-core';
-  import { workspace } from '../core/store.svelte';
+  import { workspace, type DocStore } from '../core/store.svelte';
+  import { ui } from '../core/ui-prefs.svelte';
   import { flatten, pathKey, type Row } from '../core/tree-flatten';
   import type { JsonPath, JsonValue } from '../core/types';
 
-  let active = $derived(workspace.active);
+  let { doc: docProp }: { doc?: DocStore } = $props();
+  let active = $derived(docProp ?? workspace.active);
 
   // expand state per active doc
   const expandedByDoc = new Map<string, { expanded: Set<string>; toggled: Set<string> }>();
@@ -42,12 +44,13 @@
   let totalSize = $state(0);
 
   const ROW_HEIGHT = 22;
+  const ROW_HEIGHT_WRAPPED = 24; // initial estimate; real height measured per-row
 
   onMount(() => {
     virtual = new Virtualizer<HTMLDivElement, HTMLDivElement>({
       count: rows.length,
       getScrollElement: () => scrollEl ?? null,
-      estimateSize: () => ROW_HEIGHT,
+      estimateSize: () => ui.wrap ? ROW_HEIGHT_WRAPPED : ROW_HEIGHT,
       overscan: 12,
       observeElementRect,
       observeElementOffset,
@@ -75,23 +78,90 @@
     totalSize = virtual.getTotalSize();
   });
 
+  // When wrap toggles, drop all cached measurements so heights are recomputed.
+  $effect(() => {
+    void ui.wrap;
+    if (!virtual) return;
+    virtual.measure();
+    virtual._willUpdate();
+    virtualItems = virtual.getVirtualItems();
+    totalSize = virtual.getTotalSize();
+  });
+
+  /** Svelte action: hand each row to the virtualizer for actual height measurement.
+      virtual-core reads `data-index` from the element. */
+  function measureRow(el: HTMLDivElement) {
+    virtual?.measureElement(el);
+    return {
+      update() { virtual?.measureElement(el); },
+    };
+  }
+
   onDestroy(() => { virtual = null; });
 
-  // Inline edit state
-  let editingId = $state<string | null>(null);
+  // Inline edit state — separate channels for value vs key edits.
+  let editingValueId = $state<string | null>(null);
+  let editingKeyId = $state<string | null>(null);
   let draft = $state('');
-  function startEdit(row: Row) {
-    if (row.kind !== 'leaf') return;
-    draft = JSON.stringify(row.value);
-    editingId = row.id;
+  // After addChild, queue an auto-rename so the new key opens in edit mode.
+  let pendingKeyEdit: { rowId: string; original: string } | null = null;
+
+  /** Render a value to its inline-edit text form: strings unquoted, others as JSON literals. */
+  function valueToDraft(v: JsonValue): string {
+    return typeof v === 'string' ? v : JSON.stringify(v);
   }
-  function commitEdit(row: Row) {
+
+  /** Commit a value edit. If the original was a string, accept the draft as a literal
+      string unless the user explicitly entered a JSON literal (number/bool/null/quoted). */
+  function parseDraft(draft: string, originalKind: string): JsonValue {
+    const trimmed = draft.trim();
+    // Try JSON literals first
+    if (/^(true|false|null|-?\d|"|\[|\{)/.test(trimmed)) {
+      try { return JSON.parse(draft) as JsonValue; } catch { /* fall through */ }
+    }
+    if (originalKind === 'string') return draft;
+    // Last try: maybe it's a bare number / bool the regex missed
+    const v = JSON.parse(draft) as JsonValue;
+    return v;
+  }
+
+  function startValueEdit(row: Row) {
+    if (row.kind !== 'leaf') return;
+    draft = valueToDraft(row.value);
+    editingValueId = row.id;
+    editingKeyId = null;
+  }
+
+  function commitValueEdit(row: Row) {
     try {
-      const parsed = JSON.parse(draft) as JsonValue;
+      const parsed = parseDraft(draft, valueKind(row.value));
       active.applyValuePatch({ op: 'replace', path: row.path, value: parsed });
-      editingId = null;
+      editingValueId = null;
     } catch { /* keep editing */ }
   }
+
+  function startKeyEdit(row: Row) {
+    if (row.path.length === 0) return;
+    if (typeof row.keyName !== 'string') return; // array indices not editable
+    draft = row.keyName;
+    editingKeyId = row.id;
+    editingValueId = null;
+  }
+
+  function commitKeyEdit(row: Row) {
+    if (typeof row.keyName !== 'string') { editingKeyId = null; return; }
+    const next = draft;
+    if (!next || next === row.keyName) { editingKeyId = null; return; }
+    const parentPath = row.path.slice(0, -1);
+    active.applyValuePatch({ op: 'renameKey', path: parentPath, from: row.keyName, to: next });
+    editingKeyId = null;
+  }
+
+  function cancelEdits() {
+    editingValueId = null;
+    editingKeyId = null;
+  }
+
   function focusInput(el: HTMLInputElement) { el.focus(); el.select(); }
 
   function removeRow(row: Row) {
@@ -107,14 +177,40 @@
       const obj = row.value as Record<string, JsonValue>;
       let key = 'newKey'; let i = 1;
       while (key in obj) key = `newKey${i++}`;
-      active.applyValuePatch({ op: 'add', path: [...row.path, key], value: null });
+      const newPath = [...row.path, key];
+      // Make sure the parent is open so the new row is in the rendered list.
+      const { expanded, toggled } = getExpanded();
+      toggled.add(pathKey(row.path));
+      expanded.add(pathKey(row.path));
+      active.applyValuePatch({ op: 'add', path: newPath, value: null });
+      // Tell the next render to start key-rename on this new row.
+      pendingKeyEdit = { rowId: pathKey(newPath), original: key };
+      bumpExpand++;
     }
   }
+
+  // After parse completes and rows refresh, if we queued a key edit, start it now.
+  $effect(() => {
+    void rows;
+    if (!pendingKeyEdit) return;
+    const { rowId } = pendingKeyEdit;
+    if (rows.some((r) => r.id === rowId)) {
+      draft = pendingKeyEdit.original;
+      editingKeyId = rowId;
+      pendingKeyEdit = null;
+    }
+  });
 
   function valueKind(v: JsonValue): string {
     if (v === null) return 'null';
     if (Array.isArray(v)) return 'array';
     return typeof v;
+  }
+
+  function renderValue(v: JsonValue): string {
+    if (v === null) return 'null';
+    if (typeof v === 'string') return v;
+    return String(v);
   }
 </script>
 
@@ -131,9 +227,12 @@
           {#if row}
             <div
               class="row"
+              class:wrap={ui.wrap}
+              data-index={vi.index}
               style:transform="translateY({vi.start}px)"
-              style:height="{ROW_HEIGHT}px"
+              style:min-height="{ROW_HEIGHT}px"
               style:padding-left="{row.depth * 14 + 6}px"
+              use:measureRow
             >
               {#if row.kind === 'object-open' || row.kind === 'array-open'}
                 {@const k = pathKey(row.path)}
@@ -143,7 +242,22 @@
                   {open ? '▾' : '▸'}
                 </button>
                 {#if row.keyName !== null}
-                  <span class="key">{typeof row.keyName === 'number' ? row.keyName : `"${row.keyName}"`}</span><span class="colon">:</span>
+                  {#if editingKeyId === row.id && typeof row.keyName === 'string'}
+                    <input
+                      class="edit key-edit"
+                      bind:value={draft}
+                      onblur={() => commitKeyEdit(row)}
+                      onkeydown={(e) => {
+                        if (e.key === 'Enter') { e.preventDefault(); commitKeyEdit(row); }
+                        else if (e.key === 'Escape') cancelEdits();
+                      }}
+                      use:focusInput
+                    />
+                  {:else if typeof row.keyName === 'string'}
+                    <button class="key" onclick={() => startKeyEdit(row)} title="click to rename key">{row.keyName}</button>
+                  {:else}
+                    <span class="key idx">{row.keyName}</span>
+                  {/if}<span class="colon">:</span>
                 {/if}
                 <span class="brace">{row.kind === 'object-open' ? '{' : '['}</span>
                 {#if !open}
@@ -162,23 +276,38 @@
               {:else}
                 <span class="caret-spacer"></span>
                 {#if row.keyName !== null}
-                  <span class="key">{typeof row.keyName === 'number' ? row.keyName : `"${row.keyName}"`}</span><span class="colon">:</span>
+                  {#if editingKeyId === row.id && typeof row.keyName === 'string'}
+                    <input
+                      class="edit key-edit"
+                      bind:value={draft}
+                      onblur={() => commitKeyEdit(row)}
+                      onkeydown={(e) => {
+                        if (e.key === 'Enter') { e.preventDefault(); commitKeyEdit(row); }
+                        else if (e.key === 'Escape') cancelEdits();
+                      }}
+                      use:focusInput
+                    />
+                  {:else if typeof row.keyName === 'string'}
+                    <button class="key" onclick={() => startKeyEdit(row)} title="click to rename key">{row.keyName}</button>
+                  {:else}
+                    <span class="key idx">{row.keyName}</span>
+                  {/if}<span class="colon">:</span>
                 {/if}
-                {#if editingId === row.id}
+                {#if editingValueId === row.id}
                   <input
                     class="edit"
                     bind:value={draft}
-                    onblur={() => commitEdit(row)}
+                    onblur={() => commitValueEdit(row)}
                     onkeydown={(e) => {
-                      if (e.key === 'Enter') { e.preventDefault(); commitEdit(row); }
-                      else if (e.key === 'Escape') editingId = null;
+                      if (e.key === 'Enter') { e.preventDefault(); commitValueEdit(row); }
+                      else if (e.key === 'Escape') cancelEdits();
                     }}
                     use:focusInput
                   />
                 {:else}
                   {@const k = valueKind(row.value)}
-                  <button class="value v-{k}" onclick={() => startEdit(row)} title="click to edit">
-                    {k === 'string' ? `"${row.value}"` : String(row.value)}
+                  <button class="value v-{k}" onclick={() => startValueEdit(row)} title="click to edit">
+                    {renderValue(row.value)}
                   </button>
                 {/if}
                 <span class="actions">
@@ -217,7 +346,30 @@
     align-items: center;
     gap: 4px;
     white-space: nowrap;
+    padding-top: 1px;
+    padding-bottom: 1px;
   }
+  .row.wrap {
+    align-items: flex-start;
+  }
+  /* Wrap only the value column. Keys, carets, braces stay on a single line so a
+     tall multi-line value doesn't force the key to break per-character. */
+  .row.wrap .value {
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .row.wrap .key,
+  .row.wrap .caret,
+  .row.wrap .colon,
+  .row.wrap .brace,
+  .row.wrap .actions {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .row.wrap .caret { padding-top: 2px; }
   .row:hover { background: var(--row-hover); }
   .row:hover .actions { opacity: 1; }
   .tree-empty {
@@ -235,10 +387,21 @@
   }
   .caret:hover, .act:hover { color: var(--fg); }
   .caret-spacer { display: inline-block; width: 16px; }
-  .key { color: var(--key); }
-  .colon { color: var(--muted); }
+  .key {
+    color: var(--key);
+    background: transparent;
+    border: 0;
+    padding: 1px 3px;
+    border-radius: 3px;
+    font: inherit;
+    cursor: text;
+  }
+  button.key:hover { background: var(--row-hover-strong); }
+  .key.idx { color: var(--muted); }
+  .colon { color: var(--muted); margin-right: 2px; }
   .brace { color: var(--muted); }
   .muted { color: var(--muted); font-style: italic; }
+  .key-edit { color: var(--key); }
   .value {
     background: transparent;
     border: 0;
@@ -246,8 +409,10 @@
     padding: 1px 4px;
     border-radius: 3px;
     font: inherit;
+    text-align: left;
   }
   .value:hover { background: var(--row-hover-strong); }
+  .row.wrap .value { white-space: normal; word-break: break-word; }
   .v-string { color: var(--str); }
   .v-number { color: var(--num); }
   .v-boolean { color: var(--bool); }
@@ -259,7 +424,17 @@
     border-radius: 3px;
     background: var(--surface);
     color: var(--fg);
+    flex: 1 1 auto;
     min-width: 80px;
+    width: 100%;
+    box-shadow: 0 0 0 2px var(--ring);
+    outline: none;
+  }
+  .edit.key-edit {
+    flex: 0 1 auto;
+    width: auto;
+    min-width: 60px;
+    field-sizing: content;
   }
   .actions {
     opacity: 0;

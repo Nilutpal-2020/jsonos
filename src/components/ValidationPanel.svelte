@@ -44,16 +44,28 @@
     align-items: center;
     gap: 8px;
     color: var(--ok);
+    font-weight: 500;
   }
   .dot {
     width: 8px; height: 8px; border-radius: 50%;
     background: var(--ok);
+    box-shadow: 0 0 0 3px var(--ok-soft);
     display: inline-block;
   }
   .header {
     color: var(--err);
     margin-bottom: 4px;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .header::before {
+    content: "";
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--err);
+    box-shadow: 0 0 0 3px var(--err-bg);
+    display: inline-block;
   }
   ul { list-style: none; padding: 0; margin: 0; }
   li {

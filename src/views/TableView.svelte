@@ -4,11 +4,13 @@
     Virtualizer, observeElementRect, observeElementOffset, elementScroll,
     type VirtualItem,
   } from '@tanstack/virtual-core';
-  import { workspace } from '../core/store.svelte';
+  import { workspace, type DocStore } from '../core/store.svelte';
   import { inspectTable, findArrayPaths, getAt, pathToJSONish } from '../core/table-shape';
+  import { toCsv, downloadCsv } from '../core/csv';
   import type { JsonPath, JsonValue } from '../core/types';
 
-  let active = $derived(workspace.active);
+  let { doc: docProp }: { doc?: DocStore } = $props();
+  let active = $derived(docProp ?? workspace.active);
 
   // Per-doc focus path (which array we're tabling). Default = root.
   const focusByDoc = new Map<string, JsonPath>();
@@ -228,6 +230,23 @@
     active.applyValuePatch({ op: 'remove', path: [...focus, row] });
   }
 
+  function exportCsv() {
+    const arr = focusedValue as JsonValue[] | undefined;
+    if (!Array.isArray(arr)) return;
+    if (shape.kind !== 'object-array' && shape.kind !== 'scalar-array') return;
+    // Use viewIndices so what you see (filter + sort) is what you export.
+    const rows = viewIndices.map((i) => arr[i]);
+    const csv = toCsv({
+      columns: shape.kind === 'object-array' ? shape.columns : [],
+      rows,
+      scalarHeader: 'value',
+    });
+    const baseName = active.name.replace(/\.json$/i, '');
+    const focus = getFocus();
+    const suffix = focus.length === 0 ? '' : '_' + pathToJSONish(focus).replace(/[^A-Za-z0-9]+/g, '_');
+    downloadCsv(`${baseName}${suffix}.csv`, csv);
+  }
+
   function valueKind(v: JsonValue): string {
     if (v === null) return 'null';
     if (Array.isArray(v)) return 'array';
@@ -290,6 +309,7 @@
         {#if view.sortCol || Object.keys(view.filters).length}
           <button onclick={clearAllFilters} title="Clear sort + filters">Reset</button>
         {/if}
+        <button onclick={exportCsv} title="Export current view as CSV">CSV</button>
         <button onclick={addRow} title="Append row">+ Row</button>
       {/if}
     </div>
@@ -534,6 +554,12 @@
 
   .cell {
     flex-shrink: 0;
+    flex-grow: 0;
+    /* min-width: 0 overrides flex's default `min-width: auto` so an explicit
+       width is respected even when child content has long unbreakable runs.
+       Without this, long values expand the data cell and break column alignment
+       relative to the header. */
+    min-width: 0;
     padding: 0 8px;
     display: flex;
     align-items: center;
@@ -563,7 +589,13 @@
     gap: 6px;
   }
   .cell.col.sortable:hover { background: var(--row-hover-strong); color: var(--fg); }
-  .col-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .col-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .sort-ind { color: var(--accent); font-size: 10px; flex-shrink: 0; }
   .filter-row {
     position: sticky;
@@ -605,6 +637,8 @@
     border-radius: 3px;
     font: inherit;
     text-align: left;
+    flex: 1 1 auto;
+    min-width: 0;
     width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;

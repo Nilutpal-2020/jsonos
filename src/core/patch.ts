@@ -46,9 +46,32 @@ function getIn(root: JsonValue, path: JsonPath): JsonValue | undefined {
   return cur;
 }
 
+function renameKeyIn(root: JsonValue, parentPath: JsonPath, fromKey: string, toKey: string): JsonValue {
+  const parent = getIn(root, parentPath);
+  if (!parent || typeof parent !== 'object' || Array.isArray(parent)) return root;
+  if (fromKey === toKey) return root;
+  if (!(fromKey in (parent as Record<string, JsonValue>))) return root;
+  // Rebuild the object preserving insertion order, replacing the renamed key in place.
+  // If `toKey` already exists elsewhere, it gets overwritten (last-wins).
+  const next: Record<string, JsonValue> = {};
+  for (const [k, v] of Object.entries(parent as Record<string, JsonValue>)) {
+    if (k === fromKey) {
+      next[toKey] = v;
+    } else if (k === toKey) {
+      // skip — will be replaced by the renamed entry above
+      continue;
+    } else {
+      next[k] = v;
+    }
+  }
+  return setIn(root, parentPath, next);
+}
+
 export function applyPatch(value: JsonValue | undefined, patch: Patch): JsonValue | undefined {
   if (patch.op === 'replaceText') return value; // text-only patch handled at text layer
-  const root: JsonValue = value === undefined ? (typeof patch.path[0] === 'number' ? [] : {}) : value;
+  const root: JsonValue = value === undefined
+    ? (patch.op === 'renameKey' ? {} : (typeof patch.path[0] === 'number' ? [] : {}))
+    : value;
   switch (patch.op) {
     case 'replace':
     case 'add':
@@ -61,11 +84,16 @@ export function applyPatch(value: JsonValue | undefined, patch: Patch): JsonValu
       const removed = removeIn(root, patch.from);
       return setIn(removed, patch.path, moved);
     }
+    case 'renameKey':
+      return renameKeyIn(root, patch.path, patch.from, patch.to);
   }
 }
 
 export function invertPatch(prev: JsonValue | undefined, patch: Patch): Patch | null {
   if (patch.op === 'replaceText') return null;
+  if (patch.op === 'renameKey') {
+    return { op: 'renameKey', path: patch.path, from: patch.to, to: patch.from };
+  }
   const before = prev === undefined ? undefined : getIn(prev as JsonValue, patch.op === 'move' ? patch.from : patch.path);
   switch (patch.op) {
     case 'replace':

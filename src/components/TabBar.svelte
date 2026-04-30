@@ -23,14 +23,18 @@
 
 <div class="tabs">
   {#each workspace.docs as d (d.id)}
+    {@const shown = workspace.slots.some((s) => s.docId === d.id)}
+    {@const focused = workspace.active.id === d.id}
     <div
       class="tab"
-      class:active={d.id === workspace.active.id}
+      class:active={focused}
+      class:shown={shown && !focused}
       role="button"
       tabindex="0"
       onclick={() => workspace.setActive(d.id)}
       onkeydown={(e) => { if (e.key === 'Enter') workspace.setActive(d.id); }}
       ondblclick={() => startRename(d.id, d.name)}
+      title={shown ? 'Open · click to focus its column' : 'Click to open in focused column'}
     >
       {#if editingId === d.id}
         <input
@@ -66,12 +70,13 @@
     border-bottom: 1px solid var(--border);
     overflow-x: auto;
     scrollbar-width: thin;
+    min-height: 32px;
   }
   .tab {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 10px;
+    padding: 6px 12px;
     border-right: 1px solid var(--border);
     cursor: pointer;
     user-select: none;
@@ -79,13 +84,19 @@
     font-size: 12px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     max-width: 220px;
-    min-width: 80px;
+    min-width: 90px;
+    transition: background 80ms, color 80ms;
   }
   .tab:hover { background: var(--surface); color: var(--fg); }
   .tab.active {
     background: var(--surface);
     color: var(--fg);
     border-bottom: 2px solid var(--accent);
+    margin-bottom: -1px;
+  }
+  .tab.shown {
+    color: var(--fg);
+    border-bottom: 2px solid var(--border);
     margin-bottom: -1px;
   }
   .name {

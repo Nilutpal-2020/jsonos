@@ -30,6 +30,7 @@ export type Patch =
   | { op: 'add'; path: JsonPath; value: JsonValue }
   | { op: 'remove'; path: JsonPath }
   | { op: 'move'; from: JsonPath; path: JsonPath }
+  | { op: 'renameKey'; path: JsonPath; from: string; to: string }
   | { op: 'replaceText'; text: string };
 
 export interface DocSnapshot {
