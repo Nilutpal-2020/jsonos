@@ -22,6 +22,25 @@
 </script>
 
 <div class="tabs">
+  <a class="brand" href="/" aria-label="JSON OS — home" title="JSON OS">
+    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+      <rect width="32" height="32" rx="7" fill="url(#brand-grad)"/>
+      <defs>
+        <linearGradient id="brand-grad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#5b9eff"/>
+          <stop offset="1" stop-color="#2563eb"/>
+        </linearGradient>
+      </defs>
+      <g fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M11.5 7.5c-2.5 0-3.5 1.2-3.5 3.2v3.1c0 1.4-.7 2.2-2 2.2 1.3 0 2 .8 2 2.2v3.1c0 2 1 3.2 3.5 3.2"/>
+        <path d="M20.5 7.5c2.5 0 3.5 1.2 3.5 3.2v3.1c0 1.4.7 2.2 2 2.2-1.3 0-2 .8-2 2.2v3.1c0 2-1 3.2-3.5 3.2"/>
+      </g>
+      <circle cx="16" cy="16" r="1.5" fill="#ffffff"/>
+    </svg>
+    <span class="brand-name">JSON OS</span>
+  </a>
+  <span class="brand-sep" aria-hidden="true"></span>
+
   {#each workspace.docs as d (d.id)}
     {@const shown = workspace.slots.some((s) => s.docId === d.id)}
     {@const focused = workspace.active.id === d.id}
@@ -71,6 +90,40 @@
     overflow-x: auto;
     scrollbar-width: thin;
     min-height: 32px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    color: var(--muted);
+    text-decoration: none;
+    font: 600 12px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    user-select: none;
+    transition: color 80ms;
+  }
+  .brand:hover { color: var(--fg); }
+  .brand-mark {
+    width: 18px;
+    height: 18px;
+    display: block;
+    flex-shrink: 0;
+  }
+  .brand-name { display: inline-block; }
+  .brand-sep {
+    display: inline-block;
+    width: 1px;
+    align-self: center;
+    height: 18px;
+    background: var(--border);
+    margin: 0 4px 0 0;
+    flex-shrink: 0;
+  }
+  @media (max-width: 540px) {
+    .brand-name { display: none; }
+    .brand { padding: 0 10px; }
   }
   .tab {
     display: flex;

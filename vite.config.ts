@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 const DEFAULT_PUBLIC_URL = 'https://jsonos.app';
 
 /**
- * Substitute %VITE_PUBLIC_URL% in static files copied from public/ at build time.
+ * Substitute https://jsonos.vercel.app in static files copied from public/ at build time.
  * Vite already supports %VITE_*% in index.html; this extends the same syntax to
  * robots.txt and sitemap.xml so canonical URLs are written correctly per env.
  */
@@ -20,7 +20,7 @@ function publicAssetsTokenSubstitute(publicUrl: string): Plugin {
         const src = resolve(process.cwd(), 'public', file);
         const dst = resolve(process.cwd(), 'dist', file);
         if (!existsSync(src)) continue;
-        const text = readFileSync(src, 'utf8').replaceAll('%VITE_PUBLIC_URL%', publicUrl);
+        const text = readFileSync(src, 'utf8').replaceAll('https://jsonos.vercel.app', publicUrl);
         writeFileSync(dst, text);
       }
     },
