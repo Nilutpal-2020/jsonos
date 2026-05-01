@@ -9,7 +9,7 @@
   "trailingSlash": false,
 
   "rewrites": [
-    { "source": "/((?!api|assets|.*\\.(?:js|css|svg|png|webp|jpg|jpeg|gif|ico|webmanifest|xml|txt|map)).*)",
+    { "source": "/((?!api|assets|privacy|terms|.*\\.(?:js|css|html|svg|png|webp|jpg|jpeg|gif|ico|webmanifest|xml|txt|map)).*)",
       "destination": "/index.html" }
   ],
 

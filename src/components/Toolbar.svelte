@@ -30,6 +30,11 @@
     { kind: 'divider' },
     { kind: 'item', icon: 'ⓘ',  label: 'About JSON OS',      onSelect: () => openHelpAt('about') },
     { kind: 'item', icon: '✉',  label: 'Send feedback',      onSelect: () => openHelpAt('feedback') },
+    { kind: 'divider' },
+    { kind: 'item', icon: '🔒', label: 'Privacy Policy', hint: '↗',
+      onSelect: () => window.open('/privacy.html', '_blank', 'noopener') },
+    { kind: 'item', icon: '§',  label: 'Terms of Service', hint: '↗',
+      onSelect: () => window.open('/terms.html', '_blank', 'noopener') },
   ];
 
   let fileInput: HTMLInputElement;

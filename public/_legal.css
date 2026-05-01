@@ -1,0 +1,86 @@
+:root {
+  color-scheme: dark light;
+  --bg: #0c0f14;
+  --surface: #131720;
+  --fg: #e8ecf2;
+  --muted: #8b95a5;
+  --border: #2a313e;
+  --accent: #5b9eff;
+  --accent-fg: #ffffff;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --fg: #11151c;
+    --muted: #5a6373;
+    --border: #d8dde6;
+    --accent: #2563eb;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); }
+body {
+  font: 15px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+}
+a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted currentColor; }
+a:hover { border-bottom-style: solid; }
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  background: var(--surface);
+}
+header .row {
+  max-width: 760px; margin: 0 auto;
+  display: flex; align-items: center; gap: 12px;
+}
+header svg { width: 26px; height: 26px; flex-shrink: 0; }
+header .name { font-weight: 700; letter-spacing: 0.02em; }
+header nav { margin-left: auto; display: flex; gap: 14px; font-size: 13px; }
+main {
+  max-width: 760px; width: 100%;
+  margin: 0 auto; padding: 32px 24px 64px;
+  flex: 1;
+}
+main h1 { font-size: 28px; margin: 0 0 6px; line-height: 1.2; }
+main .lede {
+  color: var(--muted); margin: 0 0 32px; font-size: 14px;
+  border-bottom: 1px solid var(--border); padding-bottom: 16px;
+}
+main h2 {
+  font-size: 17px; margin: 28px 0 8px;
+  border-left: 3px solid var(--accent); padding-left: 10px;
+}
+main h3 { font-size: 14px; margin: 18px 0 4px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+main p { margin: 0 0 12px; }
+main ul { margin: 0 0 14px; padding-left: 22px; }
+main li { padding: 2px 0; }
+main strong { color: var(--fg); }
+main code, main kbd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  background: rgba(127,127,127,0.1);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+main blockquote {
+  margin: 14px 0; padding: 10px 14px;
+  background: rgba(91,158,255,0.08);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  color: var(--fg);
+}
+footer {
+  border-top: 1px solid var(--border);
+  padding: 16px 24px;
+  font-size: 12px; color: var(--muted);
+}
+footer .row {
+  max-width: 760px; margin: 0 auto;
+  display: flex; gap: 16px; flex-wrap: wrap;
+}
+footer .spacer { flex: 1; }

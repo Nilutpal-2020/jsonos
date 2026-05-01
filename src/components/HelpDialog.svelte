@@ -256,7 +256,10 @@
             <p>
               Everything happens locally in your browser. Documents persist to
               IndexedDB on your device. No data is sent anywhere unless you
-              explicitly export it.
+              explicitly export it. Read the
+              <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+              and
+              <a href="/terms.html" target="_blank" rel="noopener">Terms of Service</a>.
             </p>
           </section>
         {:else if tab === "shortcuts"}

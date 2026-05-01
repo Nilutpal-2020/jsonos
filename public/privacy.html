@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy Policy — JSON OS</title>
+    <meta name="description" content="JSON OS privacy policy. JSON OS runs entirely in your browser. We do not upload, store, or transmit your JSON documents to any server." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://jsonos.online/privacy.html" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/_legal.css" />
+    <meta name="theme-color" content="#131720" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Privacy Policy — JSON OS" />
+    <meta property="og:description" content="JSON OS privacy policy. Local-first by design — your JSON stays on your device." />
+    <meta property="og:url" content="https://jsonos.online/privacy.html" />
+    <meta property="og:image" content="https://jsonos.online/og-image.svg" />
+  </head>
+  <body>
+    <header>
+      <div class="row">
+        <a href="/" aria-label="JSON OS home" style="display:inline-flex;align-items:center;gap:10px;border:0">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <defs>
+              <linearGradient id="g" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#5b9eff"/><stop offset="1" stop-color="#2563eb"/>
+              </linearGradient>
+            </defs>
+            <rect width="32" height="32" rx="7" fill="url(#g)"/>
+            <g fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11.5 7.5c-2.5 0-3.5 1.2-3.5 3.2v3.1c0 1.4-.7 2.2-2 2.2 1.3 0 2 .8 2 2.2v3.1c0 2 1 3.2 3.5 3.2"/>
+              <path d="M20.5 7.5c2.5 0 3.5 1.2 3.5 3.2v3.1c0 1.4.7 2.2 2 2.2-1.3 0-2 .8-2 2.2v3.1c0 2-1 3.2-3.5 3.2"/>
+            </g>
+            <circle cx="16" cy="16" r="1.5" fill="#fff"/>
+          </svg>
+          <span class="name">JSON OS</span>
+        </a>
+        <nav>
+          <a href="/">App</a>
+          <a href="/privacy.html">Privacy</a>
+          <a href="/terms.html">Terms</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <h1>Privacy Policy</h1>
+      <p class="lede">Effective 2026-05-02. JSON OS runs entirely in your browser. This policy explains the very small amount of data the service touches and why.</p>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>JSON documents you load are <strong>processed and stored on your device</strong>, in your browser's IndexedDB. They are not uploaded to JSON OS or any third-party server.</li>
+        <li>Visiting the site involves the same standard server logs your browser leaves anywhere on the web (IP address, timestamp, request path).</li>
+        <li>We use <strong>no cookies, no third-party analytics, no advertising</strong> trackers.</li>
+        <li>We do not sell, rent, or share data because we don't collect it.</li>
+      </ul>
+
+      <h2>What stays on your device</h2>
+      <p>The following is kept locally in your browser and never transmitted:</p>
+      <ul>
+        <li>The text of every JSON document you load, paste, type, or open</li>
+        <li>The JSON Schemas you paste into the Schema panel</li>
+        <li>Workspace state (open tabs, slot layout, expand state, sort/filter, theme preference)</li>
+        <li>Per-origin authentication tokens you type into the (optional) API panel, when present</li>
+      </ul>
+      <p>This data lives in IndexedDB and <code>localStorage</code> on your device. You can clear it at any time using your browser's site-data controls or by opening the developer tools and clearing storage for this origin.</p>
+
+      <h2>Server logs</h2>
+      <p>The site is hosted on Vercel. Like any website, the host receives a request log containing your IP address, the URL you fetched, the time of the request, and your user-agent. These logs are kept by the host on a rolling basis for security and operational diagnostics. We do not enrich them with personal information.</p>
+
+      <h2>Third-party services we don't use</h2>
+      <p>JSON OS does not load Google Analytics, Facebook Pixel, advertising networks, session-replay scripts, or any cross-site tracker. The only outbound network traffic from the page is the initial download of the application bundle and its assets.</p>
+
+      <h2>Cookies</h2>
+      <p>JSON OS does not set cookies. Theme and UI preferences are stored in <code>localStorage</code>, which is local to your browser and is not transmitted to any server.</p>
+
+      <h2>Sharing &amp; export</h2>
+      <p>If you choose to download a JSON file, copy to clipboard, or export to CSV, the data only moves to wherever you direct it. JSON OS does not copy that data anywhere.</p>
+
+      <h2>Children</h2>
+      <p>JSON OS is a developer tool intended for general audiences. It does not knowingly collect data from anyone, including children under 13.</p>
+
+      <h2>Changes</h2>
+      <p>If this policy ever changes — for example, if we add an optional feature that talks to a server — we will update this page and bump the date at the top. Your continued use after a change means you accept the updated policy.</p>
+
+      <h2>Contact</h2>
+      <p>Questions about privacy? Email <a href="mailto:jsonos.online@gmail.com">jsonos.online@gmail.com</a>.</p>
+    </main>
+
+    <footer>
+      <div class="row">
+        <span>© <span id="year">2026</span> JSON OS</span>
+        <span class="spacer"></span>
+        <a href="/">Back to app</a>
+        <a href="/terms.html">Terms</a>
+      </div>
+    </footer>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  </body>
+</html>

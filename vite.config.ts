@@ -3,15 +3,16 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const DEFAULT_PUBLIC_URL = 'https://jsonos.app';
+const DEFAULT_PUBLIC_URL = 'https://jsonos.online';
 
 /**
- * Substitute https://jsonos.vercel.app in static files copied from public/ at build time.
+ * Substitute %VITE_PUBLIC_URL% in static files copied from public/ at build time.
  * Vite already supports %VITE_*% in index.html; this extends the same syntax to
- * robots.txt and sitemap.xml so canonical URLs are written correctly per env.
+ * robots.txt, sitemap.xml, privacy.html, and terms.html so canonical URLs are
+ * written correctly per env.
  */
 function publicAssetsTokenSubstitute(publicUrl: string): Plugin {
-  const targets = ['robots.txt', 'sitemap.xml'];
+  const targets = ['robots.txt', 'sitemap.xml', 'privacy.html', 'terms.html'];
   return {
     name: 'jsonos:public-assets-token-substitute',
     apply: 'build',
@@ -20,7 +21,7 @@ function publicAssetsTokenSubstitute(publicUrl: string): Plugin {
         const src = resolve(process.cwd(), 'public', file);
         const dst = resolve(process.cwd(), 'dist', file);
         if (!existsSync(src)) continue;
-        const text = readFileSync(src, 'utf8').replaceAll('https://jsonos.vercel.app', publicUrl);
+        const text = readFileSync(src, 'utf8').replaceAll('%VITE_PUBLIC_URL%', publicUrl);
         writeFileSync(dst, text);
       }
     },
