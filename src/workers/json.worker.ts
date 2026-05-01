@@ -1,5 +1,6 @@
 import * as Comlink from 'comlink';
-import { parseJson, formatJson, minifyJson, repairJson } from '../core/json';
+import { parseJson, formatJson, minifyJson } from '../core/json';
+import { repair as repairCore } from '../core/json-repair';
 import type { JsonValue, ParseResult } from '../core/types';
 
 type AjvInstance = import('ajv').default;
@@ -51,9 +52,10 @@ const api = {
     try { return { ok: true, text: minifyJson(text) }; }
     catch (e) { return { ok: false, error: (e as Error).message }; }
   },
-  repair(text: string): { ok: true; text: string } | { ok: false; error: string } {
-    try { return { ok: true, text: repairJson(text) }; }
-    catch (e) { return { ok: false, error: (e as Error).message }; }
+  repair(text: string): { ok: true; text: string; changes: string[] } | { ok: false; error: string; partial?: string; changes?: string[] } {
+    const r = repairCore(text);
+    if (r.ok) return { ok: true, text: r.text, changes: r.changes };
+    return { ok: false, error: r.error ?? 'Could not repair', partial: r.text, changes: r.changes };
   },
   sortKeys(text: string, deep = true): { ok: true; text: string } | { ok: false; error: string } {
     try {

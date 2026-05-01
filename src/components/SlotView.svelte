@@ -3,6 +3,8 @@
   import TreeView from '../views/TreeView.svelte';
   import TableView from '../views/TableView.svelte';
   import { workspace, MAX_SLOTS, type Slot, type SlotView, type DocStore } from '../core/store.svelte';
+  import { compare } from '../core/compare.svelte';
+  import { treeExpand } from '../core/tree-expand.svelte';
 
   type Props = {
     slot: Slot;
@@ -12,6 +14,8 @@
   let { slot, index, focused }: Props = $props();
 
   let doc = $derived<DocStore | undefined>(workspace.slotDoc(index));
+  let diffSide = $derived(compare.side(index));
+  let diffByPath = $derived(diffSide ? (compare.result?.byPath ?? null) : null);
 
   function onFocus() { workspace.focusSlot(index); }
 
@@ -44,6 +48,17 @@
       <button class:on={slot.view === 'table'} onclick={() => setView('table')} title="Table view">Table</button>
     </div>
 
+    {#if slot.view === 'tree' && doc}
+      <div class="seg tree-ops" aria-label="Expand controls">
+        <button onclick={() => treeExpand.expandAll(doc!.id, doc!.parse.value)}
+                title="Expand all">⊞</button>
+        <button onclick={() => treeExpand.collapseAll(doc!.id, doc!.parse.value)}
+                title="Collapse all">⊟</button>
+        <button onclick={() => treeExpand.reset(doc!.id)}
+                title="Reset to default depth">⤺</button>
+      </div>
+    {/if}
+
     <span class="spacer"></span>
 
     {#if workspace.slots.length < MAX_SLOTS}
@@ -54,12 +69,12 @@
     {/if}
   </div>
 
-  <div class="body">
+  <div class="body" class:paired={diffSide !== null} data-diff-side={diffSide}>
     {#if doc}
       {#if slot.view === 'text'}
         <TextView {doc} />
       {:else if slot.view === 'tree'}
-        <TreeView {doc} />
+        <TreeView {doc} {diffByPath} {diffSide} slotIndex={index} />
       {:else}
         <TableView {doc} />
       {/if}

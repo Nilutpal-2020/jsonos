@@ -87,22 +87,15 @@ export function minifyJson(text: string): string {
   return JSON.stringify(JSON.parse(text));
 }
 
-// Best-effort repair. Handles: trailing commas, single quotes, unquoted keys,
-// stray commas before }/], BOM, smart quotes.
+// `repair` lives in json-repair.ts. Re-exported here so legacy callers see it.
+export { repair as repairJsonDetailed } from './json-repair';
+
+/** Lightweight wrapper that throws on failure — existing callers expect this. */
+import { repair as _repair } from './json-repair';
 export function repairJson(text: string): string {
-  let s = text.replace(/^﻿/, '');
-  s = s.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
-  // single-quoted strings -> double-quoted (simple, ignores escaped cases)
-  s = s.replace(/'((?:[^'\\]|\\.)*)'/g, (_m, body: string) => {
-    return '"' + body.replace(/"/g, '\\"').replace(/\\'/g, "'") + '"';
-  });
-  // unquoted object keys
-  s = s.replace(/([{,]\s*)([A-Za-z_$][A-Za-z0-9_$]*)\s*:/g, '$1"$2":');
-  // trailing commas before } or ]
-  s = s.replace(/,(\s*[}\]])/g, '$1');
-  // try parse; if still bad, throw
-  JSON.parse(s);
-  return s;
+  const r = _repair(text);
+  if (!r.ok) throw new Error(r.error ?? 'Could not repair input');
+  return r.text;
 }
 
 export function getValueAtPath(value: JsonValue | undefined, path: JsonPath): JsonValue | undefined {

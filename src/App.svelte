@@ -4,19 +4,65 @@
   import TabBar from './components/TabBar.svelte';
   import ValidationPanel from './components/ValidationPanel.svelte';
   import SidePanel from './components/SidePanel.svelte';
-  import ShareDialog from './components/ShareDialog.svelte';
   import SlotView from './components/SlotView.svelte';
   import SlotResizer from './components/SlotResizer.svelte';
   import { doc, workspace } from './core/store.svelte';
   import { ui } from './core/ui-prefs.svelte';
-  import { readShareIdFromUrl, clearShareIdFromUrl, loadShare } from './core/share';
+  import { compare } from './core/compare.svelte';
 
-  type SideTab = 'schema' | 'query' | 'diff' | 'api';
+  type SideTab = 'schema' | 'diff';
   let panelOpen = $state(false);
   let sideTab = $state<SideTab>('schema');
-  let shareOpen = $state(false);
-  let shareLoadError = $state('');
   let workspaceEl = $state<HTMLDivElement | undefined>();
+
+  // Side-panel resize: pixels, persisted, clamped to [PANEL_MIN, viewport*0.5].
+  const PANEL_KEY = 'jsonos.panelWidth';
+  const PANEL_MIN = 280;
+  const PANEL_DEFAULT = 380;
+  let panelWidthRaw = $state<number>(readPanelWidth());
+  let viewportWidth = $state<number>(typeof window === 'undefined' ? 1024 : window.innerWidth);
+  let panelMax = $derived(Math.floor(viewportWidth * 0.5));
+  let panelWidth = $derived(Math.max(PANEL_MIN, Math.min(panelMax, panelWidthRaw)));
+  let resizing = $state(false);
+
+  function readPanelWidth(): number {
+    try {
+      const v = parseInt(localStorage.getItem(PANEL_KEY) ?? '', 10);
+      return Number.isFinite(v) && v > 0 ? v : PANEL_DEFAULT;
+    } catch { return PANEL_DEFAULT; }
+  }
+  function persistPanelWidth(w: number) {
+    try { localStorage.setItem(PANEL_KEY, String(w)); } catch {}
+  }
+
+  function startPanelResize(e: PointerEvent) {
+    e.preventDefault();
+    resizing = true;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    const startX = e.clientX;
+    const startW = panelWidth;
+    const onMove = (ev: PointerEvent) => {
+      // Panel sits on the right; dragging left increases width.
+      const dx = ev.clientX - startX;
+      panelWidthRaw = startW - dx;
+    };
+    const onUp = () => {
+      resizing = false;
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      panelWidthRaw = panelWidth;        // commit clamped value
+      persistPanelWidth(panelWidth);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }
+  function resetPanelWidth() {
+    panelWidthRaw = PANEL_DEFAULT;
+    persistPanelWidth(PANEL_DEFAULT);
+  }
+  function onWindowResize() {
+    viewportWidth = window.innerWidth;
+  }
 
   let gridTemplate = $derived.by(() => {
     const fr = workspace.slotFractions;
@@ -30,19 +76,17 @@
 
   onMount(async () => {
     await workspace.init();
-    const shareId = readShareIdFromUrl();
-    if (shareId) {
-      try {
-        const payload = await loadShare(shareId);
-        workspace.newDoc(payload.text, `${payload.name} (shared)`);
-      } catch (e) {
-        shareLoadError = `Could not load shared document: ${(e as Error).message}`;
-        setTimeout(() => shareLoadError = '', 5000);
-      } finally {
-        clearShareIdFromUrl();
-      }
-    }
   });
+
+  function toggleCompare() {
+    // Toggle: linked → unlink. Otherwise open the Compare panel to set up a pair.
+    if (compare.pair) {
+      compare.clear();
+      return;
+    }
+    panelOpen = true;
+    sideTab = 'diff';
+  }
 
   function onKey(e: KeyboardEvent) {
     // If a focused widget already handled it (CodeMirror keymap with
@@ -58,6 +102,7 @@
     else if (e.key === '\\') { e.preventDefault(); panelOpen = !panelOpen; }
     else if (e.key === 't') { e.preventDefault(); workspace.newDoc(); }
     else if (e.shiftKey && (e.key === 'w' || e.key === 'W')) { e.preventDefault(); ui.toggleWrap(); }
+    else if (e.shiftKey && (e.key === 'c' || e.key === 'C')) { e.preventDefault(); toggleCompare(); }
     else if (e.key === '1' || e.key === '2' || e.key === '3') {
       const n = Number(e.key) - 1;
       if (workspace.slots[n]) { e.preventDefault(); workspace.focusSlot(n); }
@@ -65,17 +110,17 @@
   }
 </script>
 
-<svelte:window onkeydown={onKey} />
+<svelte:window onkeydown={onKey} onresize={onWindowResize} />
 
 <div class="app">
   <TabBar />
-  <Toolbar bind:panelOpen onShare={() => shareOpen = true} />
+  <Toolbar bind:panelOpen onCompare={toggleCompare} />
 
-  {#if shareLoadError}
-    <div class="share-err">{shareLoadError}</div>
-  {/if}
-
-  <div class="layout" class:has-panel={panelOpen}>
+  <div
+    class="layout"
+    class:has-panel={panelOpen}
+    style:--panel-width="{panelWidth}px"
+  >
     <div class="workspace" bind:this={workspaceEl} style:grid-template-columns={gridTemplate}>
       {#each workspace.slots as slot, i (i)}
         <SlotView {slot} index={i} focused={i === workspace.focusedSlotIndex} />
@@ -85,12 +130,25 @@
       {/each}
     </div>
     {#if panelOpen}
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div
+        class="panel-resizer"
+        class:dragging={resizing}
+        onpointerdown={startPanelResize}
+        ondblclick={resetPanelWidth}
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize side panel"
+        aria-valuemin={PANEL_MIN}
+        aria-valuemax={panelMax}
+        aria-valuenow={panelWidth}
+        title="Drag to resize · double-click to reset"
+      ></div>
       <div class="side"><SidePanel bind:tab={sideTab} onClose={() => panelOpen = false} /></div>
     {/if}
   </div>
 
   <ValidationPanel />
-  <ShareDialog bind:open={shareOpen} />
 </div>
 
 <style>
@@ -213,18 +271,21 @@
     min-height: 0;
     grid-template-columns: 1fr;
   }
-  .layout.has-panel { grid-template-columns: 1fr 380px; }
+  .layout.has-panel {
+    grid-template-columns: 1fr 4px var(--panel-width, 380px);
+  }
   .workspace {
     display: grid;
     min-height: 0;
     min-width: 0;
   }
   .side { min-width: 0; min-height: 0; }
-  .share-err {
-    background: var(--err-bg);
-    color: var(--err);
-    padding: 6px 12px;
-    font-size: 12px;
-    border-bottom: 1px solid var(--border);
+  .panel-resizer {
+    width: 4px;
+    cursor: col-resize;
+    background: var(--border);
+    user-select: none;
+    transition: background 100ms;
   }
+  .panel-resizer:hover, .panel-resizer.dragging { background: var(--accent); }
 </style>

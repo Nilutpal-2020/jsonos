@@ -116,10 +116,13 @@ export class DocStore {
     const r = await jsonWorker.minify(this.text);
     if (r.ok) this.setText(r.text);
   }
-  async repair() {
+  async repair(): Promise<{ ok: true; changes: string[] } | { ok: false; error: string; partial?: string; changes: string[] }> {
     const r = await jsonWorker.repair(this.text);
-    if (r.ok) this.setText(r.text);
-    else throw new Error(r.error);
+    if (r.ok) {
+      this.setText(r.text);
+      return { ok: true, changes: r.changes };
+    }
+    return { ok: false, error: r.error, partial: r.partial, changes: r.changes ?? [] };
   }
   async sortKeys(deep = true) {
     const r = await jsonWorker.sortKeys(this.text, deep);

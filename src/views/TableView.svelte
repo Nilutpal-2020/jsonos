@@ -8,6 +8,7 @@
   import { inspectTable, findArrayPaths, getAt, pathToJSONish } from '../core/table-shape';
   import { toCsv, downloadCsv } from '../core/csv';
   import type { JsonPath, JsonValue } from '../core/types';
+  import EmptyDoc from '../components/EmptyDoc.svelte';
 
   let { doc: docProp }: { doc?: DocStore } = $props();
   let active = $derived(docProp ?? workspace.active);
@@ -315,10 +316,12 @@
     </div>
   </div>
 
-  {#if active.parse.errors.length}
+  {#if active.parse.errors.length && !active.text.trim()}
+    <EmptyDoc doc={active} />
+  {:else if active.parse.errors.length}
     <div class="empty">JSON has errors — fix in text view to use table.</div>
   {:else if active.parse.value === undefined}
-    <div class="empty">Empty document.</div>
+    <EmptyDoc doc={active} />
   {:else if shape.kind === 'not-array'}
     <div class="empty">
       Selected path is not an array.

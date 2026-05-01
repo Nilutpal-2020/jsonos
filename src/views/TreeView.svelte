@@ -6,37 +6,54 @@
   import { flatten, pathKey, type Row } from '../core/tree-flatten';
   import { getAt } from '../core/table-shape';
   import type { JsonPath, JsonValue } from '../core/types';
+  import type { DiffNode } from '../core/diff-engine';
   import ContextMenu, { type MenuItem } from '../components/ContextMenu.svelte';
+  import EmptyDoc from '../components/EmptyDoc.svelte';
+  import { compare } from '../core/compare.svelte';
+  import { treeExpand } from '../core/tree-expand.svelte';
 
-  let { doc: docProp }: { doc?: DocStore } = $props();
+  type Props = {
+    doc?: DocStore;
+    diffByPath?: Map<string, DiffNode> | null;
+    diffSide?: 'left' | 'right' | null;
+    slotIndex?: number;
+  };
+  let { doc: docProp, diffByPath = null, diffSide = null, slotIndex }: Props = $props();
   let active = $derived(docProp ?? workspace.active);
 
-  // expand state per active doc
-  const expandedByDoc = new Map<string, { expanded: Set<string>; toggled: Set<string> }>();
-  function getExpanded() {
-    let s = expandedByDoc.get(active.id);
-    if (!s) {
-      s = { expanded: new Set(), toggled: new Set() };
-      expandedByDoc.set(active.id, s);
-    }
-    return s;
+  /** Diff status for a path; null if no diff context. */
+  function diffStatus(path: JsonPath): DiffNode['status'] | null {
+    if (!diffByPath) return null;
+    return diffByPath.get(pathKey(path))?.status ?? null;
   }
-  let bumpExpand = $state(0);
+  /** Look up the matching node so we can show before/after on changes. */
+  function diffAt(path: JsonPath): DiffNode | null {
+    if (!diffByPath) return null;
+    return diffByPath.get(pathKey(path)) ?? null;
+  }
+
+  // expand state lives in src/core/tree-expand.svelte.ts so SlotView's
+  // header chrome and TreeView agree on what's open.
+  function getExpanded() { return treeExpand.get(active.id); }
 
   let rows = $derived.by(() => {
-    void bumpExpand;
+    void treeExpand.bump;
     if (active.parse.errors.length || active.parse.value === undefined) return [];
     const { expanded, toggled } = getExpanded();
     return flatten(active.parse.value, expanded, toggled);
   });
 
   function toggle(path: JsonPath, currentlyOpen: boolean) {
+    treeExpand.toggle(active.id, path, currentlyOpen);
+  }
+
+  /** Used inside the row {@const}; reads `treeExpand.bump` so Svelte 5 keyed
+      each items re-evaluate when set contents mutate (Sets aren't tracked). */
+  function isPathOpen(path: JsonPath): boolean {
+    void treeExpand.bump;
     const { expanded, toggled } = getExpanded();
     const k = pathKey(path);
-    toggled.add(k);
-    if (currentlyOpen) expanded.delete(k);
-    else expanded.add(k);
-    bumpExpand++;
+    return toggled.has(k) ? expanded.has(k) : path.length < 3;
   }
 
   // Virtualizer
@@ -100,6 +117,38 @@
   }
 
   onDestroy(() => { virtual = null; });
+
+  // ──────────── sync-scroll between paired diff columns ────────────
+  // Broadcast our scrollTop ratio when the user scrolls; consume the peer's
+  // ratio when they scroll. Guard with `applyingExternal` to avoid feedback loops.
+  let applyingExternal = false;
+
+  $effect(() => {
+    const peer = compare.scrollSignal;
+    if (peer === null) return;
+    if (slotIndex === undefined) return;
+    if (compare.scrollSourceSlot === slotIndex) return;     // we sent it
+    if (!compare.isPaired(slotIndex)) return;
+    const sc = scrollEl;
+    if (!sc) return;
+    const max = sc.scrollHeight - sc.clientHeight;
+    const next = Math.round(peer * max);
+    if (Math.abs(sc.scrollTop - next) < 1) return;
+    applyingExternal = true;
+    sc.scrollTop = next;
+    queueMicrotask(() => { applyingExternal = false; });
+  });
+
+  function onScroll() {
+    if (applyingExternal) return;
+    if (slotIndex === undefined) return;
+    if (!compare.isPaired(slotIndex)) return;
+    const sc = scrollEl;
+    if (!sc) return;
+    const max = sc.scrollHeight - sc.clientHeight;
+    if (max <= 0) return;
+    compare.publishScroll(slotIndex, sc.scrollTop / max);
+  }
 
   // Inline edit state — separate channels for value vs key edits.
   let editingValueId = $state<string | null>(null);
@@ -187,7 +236,7 @@
       active.applyValuePatch({ op: 'add', path: newPath, value: null });
       // Tell the next render to start key-rename on this new row.
       pendingKeyEdit = { rowId: pathKey(newPath), original: key };
-      bumpExpand++;
+      treeExpand.bump++;
     }
   }
 
@@ -277,7 +326,7 @@
       // For "before"/"after" empty insertion, queue rename of the new key.
       if (where !== 'duplicate') {
         pendingKeyEdit = { rowId: pathKey([...parentPath, newKey]), original: newKey };
-        bumpExpand++;
+        treeExpand.bump++;
       }
     }
   }
@@ -410,20 +459,27 @@
 </script>
 
 <div class="tree-root">
-  {#if active.parse.errors.length}
+  {#if active.parse.errors.length && !active.text.trim()}
+    <EmptyDoc doc={active} />
+  {:else if active.parse.errors.length}
     <div class="tree-empty">JSON has errors — fix in text view to use tree.</div>
   {:else if active.parse.value === undefined}
-    <div class="tree-empty">Empty document.</div>
+    <EmptyDoc doc={active} />
   {:else}
-    <div class="scroll" bind:this={scrollEl}>
+    <div class="scroll" bind:this={scrollEl} onscroll={onScroll}>
       <div class="virt" style:height="{totalSize}px">
         {#each virtualItems as vi (rows[vi.index]?.id ?? vi.index)}
           {@const row = rows[vi.index]}
           {#if row}
+            {@const ds = diffStatus(row.path)}
             <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
             <div
               class="row"
               class:wrap={ui.wrap}
+              class:diff-added={ds === 'added'}
+              class:diff-removed={ds === 'removed'}
+              class:diff-changed={ds === 'changed'}
+              class:diff-moved={ds === 'moved'}
               data-index={vi.index}
               style:transform="translateY({vi.start}px)"
               style:min-height="{ROW_HEIGHT}px"
@@ -435,9 +491,7 @@
               tabindex="-1"
             >
               {#if row.kind === 'object-open' || row.kind === 'array-open'}
-                {@const k = pathKey(row.path)}
-                {@const { expanded, toggled } = getExpanded()}
-                {@const open = toggled.has(k) ? expanded.has(k) : row.path.length < 3}
+                {@const open = isPathOpen(row.path)}
                 <button class="caret" onclick={() => toggle(row.path, open)} aria-label="toggle">
                   {open ? '▾' : '▸'}
                 </button>
@@ -509,6 +563,23 @@
                   <button class="value v-{k}" onclick={() => startValueEdit(row)} title="click to edit">
                     {renderValue(row.value)}
                   </button>
+                  {#if ds === 'changed'}
+                    {@const dn = diffAt(row.path)}
+                    {#if dn && diffSide === 'right' && dn.before !== undefined}
+                      <span class="diff-old" title="Was: {JSON.stringify(dn.before)}">
+                        was {renderValue(dn.before as JsonValue)}
+                      </span>
+                    {:else if dn && diffSide === 'left' && dn.after !== undefined}
+                      <span class="diff-old" title="Now: {JSON.stringify(dn.after)}">
+                        now {renderValue(dn.after as JsonValue)}
+                      </span>
+                    {/if}
+                  {:else if ds === 'moved'}
+                    {@const dn = diffAt(row.path)}
+                    {#if dn && dn.fromIndex !== undefined && dn.toIndex !== undefined}
+                      <span class="diff-old">moved {dn.fromIndex} → {dn.toIndex}</span>
+                    {/if}
+                  {/if}
                 {/if}
                 <span class="actions">
                   {#if row.path.length > 0}
@@ -538,9 +609,13 @@
     height: 100%;
     background: var(--surface);
     color: var(--fg);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
   }
   .scroll {
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     overflow: auto;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 13px;
@@ -579,6 +654,31 @@
     white-space: nowrap;
   }
   .row.wrap .caret { padding-top: 2px; }
+
+  /* ─── diff overlay ──────────────────────────────────────────── */
+  .row.diff-added   { background: color-mix(in oklab, var(--ok)  18%, transparent); }
+  .row.diff-removed { background: color-mix(in oklab, var(--err) 18%, transparent); }
+  .row.diff-changed { background: color-mix(in oklab, var(--warn) 22%, transparent); }
+  .row.diff-moved   { background: color-mix(in oklab, var(--accent) 18%, transparent); }
+  .row.diff-added   { box-shadow: inset 3px 0 0 var(--ok); }
+  .row.diff-removed { box-shadow: inset 3px 0 0 var(--err); }
+  .row.diff-changed { box-shadow: inset 3px 0 0 var(--warn); }
+  .row.diff-moved   { box-shadow: inset 3px 0 0 var(--accent); }
+  .row.diff-removed .value { text-decoration: line-through; opacity: 0.85; }
+  .diff-old {
+    color: var(--muted);
+    font-style: italic;
+    font-size: 11px;
+    margin-left: 8px;
+    padding: 0 6px;
+    border-radius: 3px;
+    background: var(--surface-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 280px;
+  }
+
   .row:hover { background: var(--row-hover); }
   .row:hover .actions { opacity: 1; }
   .tree-empty {

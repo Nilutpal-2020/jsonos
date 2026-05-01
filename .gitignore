@@ -73,3 +73,5 @@ implementation-plan.md
 
 # Vercel
 .vercel
+
+*.resolved
