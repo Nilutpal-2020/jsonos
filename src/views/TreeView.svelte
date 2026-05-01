@@ -4,7 +4,9 @@
   import { workspace, type DocStore } from '../core/store.svelte';
   import { ui } from '../core/ui-prefs.svelte';
   import { flatten, pathKey, type Row } from '../core/tree-flatten';
+  import { getAt } from '../core/table-shape';
   import type { JsonPath, JsonValue } from '../core/types';
+  import ContextMenu, { type MenuItem } from '../components/ContextMenu.svelte';
 
   let { doc: docProp }: { doc?: DocStore } = $props();
   let active = $derived(docProp ?? workspace.active);
@@ -207,6 +209,199 @@
     return typeof v;
   }
 
+  // ──────────────────────────────────────────────────────────────────────
+  // Context menu + sibling/duplicate operations
+  // ──────────────────────────────────────────────────────────────────────
+
+  // App-internal clipboard (separate from system clipboard so we can hold a
+  // structured JsonValue, plus the source key when copied from an object).
+  let internalClip = $state<{ value: JsonValue; key?: string } | null>(null);
+  let menu = $state<{ x: number; y: number; row: Row } | null>(null);
+
+  function snap<T>(v: T): T {
+    return v == null || typeof v !== 'object' ? v : ($state.snapshot(v as any) as T);
+  }
+
+  function parentInfo(row: Row): { parentPath: JsonPath; parent: JsonValue | undefined; lastSeg: string | number | undefined } {
+    if (row.path.length === 0) return { parentPath: [], parent: undefined, lastSeg: undefined };
+    const parentPath = row.path.slice(0, -1);
+    const parent = getAt(active.parse.value, parentPath);
+    const lastSeg = row.path[row.path.length - 1];
+    return { parentPath, parent: parent as JsonValue | undefined, lastSeg };
+  }
+
+  function nextUniqueKey(parent: Record<string, JsonValue>, base: string): string {
+    if (!(base in parent)) return base;
+    for (let i = 1; i < 10_000; i++) {
+      const cand = `${base}${i}`;
+      if (!(cand in parent)) return cand;
+    }
+    return `${base}_${Date.now()}`;
+  }
+
+  /** Insert into the parent of `row`. `where` = before | after | duplicate. */
+  function insertSibling(row: Row, where: 'before' | 'after' | 'duplicate', value?: JsonValue) {
+    if (row.path.length === 0) return;
+    const { parentPath, parent, lastSeg } = parentInfo(row);
+    if (parent === undefined) return;
+
+    if (Array.isArray(parent)) {
+      const idx = lastSeg as number;
+      const insertAt = where === 'before' ? idx : idx + 1;
+      const v: JsonValue = where === 'duplicate'
+        ? snap(parent[idx] as JsonValue)
+        : (value === undefined ? null : value);
+      const next = [...parent.slice(0, insertAt), v, ...parent.slice(insertAt)];
+      active.applyValuePatch({ op: 'replace', path: parentPath, value: snap(next) });
+      return;
+    }
+
+    if (parent && typeof parent === 'object') {
+      const obj = parent as Record<string, JsonValue>;
+      const key = lastSeg as string;
+      const baseKey = where === 'duplicate' ? `${key} copy` : 'newKey';
+      const newKey = nextUniqueKey(obj, baseKey);
+      const v: JsonValue = where === 'duplicate'
+        ? snap(obj[key])
+        : (value === undefined ? null : value);
+
+      const next: Record<string, JsonValue> = {};
+      const keys = Object.keys(obj);
+      for (const k of keys) {
+        if (k === key && where === 'before') next[newKey] = v;
+        next[k] = obj[k];
+        if (k === key && (where === 'after' || where === 'duplicate')) next[newKey] = v;
+      }
+      active.applyValuePatch({ op: 'replace', path: parentPath, value: snap(next) });
+
+      // For "before"/"after" empty insertion, queue rename of the new key.
+      if (where !== 'duplicate') {
+        pendingKeyEdit = { rowId: pathKey([...parentPath, newKey]), original: newKey };
+        bumpExpand++;
+      }
+    }
+  }
+
+  function copyRow(row: Row) {
+    const value = snap(row.value);
+    internalClip = {
+      value,
+      key: typeof row.keyName === 'string' ? row.keyName : undefined,
+    };
+    // Best-effort system clipboard too.
+    navigator.clipboard?.writeText(JSON.stringify(value, null, 2)).catch(() => {});
+  }
+
+  function cutRow(row: Row) {
+    if (row.path.length === 0) return;
+    copyRow(row);
+    active.applyValuePatch({ op: 'remove', path: row.path });
+  }
+
+  /** Paste from internalClip as: a child of an open container row, OR a sibling
+      after a leaf row. Falls back to system clipboard if internalClip empty. */
+  async function pasteAt(row: Row) {
+    let value: JsonValue | null = internalClip?.value ?? null;
+    let key: string | undefined = internalClip?.key;
+    if (internalClip == null) {
+      try {
+        const txt = await navigator.clipboard.readText();
+        value = JSON.parse(txt);
+      } catch { return; }
+    }
+
+    // Paste into a container as last child
+    if (row.kind === 'object-open') {
+      const obj = row.value as Record<string, JsonValue>;
+      const k = nextUniqueKey(obj, key ?? 'pasted');
+      const next = { ...obj, [k]: snap(value as JsonValue) };
+      active.applyValuePatch({ op: 'replace', path: row.path, value: snap(next) });
+      return;
+    }
+    if (row.kind === 'array-open') {
+      const arr = row.value as JsonValue[];
+      const next = [...arr, snap(value as JsonValue)];
+      active.applyValuePatch({ op: 'replace', path: row.path, value: snap(next) });
+      return;
+    }
+    // Paste as sibling after the current leaf
+    insertSibling(row, 'after', snap(value as JsonValue));
+  }
+
+  function sortRow(row: Row) {
+    if (row.kind !== 'object-open') return;
+    const obj = snap(row.value) as Record<string, JsonValue>;
+    const next: Record<string, JsonValue> = {};
+    for (const k of Object.keys(obj).sort()) next[k] = obj[k];
+    active.applyValuePatch({ op: 'replace', path: row.path, value: next });
+  }
+
+  function convertTo(row: Row, kind: 'object' | 'array' | 'value') {
+    let next: JsonValue;
+    if (kind === 'object') next = {};
+    else if (kind === 'array') next = [];
+    else next = null;
+    active.applyValuePatch({ op: 'replace', path: row.path, value: next });
+  }
+
+  function buildMenu(row: Row): MenuItem[] {
+    const isContainerOpen = row.kind === 'object-open' || row.kind === 'array-open';
+    const isLeaf = row.kind === 'leaf';
+    const canEditKey = typeof row.keyName === 'string' && row.path.length > 0;
+    const canRemove = row.path.length > 0;
+
+    return [
+      ...(canEditKey ? [{
+        kind: 'item' as const, icon: '✎', label: 'Edit key',
+        onSelect: () => startKeyEdit(row),
+      }] : []),
+      ...(isLeaf ? [{
+        kind: 'item' as const, icon: '✎', label: 'Edit value',
+        onSelect: () => startValueEdit(row),
+      }] : []),
+      { kind: 'divider' },
+      { kind: 'item', icon: '✂', label: 'Cut',  hint: '⌘X', disabled: !canRemove, onSelect: () => cutRow(row) },
+      { kind: 'item', icon: '⎘', label: 'Copy', hint: '⌘C', onSelect: () => copyRow(row) },
+      { kind: 'item', icon: '📋', label: 'Paste', hint: '⌘V', onSelect: () => pasteAt(row) },
+      { kind: 'item', icon: '⎘', label: 'Duplicate',  hint: '⌘D', disabled: !canRemove, onSelect: () => insertSibling(row, 'duplicate') },
+      { kind: 'divider' },
+      { kind: 'item', icon: '↥', label: 'Insert before', disabled: !canRemove, onSelect: () => insertSibling(row, 'before') },
+      { kind: 'item', icon: '↧', label: 'Insert after',  disabled: !canRemove, onSelect: () => insertSibling(row, 'after')  },
+      ...(isContainerOpen ? [{
+        kind: 'item' as const, icon: '+', label: 'Add child',
+        onSelect: () => addChild(row),
+      }] : []),
+      { kind: 'divider' },
+      { kind: 'item', icon: '⇅', label: 'Sort keys', disabled: row.kind !== 'object-open', onSelect: () => sortRow(row) },
+      {
+        kind: 'submenu', icon: '⇄', label: 'Convert to',
+        items: [
+          { kind: 'item', label: 'Object  { }', disabled: row.kind === 'object-open', onSelect: () => convertTo(row, 'object') },
+          { kind: 'item', label: 'Array   [ ]', disabled: row.kind === 'array-open',  onSelect: () => convertTo(row, 'array')  },
+          { kind: 'item', label: 'Value   null', disabled: row.kind === 'leaf',       onSelect: () => convertTo(row, 'value')  },
+        ],
+      },
+      { kind: 'divider' },
+      { kind: 'item', icon: '🗑', label: 'Remove', danger: true, disabled: !canRemove, hint: 'Del', onSelect: () => removeRow(row) },
+    ];
+  }
+
+  function openContextMenu(e: MouseEvent, row: Row) {
+    e.preventDefault();
+    e.stopPropagation();
+    menu = { x: e.clientX, y: e.clientY, row };
+  }
+
+  function rowKeyShortcut(e: KeyboardEvent, row: Row) {
+    const meta = e.metaKey || e.ctrlKey;
+    if (!meta) return;
+    const k = e.key.toLowerCase();
+    if (k === 'c') { e.preventDefault(); copyRow(row); }
+    else if (k === 'x') { e.preventDefault(); cutRow(row); }
+    else if (k === 'v') { e.preventDefault(); pasteAt(row); }
+    else if (k === 'd') { e.preventDefault(); insertSibling(row, 'duplicate'); }
+  }
+
   function renderValue(v: JsonValue): string {
     if (v === null) return 'null';
     if (typeof v === 'string') return v;
@@ -225,6 +420,7 @@
         {#each virtualItems as vi (rows[vi.index]?.id ?? vi.index)}
           {@const row = rows[vi.index]}
           {#if row}
+            <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
             <div
               class="row"
               class:wrap={ui.wrap}
@@ -233,6 +429,10 @@
               style:min-height="{ROW_HEIGHT}px"
               style:padding-left="{row.depth * 14 + 6}px"
               use:measureRow
+              oncontextmenu={(e) => openContextMenu(e, row)}
+              onkeydown={(e) => rowKeyShortcut(e, row)}
+              role="group"
+              tabindex="-1"
             >
               {#if row.kind === 'object-open' || row.kind === 'array-open'}
                 {@const k = pathKey(row.path)}
@@ -323,6 +523,15 @@
     </div>
   {/if}
 </div>
+
+{#if menu}
+  <ContextMenu
+    x={menu.x}
+    y={menu.y}
+    items={buildMenu(menu.row)}
+    onClose={() => (menu = null)}
+  />
+{/if}
 
 <style>
   .tree-root {
