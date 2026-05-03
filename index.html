@@ -22,7 +22,10 @@
 
     <!-- Icons / manifest -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32"   href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="mask-icon" href="/favicon.svg" color="#5b9eff" />
     <link rel="manifest" href="/manifest.webmanifest" />
 
@@ -32,8 +35,8 @@
     <meta property="og:title" content="JSON OS — Online JSON workbench (viewer, editor, validator, diff)" />
     <meta property="og:description" content="View, edit, validate, repair, query, transform, and compare JSON locally in your browser. Tree · text · table views, multi-column workspace, JSON Schema validation, side-by-side diff. Free and local-first." />
     <meta property="og:url" content="%VITE_PUBLIC_URL%/" />
-    <meta property="og:image" content="%VITE_PUBLIC_URL%/og-image.svg" />
-    <meta property="og:image:type" content="image/svg+xml" />
+    <meta property="og:image" content="%VITE_PUBLIC_URL%/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="JSON OS — JSON workbench with tree, text, and table views" />
@@ -43,7 +46,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="JSON OS — Online JSON workbench" />
     <meta name="twitter:description" content="View, edit, validate, repair, and compare JSON locally in your browser. Free, no signup, no uploads." />
-    <meta name="twitter:image" content="%VITE_PUBLIC_URL%/og-image.svg" />
+    <meta name="twitter:image" content="%VITE_PUBLIC_URL%/og-image.png" />
     <meta name="twitter:image:alt" content="JSON OS — JSON workbench" />
 
     <!-- Performance hints -->
@@ -64,6 +67,7 @@
       {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
+        "@id": "%VITE_PUBLIC_URL%/#software",
         "name": "JSON OS",
         "alternateName": "jsonos",
         "applicationCategory": "DeveloperApplication",
@@ -72,10 +76,17 @@
         "browserRequirements": "Requires modern browser with ES2022 support",
         "description": "Browser-based JSON workbench for viewing, editing, validating, repairing, querying, transforming, diffing, and sharing JSON. Tree, text, and table views with multi-column workspace and local-first processing.",
         "url": "%VITE_PUBLIC_URL%/",
-        "image": "%VITE_PUBLIC_URL%/og-image.svg",
+        "image": {
+          "@type": "ImageObject",
+          "url": "%VITE_PUBLIC_URL%/og-image.png",
+          "width": 1200,
+          "height": 630
+        },
         "softwareVersion": "1.0",
         "inLanguage": "en",
         "isAccessibleForFree": true,
+        "publisher": { "@id": "%VITE_PUBLIC_URL%/#org" },
+        "creator":   { "@id": "%VITE_PUBLIC_URL%/#org" },
         "offers": {
           "@type": "Offer",
           "price": "0",
@@ -104,15 +115,24 @@
       }
     </script>
 
-    <!-- Structured data: Organization -->
+    <!-- Structured data: Organization (logo source for Knowledge Panel) -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "Organization",
+        "@id": "%VITE_PUBLIC_URL%/#org",
         "name": "JSON OS",
         "url": "%VITE_PUBLIC_URL%/",
-        "logo": "%VITE_PUBLIC_URL%/apple-touch-icon.svg",
-        "email": "jsonos.online@gmail.com"
+        "logo": {
+          "@type": "ImageObject",
+          "url": "%VITE_PUBLIC_URL%/favicon-512.png",
+          "width": 512,
+          "height": 512,
+          "caption": "JSON OS logo"
+        },
+        "image": "%VITE_PUBLIC_URL%/favicon-512.png",
+        "email": "jsonos.online@gmail.com",
+        "sameAs": []
       }
     </script>
 
@@ -121,9 +141,11 @@
       {
         "@context": "https://schema.org",
         "@type": "WebSite",
+        "@id": "%VITE_PUBLIC_URL%/#website",
         "name": "JSON OS",
         "url": "%VITE_PUBLIC_URL%/",
-        "inLanguage": "en"
+        "inLanguage": "en",
+        "publisher": { "@id": "%VITE_PUBLIC_URL%/#org" }
       }
     </script>
 

@@ -17,10 +17,22 @@
       "purpose": "any"
     },
     {
-      "src": "/apple-touch-icon.svg",
-      "type": "image/svg+xml",
+      "src": "/favicon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "type": "image/png",
       "sizes": "180x180",
-      "purpose": "maskable"
+      "purpose": "any"
     }
   ]
 }
