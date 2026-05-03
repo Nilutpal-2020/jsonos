@@ -52,7 +52,7 @@
       <ul>
         <li>JSON documents you load are <strong>processed and stored on your device</strong>, in your browser's IndexedDB. They are not uploaded to JSON OS or any third-party server.</li>
         <li>Visiting the site involves the same standard server logs your browser leaves anywhere on the web (IP address, timestamp, request path).</li>
-        <li>We use <strong>no cookies, no third-party analytics, no advertising</strong> trackers.</li>
+        <li>We use <strong>no cookies and no advertising trackers</strong>. We use <a href="#analytics">cookieless, privacy-friendly analytics</a> for page-view counts and Core Web Vitals only.</li>
         <li>We do not sell, rent, or share data because we don't collect it.</li>
       </ul>
 
@@ -69,8 +69,11 @@
       <h2>Server logs</h2>
       <p>The site is hosted on Vercel. Like any website, the host receives a request log containing your IP address, the URL you fetched, the time of the request, and your user-agent. These logs are kept by the host on a rolling basis for security and operational diagnostics. We do not enrich them with personal information.</p>
 
+      <h2 id="analytics">Analytics</h2>
+      <p>We use <strong>Vercel Analytics</strong> and <strong>Vercel Speed Insights</strong> to count page views and measure page-load performance (Core Web Vitals such as LCP, INP, CLS). These tools <strong>do not use cookies</strong>, do not assign you a tracking identifier, and do not collect personal data or follow you across other sites. Vercel processes the events on our behalf as our hosting provider; see <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener">Vercel's privacy policy</a>.</p>
+
       <h2>Third-party services we don't use</h2>
-      <p>JSON OS does not load Google Analytics, Facebook Pixel, advertising networks, session-replay scripts, or any cross-site tracker. The only outbound network traffic from the page is the initial download of the application bundle and its assets.</p>
+      <p>JSON OS does not load Google Analytics, Facebook Pixel, advertising networks, session-replay scripts, or any cross-site tracker. Outbound traffic is limited to the application bundle, asset downloads, and the cookieless analytics events described above.</p>
 
       <h2>Cookies</h2>
       <p>JSON OS does not set cookies. Theme and UI preferences are stored in <code>localStorage</code>, which is local to your browser and is not transmitted to any server.</p>
