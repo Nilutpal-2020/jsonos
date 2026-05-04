@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
     <!-- Primary meta -->
-    <title>JSON OS — Online JSON viewer, editor, validator, formatter, diff &amp; repair</title>
-    <meta name="description" content="JSON OS is a free, local-first online JSON workbench. View, edit, validate (JSON Schema), format, repair, query, transform, and compare JSON in your browser. Tree, text, and table views with a multi-column workspace. No upload, no signup, runs entirely offline." />
-    <meta name="keywords" content="json editor, json viewer, json formatter, json validator, json schema, json beautifier, json minifier, json repair, json compare, json diff, online json tool, json transform, json table editor, json tree viewer, json to csv, json csv export, free json editor, browser json editor, offline json tool" />
+    <title>JSON Editor Online — Format, Validate, Compare &amp; Query JSON | JSON OS</title>
+    <meta name="description" content="Free online JSON editor. Format, validate, repair, compare, and query JSON with MongoDB-style filters. Tree, text &amp; table views. No signup, runs in your browser." />
+    <meta name="keywords" content="json editor, json editor online, online json editor, free json editor, json viewer, json viewer online, json formatter, json beautifier, json prettify, json minifier, json validator, json schema validator, ajv online, json repair, fix json, json compare, json diff, side by side json, json query, mongodb query json, filter json online, json query tool, json tree viewer, json table editor, json to csv, csv export, json transform, json sort keys, json beautify, json lint, jsonlint alternative, jq online, jsonpath, online json tools, browser json editor, offline json tool, local json editor, no upload json editor" />
     <meta name="author" content="JSON OS" />
     <meta name="application-name" content="JSON OS" />
     <meta name="generator" content="Vite + Svelte" />
@@ -32,22 +32,22 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="JSON OS" />
-    <meta property="og:title" content="JSON OS — Online JSON workbench (viewer, editor, validator, diff)" />
-    <meta property="og:description" content="View, edit, validate, repair, query, transform, and compare JSON locally in your browser. Tree · text · table views, multi-column workspace, JSON Schema validation, side-by-side diff. Free and local-first." />
+    <meta property="og:title" content="JSON Editor Online — Free JSON Viewer, Formatter, Validator, Compare &amp; Query" />
+    <meta property="og:description" content="Free online JSON editor. Format, validate, repair, compare, and filter JSON with MongoDB-style queries. Tree · text · table views, JSON Schema, side-by-side diff. No signup, runs in your browser." />
     <meta property="og:url" content="%VITE_PUBLIC_URL%/" />
     <meta property="og:image" content="%VITE_PUBLIC_URL%/og-image.png" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="JSON OS — JSON workbench with tree, text, and table views" />
+    <meta property="og:image:alt" content="JSON OS — online JSON editor with tree, text, and table views" />
     <meta property="og:locale" content="en_US" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="JSON OS — Online JSON workbench" />
-    <meta name="twitter:description" content="View, edit, validate, repair, and compare JSON locally in your browser. Free, no signup, no uploads." />
+    <meta name="twitter:title" content="JSON Editor Online — Free JSON Viewer, Formatter, Validator, Compare &amp; Query" />
+    <meta name="twitter:description" content="Free online JSON editor. Format, validate, repair, compare, and filter JSON with MongoDB-style queries. No signup, runs in your browser." />
     <meta name="twitter:image" content="%VITE_PUBLIC_URL%/og-image.png" />
-    <meta name="twitter:image:alt" content="JSON OS — JSON workbench" />
+    <meta name="twitter:image:alt" content="JSON OS — online JSON editor" />
 
     <!-- Performance hints -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -69,12 +69,12 @@
         "@type": "SoftwareApplication",
         "@id": "%VITE_PUBLIC_URL%/#software",
         "name": "JSON OS",
-        "alternateName": "jsonos",
+        "alternateName": ["jsonos", "JSON Editor Online"],
         "applicationCategory": "DeveloperApplication",
         "applicationSubCategory": "JSONEditor",
         "operatingSystem": "Web",
         "browserRequirements": "Requires modern browser with ES2022 support",
-        "description": "Browser-based JSON workbench for viewing, editing, validating, repairing, querying, transforming, diffing, and sharing JSON. Tree, text, and table views with multi-column workspace and local-first processing.",
+        "description": "Free online JSON editor and viewer. Format, validate, repair, compare, and query JSON with MongoDB-style filters in your browser. Tree, text, and table views, JSON Schema validation, side-by-side diff, CSV export. No signup, no uploads, local-first.",
         "url": "%VITE_PUBLIC_URL%/",
         "image": {
           "@type": "ImageObject",
@@ -82,7 +82,7 @@
           "width": 1200,
           "height": 630
         },
-        "softwareVersion": "1.0",
+        "softwareVersion": "1.1",
         "inLanguage": "en",
         "isAccessibleForFree": true,
         "publisher": { "@id": "%VITE_PUBLIC_URL%/#org" },
@@ -94,17 +94,27 @@
           "availability": "https://schema.org/InStock"
         },
         "featureList": [
-          "JSON viewer and editor",
-          "Tree, text, and table views",
-          "Multi-column workspace (up to 3)",
-          "JSON Schema validation (Ajv)",
-          "Format, minify, sort keys",
-          "Auto-repair: comments, smart quotes, trailing commas, unquoted keys, hex/oct/bin numbers, Python literals, unclosed brackets, missing commas",
-          "Side-by-side compare with ignore rules and move detection",
-          "CSV export",
+          "Online JSON editor and viewer",
+          "JSON formatter (beautify) and minifier",
+          "JSON validator with inline error markers",
+          "JSON Schema validation (Ajv) with format checks",
+          "MongoDB-style query engine ($eq $ne $gt $gte $lt $lte $in $nin $regex $exists $type $mod $size $all $elemMatch $and $or $nor $not)",
+          "Filter JSON arrays and validate single documents with live results",
+          "Side-by-side compare with sync-scroll, move detection, and ignore rules (paths, null=missing, case-insensitive, trim)",
+          "Tree, text, and table views over the same document",
+          "Virtualized tree for large documents, expand/collapse all",
+          "Multi-column workspace (up to 3 panes) with drag-resize and per-column view",
+          "Cross-view selection sync — click a key in tree to highlight it in text",
+          "Auto-repair: comments, smart quotes, trailing commas, unquoted keys, hex/oct/bin numbers, Python literals (True/False/None), undefined/NaN, unclosed brackets, missing commas",
+          "Sort keys (deep), CSV export, copy/paste with structural clipboard",
+          "Inline rename, value editing, duplicate, cut/copy/paste in tree view",
+          "Find and replace with regex, case, and whole-word toggles",
+          "Drop a .json file anywhere to load it; native Ctrl+V paste in tree",
           "Light, dark, and system themes",
-          "Local-first: parsing in a Web Worker, persistence in IndexedDB"
+          "Local-first: parsing in a Web Worker, persistence in IndexedDB, no server uploads"
         ],
+        "softwareHelp": "%VITE_PUBLIC_URL%/#help",
+        "permissions": "browser-storage",
         "aggregateRating": {
           "@type": "AggregateRating",
           "ratingValue": "5",
@@ -112,6 +122,51 @@
           "bestRating": "5",
           "worstRating": "1"
         }
+      }
+    </script>
+
+    <!-- Structured data: HowTo (top user task) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": "How to format, validate and query JSON online",
+        "description": "Open JSON OS in a browser, paste or open a JSON file, then format, validate, query, or compare without uploading anything to a server.",
+        "totalTime": "PT1M",
+        "tool": [{ "@type": "HowToTool", "name": "Modern web browser" }],
+        "step": [
+          {
+            "@type": "HowToStep",
+            "name": "Open the editor",
+            "text": "Visit jsonos.online — the editor loads in your browser, no signup required.",
+            "url": "%VITE_PUBLIC_URL%/"
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Paste or open JSON",
+            "text": "Press Cmd+V to paste, click Open to choose a .json file, or drop a file anywhere on the page."
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Format or repair",
+            "text": "Press Cmd+/ to format, click Minify to compact, or click Repair to fix common JSON mistakes (trailing commas, comments, unquoted keys, smart quotes, etc.)."
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Validate against a JSON Schema",
+            "text": "Open the side panel, switch to the Schema tab, paste a JSON Schema. Errors appear inline with their paths."
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Query the document",
+            "text": "Press Cmd+Shift+K to open Query. Set a target path (e.g. $.users) and write a MongoDB-style filter such as { \"age\": { \"$gt\": 18 } }."
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Compare two documents",
+            "text": "Open a second tab, click ⇄ Compare. Two-doc workspaces auto-pair; otherwise pick a peer from the menu. Differences are color-coded and the panes scroll in sync."
+          }
+        ]
       }
     </script>
 
@@ -202,6 +257,38 @@
               "@type": "Answer",
               "text": "After the first load, the app and your saved documents work without a network. JSON parsing runs in a Web Worker; everything is stored in IndexedDB on your device."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I run MongoDB-style queries on a JSON document?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Press Cmd+Shift+K or click the 🔎 Query button to open the Query panel. Set a target path (e.g. $ or $.users) and write a MongoDB-style filter object. Supported operators include $eq, $ne, $gt, $gte, $lt, $lte, $in, $nin, $exists, $type, $regex, $mod, $size, $all, $elemMatch, $and, $or, $nor, and $not. Field paths use dot notation and auto-branch over arrays. Results are listed with their JSON paths and clicking one highlights it in the tree."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I edit JSON in a tree view?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. The tree view supports inline key rename, value editing, duplicate, cut/copy/paste, insert before/after, sort keys, convert object⇄array⇄value, and remove. Right-click any row for the full menu. Cmd+A selects all, Cmd+V pastes JSON from the clipboard at the focused row, and Cmd+C copies."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I export JSON arrays as CSV?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Switch to the table view on any column, sort and filter the columns, then export the visible data as CSV with the Export button. The CSV includes a UTF-8 BOM so it opens cleanly in Excel."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is there a keyboard shortcut for everything?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Press ? or open the Help dialog for the full list. Highlights: Cmd+/ format, Cmd+Z undo, Cmd+S download, Cmd+T new tab, Cmd+\\ toggle side panel, Cmd+Shift+K query, Cmd+Shift+C compare, Cmd+Shift+W toggle wrap, Cmd+1/2/3 focus column."
+            }
           }
         ]
       }
@@ -209,10 +296,34 @@
   </head>
   <body>
     <div id="app">
+      <!-- Crawler / first-paint content. Svelte replaces this once main.ts mounts. -->
+      <div id="seo-fallback" style="max-width:780px;margin:0 auto;padding:32px 24px;font:15px/1.55 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#e8ecf2">
+        <h1 style="font-size:28px;margin:0 0 8px">JSON Editor Online — Free JSON Viewer, Formatter, Validator, Compare &amp; Query</h1>
+        <p style="margin:0 0 16px;color:#8b95a5">JSON OS is a free, browser-based JSON editor. Format, validate, repair, compare, and filter JSON locally — no signup, no uploads, no server processing.</p>
+
+        <h2 style="font-size:18px;margin:24px 0 8px">What you can do</h2>
+        <ul style="margin:0 0 16px;padding-left:20px">
+          <li><strong>View &amp; edit JSON</strong> in tree, text, or table — switch any column independently.</li>
+          <li><strong>Format / beautify / minify / sort keys</strong> with one click.</li>
+          <li><strong>Validate JSON</strong> against a JSON Schema (Ajv with format checks).</li>
+          <li><strong>Repair broken JSON</strong>: smart quotes, trailing commas, unquoted keys, comments, hex/octal/binary numbers, Python literals, missing commas, unclosed brackets.</li>
+          <li><strong>Compare two documents</strong> side by side with sync-scroll, move detection, and ignore rules.</li>
+          <li><strong>Query JSON with MongoDB-style filters</strong>: <code>$eq $gt $in $regex $exists $elemMatch $and $or</code> and more — perfect for filtering arrays or validating a single document.</li>
+          <li><strong>Find &amp; replace</strong> with regex, case, and whole-word toggles.</li>
+          <li><strong>Export</strong> JSON arrays to CSV (UTF-8 BOM, Excel-friendly).</li>
+          <li><strong>Multi-column workspace</strong> (up to 3 panes), drag-resize, dark / light / system themes.</li>
+          <li><strong>Local-first</strong>: parsing in a Web Worker, persistence in IndexedDB; nothing leaves your device.</li>
+        </ul>
+
+        <h2 style="font-size:18px;margin:24px 0 8px">Get started</h2>
+        <p style="margin:0 0 8px">Paste JSON (Cmd+V), open a file, or drop a <code>.json</code> file anywhere on this page. Press <strong>?</strong> for the shortcut cheatsheet.</p>
+
+        <p style="margin:24px 0 0;color:#8b95a5;font-size:13px">Loading the JSON OS workbench… If this message stays, your browser may have JavaScript disabled. <a href="/privacy.html" style="color:#5b9eff">Privacy</a> · <a href="/terms.html" style="color:#5b9eff">Terms</a></p>
+      </div>
       <noscript>
         <div style="padding:24px;font:14px/1.5 system-ui,sans-serif;max-width:560px;margin:48px auto;color:#e8ecf2">
-          <h1 style="margin:0 0 8px">JSON OS</h1>
-          <p>This app needs JavaScript. Enable it to view, edit, and validate JSON in your browser.</p>
+          <h1 style="margin:0 0 8px">JSON OS — Online JSON Editor</h1>
+          <p>This app needs JavaScript. Enable it to view, edit, format, validate, query, and compare JSON in your browser.</p>
           <p>Read more: <a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms of Service</a>.</p>
         </div>
       </noscript>

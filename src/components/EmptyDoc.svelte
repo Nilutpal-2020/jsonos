@@ -85,6 +85,13 @@
     {#if pasteError}<div class="err">{pasteError}</div>{/if}
 
     <p class="drop-hint">— or drag a <code>.json</code> file here —</p>
+
+    <div class="kbd-hints">
+      <span><kbd>⌘T</kbd> new doc</span>
+      <span><kbd>⌘/</kbd> format</span>
+      <span><kbd>⌘⇧K</kbd> query</span>
+      <span><kbd>?</kbd> help</span>
+    </div>
   </div>
 
   <input
@@ -171,6 +178,24 @@
     font-size: 11px;
     margin: 16px 0 0;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .kbd-hints {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 16px;
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .kbd-hints kbd {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0 5px;
+    margin-right: 3px;
+    color: var(--fg);
+    font: 10px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
   code {
     background: var(--surface-2);

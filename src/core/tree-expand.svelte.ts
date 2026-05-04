@@ -66,6 +66,23 @@ class TreeExpandStore {
     this.bump++;
   }
 
+  /** Ensure every prefix of `path` (root, root.a, root.a.b, …) is expanded.
+   *  Used when navigating to a row from outside (e.g. text cursor sync). */
+  expandToPath(docId: string, path: JsonPath) {
+    const { expanded, toggled } = this.get(docId);
+    let mut = false;
+    for (let i = 0; i <= path.length; i++) {
+      const prefix = path.slice(0, i);
+      const k = pathKey(prefix);
+      if (!expanded.has(k) || !toggled.has(k)) {
+        expanded.add(k);
+        toggled.add(k);
+        mut = true;
+      }
+    }
+    if (mut) this.bump++;
+  }
+
   expandAll(docId: string, value: JsonValue | undefined) {
     if (value === undefined) return;
     const s = this.get(docId);

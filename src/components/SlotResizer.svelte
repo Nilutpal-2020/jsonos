@@ -20,7 +20,7 @@
     const totalFr = startFr.reduce((s, f) => s + f, 0);
     // Usable px = container width minus all resizers (each 4px), N = slots count
     const N = workspace.slots.length;
-    const resizerPx = (N - 1) * 4;
+    const resizerPx = (N - 1) * 6;
     const usablePx = Math.max(1, containerEl.clientWidth - resizerPx);
 
     const minFr = 0.2;
@@ -65,16 +65,40 @@
   role="separator"
   aria-orientation="vertical"
   title="Drag to resize · double-click to reset"
-></div>
+><span class="grip" aria-hidden="true"></span></div>
 
 <style>
+  /* Element fills the full 6px column. Visible line is the center 1px,
+     painted via background-clip; the rest is invisible click area. */
   .resizer {
-    width: 4px;
+    width: 6px;
     cursor: col-resize;
-    background: var(--border);
+    background:
+      linear-gradient(to right, transparent 2px, var(--border) 2px, var(--border) 3px, transparent 3px);
     flex-shrink: 0;
     user-select: none;
-    transition: background 100ms;
+    transition: background 120ms;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  .resizer:hover, .resizer.dragging { background: var(--accent); }
+  .resizer:hover {
+    background:
+      linear-gradient(to right, transparent 2px, var(--accent) 2px, var(--accent) 3px, transparent 3px);
+  }
+  .resizer.dragging {
+    background:
+      linear-gradient(to right, transparent 1px, var(--accent) 1px, var(--accent) 4px, transparent 4px);
+  }
+  /* Tiny grip dots — only visible on hover, signal "drag me" without taking space. */
+  .grip {
+    width: 4px; height: 28px;
+    background: radial-gradient(circle 1px at 50% 25%, var(--accent), transparent 1.4px),
+                radial-gradient(circle 1px at 50% 50%, var(--accent), transparent 1.4px),
+                radial-gradient(circle 1px at 50% 75%, var(--accent), transparent 1.4px);
+    opacity: 0;
+    transition: opacity 120ms;
+  }
+  .resizer:hover .grip, .resizer.dragging .grip { opacity: 1; }
 </style>

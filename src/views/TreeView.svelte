@@ -11,6 +11,7 @@
   import EmptyDoc from '../components/EmptyDoc.svelte';
   import { compare } from '../core/compare.svelte';
   import { treeExpand } from '../core/tree-expand.svelte';
+  import { selection } from '../core/selection.svelte';
 
   type Props = {
     doc?: DocStore;
@@ -451,6 +452,151 @@
     else if (k === 'd') { e.preventDefault(); insertSibling(row, 'duplicate'); }
   }
 
+  // ──────────────────────────────────────────────────────────────────────
+  // Selection — single-row OR select-all. Bridged with TextView via the
+  // shared selection store so clicking a row highlights the same key/value
+  // in the editor and vice versa.
+  // ──────────────────────────────────────────────────────────────────────
+
+  let selectedKey = $derived.by<string | null>(() => {
+    void selection.stamp(active.id);
+    return selection.key(active.id);
+  });
+  let selectAll = $derived.by<boolean>(() => {
+    void selection.stamp(active.id);
+    return selection.isSelectAll(active.id);
+  });
+
+  function selectRow(row: Row) {
+    // Selecting the document root would mean "everything"; that's what
+    // Ctrl+A is for. Treat a root click as a no-op so the cross-view
+    // highlight stays scoped to a single key/value.
+    if (row.path.length === 0) {
+      selection.clear(active.id);
+      return;
+    }
+    selection.set(active.id, row.path, 'tree');
+  }
+
+  function rowFromPathKey(k: string): Row | undefined {
+    return rows.find((r) => r.id === k);
+  }
+
+  /** When another view (text cursor, query panel, etc.) moves the selection,
+      scroll to the matching row and auto-expand parents so it's visible. */
+  $effect(() => {
+    void selection.stamp(active.id);
+    if (selection.source === 'tree' || selection.source === null) return;
+    const path = selection.get(active.id);
+    if (!path) return;
+    treeExpand.expandToPath(active.id, path);
+    // Wait for the virtualizer to absorb the new row count before scrolling.
+    requestAnimationFrame(() => {
+      if (!virtual) return;
+      virtual.setOptions({ ...virtual.options, count: rows.length });
+      virtual._willUpdate();
+      const k = pathKey(path);
+      const idx = rows.findIndex((r) => r.id === k);
+      if (idx >= 0) virtual.scrollToIndex(idx, { align: 'center' });
+    });
+  });
+
+  function copyAllText() {
+    navigator.clipboard?.writeText(active.text).catch(() => {});
+  }
+
+  /** Replace the whole document with the given JSON value. */
+  function replaceDoc(value: JsonValue) {
+    active.applyValuePatch({ op: 'replace', path: [], value: snap(value) });
+  }
+
+  /** Tree-level Ctrl+A / Ctrl+V / Ctrl+C handler. Fires when focus is inside
+      the tree but not in an input, and no row-specific shortcut handled it. */
+  async function onTreeKey(e: KeyboardEvent) {
+    if (e.defaultPrevented) return;
+    const target = e.target as HTMLElement | null;
+    // Don't intercept while editing key/value (input handles its own clipboard).
+    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+    const meta = e.metaKey || e.ctrlKey;
+    if (!meta) {
+      if (e.key === 'Escape') {
+        if (selectedKey || selectAll) {
+          e.preventDefault();
+          selection.clear(active.id);
+        }
+      }
+      return;
+    }
+    const k = e.key.toLowerCase();
+    if (k === 'a') {
+      e.preventDefault();
+      selection.setAll(active.id, true, 'tree');
+      // Best-effort: also seed the system clipboard so an immediate Ctrl+C
+      // outside the app picks up the doc text without a second keystroke.
+      copyAllText();
+      return;
+    }
+    if (k === 'c') {
+      if (selectAll) {
+        e.preventDefault();
+        copyAllText();
+        return;
+      }
+      if (selectedKey) {
+        const row = rowFromPathKey(selectedKey);
+        if (row) { e.preventDefault(); copyRow(row); }
+        return;
+      }
+      return;
+    }
+    if (k === 'v') {
+      e.preventDefault();
+      let value: JsonValue;
+      try {
+        const txt = await navigator.clipboard.readText();
+        value = JSON.parse(txt) as JsonValue;
+      } catch {
+        // Fall back to the in-app clipboard if the system one isn't readable.
+        if (internalClip) value = internalClip.value;
+        else return;
+      }
+      if (selectAll || selectedKey === null) {
+        replaceDoc(value);
+        selection.setAll(active.id, false);
+        return;
+      }
+      const row = rowFromPathKey(selectedKey);
+      if (!row) { replaceDoc(value); return; }
+      if (row.kind === 'object-open' || row.kind === 'array-open') {
+        await pasteAt(row);
+      } else {
+        insertSibling(row, 'after', snap(value));
+      }
+      return;
+    }
+    if (k === 'x') {
+      if (selectedKey) {
+        const row = rowFromPathKey(selectedKey);
+        if (row) { e.preventDefault(); cutRow(row); selection.clear(active.id); }
+      }
+      return;
+    }
+  }
+
+  function onTreeBackgroundPointerDown(e: PointerEvent) {
+    // Click on empty space below rows clears the selection. Don't interfere
+    // with row clicks — those bubble up after handling their own logic.
+    const t = e.target as HTMLElement | null;
+    if (!t) return;
+    if (t.classList.contains('scroll') || t.classList.contains('virt') || t.classList.contains('tree-root')) {
+      selection.clear(active.id);
+    }
+    // Pull keyboard focus into the tree so Ctrl+A / Ctrl+V land here.
+    if (scrollEl && t.tagName !== 'INPUT' && t.tagName !== 'TEXTAREA') {
+      scrollEl.focus({ preventScroll: true });
+    }
+  }
+
   function renderValue(v: JsonValue): string {
     if (v === null) return 'null';
     if (typeof v === 'string') return v;
@@ -466,16 +612,27 @@
   {:else if active.parse.value === undefined}
     <EmptyDoc doc={active} />
   {:else}
-    <div class="scroll" bind:this={scrollEl} onscroll={onScroll}>
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+    <div
+      class="scroll"
+      bind:this={scrollEl}
+      onscroll={onScroll}
+      onkeydown={onTreeKey}
+      onpointerdown={onTreeBackgroundPointerDown}
+      tabindex="0"
+    >
       <div class="virt" style:height="{totalSize}px">
         {#each virtualItems as vi (rows[vi.index]?.id ?? vi.index)}
           {@const row = rows[vi.index]}
           {#if row}
             {@const ds = diffStatus(row.path)}
+            {@const isSel = selectAll || selectedKey === row.id}
             <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
             <div
               class="row"
               class:wrap={ui.wrap}
+              class:selected={isSel}
               class:diff-added={ds === 'added'}
               class:diff-removed={ds === 'removed'}
               class:diff-changed={ds === 'changed'}
@@ -485,7 +642,8 @@
               style:min-height="{ROW_HEIGHT}px"
               style:padding-left="{row.depth * 14 + 6}px"
               use:measureRow
-              oncontextmenu={(e) => openContextMenu(e, row)}
+              onclick={() => selectRow(row)}
+              oncontextmenu={(e) => { selectRow(row); openContextMenu(e, row); }}
               onkeydown={(e) => rowKeyShortcut(e, row)}
               role="group"
               tabindex="-1"
@@ -619,7 +777,9 @@
     overflow: auto;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 13px;
+    outline: none;
   }
+  .scroll:focus { outline: none; }
   .virt { position: relative; width: 100%; }
   .row {
     position: absolute;
@@ -654,6 +814,13 @@
     white-space: nowrap;
   }
   .row.wrap .caret { padding-top: 2px; }
+
+  /* ─── selection (cross-view sync) ───────────────────────────── */
+  .row.selected {
+    background: var(--accent-soft);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+  .row.selected:hover { background: color-mix(in oklab, var(--accent-soft) 75%, var(--row-hover-strong)); }
 
   /* ─── diff overlay ──────────────────────────────────────────── */
   .row.diff-added   { background: color-mix(in oklab, var(--ok)  18%, transparent); }

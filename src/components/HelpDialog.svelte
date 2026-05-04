@@ -52,6 +52,7 @@
         { keys: "⌘ 1 / 2 / 3", label: "Focus column 1, 2, or 3" },
         { keys: "⌘ \\", label: "Toggle side panel" },
         { keys: "⌘ ⇧ C", label: "Toggle Compare pair (link / unlink)" },
+        { keys: "⌘ ⇧ K", label: "Open Query panel (MongoDB-style filter)" },
       ],
     },
     {

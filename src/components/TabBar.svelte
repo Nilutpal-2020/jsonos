@@ -44,16 +44,30 @@
   {#each workspace.docs as d (d.id)}
     {@const shown = workspace.slots.some((s) => s.docId === d.id)}
     {@const focused = workspace.active.id === d.id}
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <div
       class="tab"
       class:active={focused}
       class:shown={shown && !focused}
       role="button"
       tabindex="0"
-      onclick={() => workspace.setActive(d.id)}
+      onclick={(e) => {
+        if (e.metaKey || e.ctrlKey) {
+          // Cmd/Ctrl-click → open in a NEW column (alongside current).
+          workspace.addSlot(d.id, workspace.slots[workspace.focusedSlotIndex]?.view ?? 'text');
+        } else {
+          workspace.setActive(d.id);
+        }
+      }}
+      onauxclick={(e) => {
+        // Middle-click closes the tab.
+        if (e.button === 1) { e.preventDefault(); workspace.closeDoc(d.id); }
+      }}
       onkeydown={(e) => { if (e.key === 'Enter') workspace.setActive(d.id); }}
       ondblclick={() => startRename(d.id, d.name)}
-      title={shown ? 'Open · click to focus its column' : 'Click to open in focused column'}
+      title={shown
+        ? 'Click: focus column · ⌘-click: new column · middle-click: close · double-click: rename'
+        : 'Click: open in focused column · ⌘-click: new column · middle-click: close · double-click: rename'}
     >
       {#if editingId === d.id}
         <input

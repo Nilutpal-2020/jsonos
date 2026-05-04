@@ -9,6 +9,7 @@
     <span>JSON Schema</span>
     <button class="clear" onclick={() => active.setSchema('')} disabled={!active.schemaText}>Clear</button>
   </div>
+  <div class="hint">Paste a JSON Schema; violations appear inline and in the editor gutter.</div>
   <textarea
     class="editor"
     spellcheck="false"
@@ -52,6 +53,13 @@
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+  }
+  .hint {
+    padding: 4px 10px 6px;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.45;
+    border-bottom: 1px solid var(--border);
   }
   .clear {
     background: transparent;

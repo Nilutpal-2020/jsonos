@@ -1,15 +1,64 @@
 <script lang="ts">
-  import { doc } from '../core/store.svelte';
+  import { doc, workspace } from '../core/store.svelte';
   import { ui } from '../core/ui-prefs.svelte';
   import { compare } from '../core/compare.svelte';
   import ThemeToggle from './ThemeToggle.svelte';
   import ContextMenu, { type MenuItem } from './ContextMenu.svelte';
   import HelpDialog from './HelpDialog.svelte';
 
+  type SideTab = 'schema' | 'diff' | 'query';
   let {
     panelOpen = $bindable(false),
+    sideTab   = $bindable<SideTab>('schema'),
     onCompare,
-  }: { panelOpen: boolean; onCompare: () => void } = $props();
+  }: { panelOpen: boolean; sideTab: SideTab; onCompare: () => void } = $props();
+
+  function openSidePanel(tab: SideTab) {
+    sideTab = tab;
+    panelOpen = true;
+  }
+
+  // ───── Compare button: auto-pair when feasible, otherwise prompt ─────
+  let compareMenu = $state<{ x: number; y: number } | null>(null);
+
+  /** Snap together `active` and `peer` as a side-by-side diff pair. */
+  function pairWith(peerId: string) {
+    const active = workspace.active;
+    if (!active || active.id === peerId) return;
+    workspace.openSideBySide(active.id, peerId, 'tree');
+    compare.setPair(0, 1);
+    compareMenu = null;
+  }
+
+  function compareItems(): MenuItem[] {
+    const others = workspace.docs.filter((d) => d.id !== workspace.active?.id);
+    if (others.length === 0) {
+      return [{ kind: 'item', label: 'Open another doc to compare', disabled: true, onSelect: () => {} }];
+    }
+    return [
+      { kind: 'item', label: 'Compare with…', disabled: true, onSelect: () => {} },
+      { kind: 'divider' },
+      ...others.map<MenuItem>((d) => ({
+        kind: 'item' as const,
+        icon: '⇄',
+        label: d.name + (d.dirty ? ' •' : ''),
+        onSelect: () => pairWith(d.id),
+      })),
+      { kind: 'divider' },
+      { kind: 'item', icon: '⚙', label: 'Open Compare panel', onSelect: () => { compareMenu = null; onCompare(); } },
+    ];
+  }
+
+  function handleCompareClick(e: MouseEvent) {
+    // Currently linked → unlink. Same behavior as before.
+    if (compare.pair) { onCompare(); return; }
+    const others = workspace.docs.filter((d) => d.id !== workspace.active?.id);
+    // Exactly one peer: link instantly without a picker.
+    if (others.length === 1) { pairWith(others[0].id); return; }
+    // Several peers, or none — show picker anchored under the button.
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    compareMenu = { x: r.left, y: r.bottom + 4 };
+  }
 
   // Help menu state
   type HelpTab = 'docs' | 'shortcuts' | 'about' | 'feedback';
@@ -101,12 +150,20 @@
     <button onclick={copy} title="Copy to clipboard">Copy</button>
     <button onclick={() => doc.download()} title="Download">Save</button>
     <button
-      onclick={onCompare}
+      onclick={handleCompareClick}
       title={compare.pair ? 'Unlink current diff pair (⌘⇧C)' : 'Compare with another doc (⌘⇧C)'}
       class="compare-btn"
       class:on={compare.pair !== null}
       aria-pressed={compare.pair !== null}
+      aria-haspopup={compare.pair ? undefined : 'menu'}
+      aria-expanded={compareMenu !== null}
     >{compare.pair ? '⊗ Unlink' : '⇄ Compare'}</button>
+    <button
+      onclick={() => openSidePanel('query')}
+      title="MongoDB-style query (⌘⇧K)"
+      class:on={panelOpen && sideTab === 'query'}
+      aria-pressed={panelOpen && sideTab === 'query'}
+    >🔎 Query</button>
   </div>
 
   <div class="sep"></div>
@@ -156,6 +213,15 @@
 
 {#if helpMenu}
   <ContextMenu x={helpMenu.x} y={helpMenu.y} items={helpItems} onClose={closeHelpMenu} />
+{/if}
+
+{#if compareMenu}
+  <ContextMenu
+    x={compareMenu.x}
+    y={compareMenu.y}
+    items={compareItems()}
+    onClose={() => (compareMenu = null)}
+  />
 {/if}
 
 <HelpDialog bind:open={helpOpen} bind:tab={helpTab} />

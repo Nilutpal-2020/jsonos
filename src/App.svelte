@@ -10,7 +10,7 @@
   import { ui } from './core/ui-prefs.svelte';
   import { compare } from './core/compare.svelte';
 
-  type SideTab = 'schema' | 'diff';
+  type SideTab = 'schema' | 'diff' | 'query';
   let panelOpen = $state(false);
   let sideTab = $state<SideTab>('schema');
   let workspaceEl = $state<HTMLDivElement | undefined>();
@@ -69,7 +69,7 @@
     const parts: string[] = [];
     for (let i = 0; i < fr.length; i++) {
       parts.push(`minmax(0, ${fr[i]}fr)`);
-      if (i < fr.length - 1) parts.push('4px');
+      if (i < fr.length - 1) parts.push('6px');
     }
     return parts.join(' ');
   });
@@ -78,10 +78,52 @@
     await workspace.init();
   });
 
+  // Global drag-and-drop: drop a JSON file anywhere on the app.
+  // Loads into the focused slot's doc.
+  let dragDepth = 0;
+  let appDragOver = $state(false);
+  function isFileDrag(e: DragEvent): boolean {
+    return !!e.dataTransfer?.types.some((t) => t === 'Files' || t === 'application/json');
+  }
+  function onDragEnter(e: DragEvent) {
+    if (!isFileDrag(e)) return;
+    e.preventDefault();
+    dragDepth++;
+    appDragOver = true;
+  }
+  function onDragLeave(e: DragEvent) {
+    if (!isFileDrag(e)) return;
+    e.preventDefault();
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (dragDepth === 0) appDragOver = false;
+  }
+  function onDragOver(e: DragEvent) {
+    if (!isFileDrag(e)) return;
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+  }
+  async function onDrop(e: DragEvent) {
+    if (!isFileDrag(e)) return;
+    e.preventDefault();
+    dragDepth = 0;
+    appDragOver = false;
+    const f = e.dataTransfer?.files?.[0];
+    if (!f) return;
+    const text = await f.text();
+    workspace.active.load(text, f.name);
+  }
+
   function toggleCompare() {
-    // Toggle: linked → unlink. Otherwise open the Compare panel to set up a pair.
+    // Toggle: linked → unlink. Otherwise auto-pair if exactly one peer exists,
+    // else open the Compare panel for a manual pick.
     if (compare.pair) {
       compare.clear();
+      return;
+    }
+    const others = workspace.docs.filter((d) => d.id !== workspace.active?.id);
+    if (others.length === 1) {
+      workspace.openSideBySide(workspace.active.id, others[0].id, 'tree');
+      compare.setPair(0, 1);
       return;
     }
     panelOpen = true;
@@ -103,6 +145,7 @@
     else if (e.key === 't') { e.preventDefault(); workspace.newDoc(); }
     else if (e.shiftKey && (e.key === 'w' || e.key === 'W')) { e.preventDefault(); ui.toggleWrap(); }
     else if (e.shiftKey && (e.key === 'c' || e.key === 'C')) { e.preventDefault(); toggleCompare(); }
+    else if (e.shiftKey && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); panelOpen = true; sideTab = 'query'; }
     else if (e.key === '1' || e.key === '2' || e.key === '3') {
       const n = Number(e.key) - 1;
       if (workspace.slots[n]) { e.preventDefault(); workspace.focusSlot(n); }
@@ -112,9 +155,26 @@
 
 <svelte:window onkeydown={onKey} onresize={onWindowResize} />
 
-<div class="app">
+<div
+  class="app"
+  class:dragging={appDragOver}
+  ondragenter={onDragEnter}
+  ondragleave={onDragLeave}
+  ondragover={onDragOver}
+  ondrop={onDrop}
+  role="application"
+>
+  {#if appDragOver}
+    <div class="drop-overlay">
+      <div class="drop-card">
+        <div class="drop-icon">⤓</div>
+        <div class="drop-title">Drop to load</div>
+        <div class="drop-sub">Loads into <strong>{workspace.active?.name ?? 'current doc'}</strong></div>
+      </div>
+    </div>
+  {/if}
   <TabBar />
-  <Toolbar bind:panelOpen onCompare={toggleCompare} />
+  <Toolbar bind:panelOpen bind:sideTab onCompare={toggleCompare} />
 
   <div
     class="layout"
@@ -149,6 +209,26 @@
   </div>
 
   <ValidationPanel />
+
+  <div class="hint-bar" aria-hidden="true">
+    {#if compare.pair}
+      <kbd>⌘⇧C</kbd> unlink ·
+      <kbd>⌘[</kbd> / <kbd>⌘]</kbd> prev / next change ·
+      <kbd>⌘⇧K</kbd> query
+    {:else if workspace.slots.length > 1}
+      <kbd>⌘1</kbd>–<kbd>⌘3</kbd> focus column ·
+      <kbd>⌘\</kbd> panel ·
+      <kbd>⌘⇧K</kbd> query ·
+      <kbd>⌘⇧C</kbd> compare
+    {:else}
+      <kbd>⌘/</kbd> format ·
+      <kbd>⌘⇧W</kbd> wrap ·
+      <kbd>⌘\</kbd> panel ·
+      <kbd>⌘⇧K</kbd> query ·
+      <kbd>⌘⇧C</kbd> compare ·
+      <kbd>?</kbd> help
+    {/if}
+  </div>
 </div>
 
 <style>
@@ -272,7 +352,7 @@
     grid-template-columns: 1fr;
   }
   .layout.has-panel {
-    grid-template-columns: 1fr 4px var(--panel-width, 380px);
+    grid-template-columns: 1fr 6px var(--panel-width, 380px);
   }
   .workspace {
     display: grid;
@@ -281,11 +361,71 @@
   }
   .side { min-width: 0; min-height: 0; }
   .panel-resizer {
-    width: 4px;
+    width: 6px;
     cursor: col-resize;
-    background: var(--border);
+    background:
+      linear-gradient(to right, transparent 2px, var(--border) 2px, var(--border) 3px, transparent 3px);
     user-select: none;
-    transition: background 100ms;
+    transition: background 120ms;
   }
-  .panel-resizer:hover, .panel-resizer.dragging { background: var(--accent); }
+  .panel-resizer:hover {
+    background:
+      linear-gradient(to right, transparent 2px, var(--accent) 2px, var(--accent) 3px, transparent 3px);
+  }
+  .panel-resizer.dragging {
+    background:
+      linear-gradient(to right, transparent 1px, var(--accent) 1px, var(--accent) 4px, transparent 4px);
+  }
+
+  .hint-bar {
+    flex-shrink: 0;
+    background: var(--surface-2);
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 11px;
+    padding: 3px 12px;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .hint-bar :global(kbd) {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0 5px;
+    margin: 0 2px;
+    color: var(--fg);
+    font: 10px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  .app.dragging > :not(.drop-overlay) { pointer-events: none; }
+  .drop-overlay {
+    position: fixed; inset: 0;
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    background: color-mix(in oklab, var(--bg) 50%, transparent);
+    backdrop-filter: blur(3px);
+    border: 3px dashed var(--accent);
+    box-shadow: inset 0 0 0 6px var(--accent-soft);
+    pointer-events: none;
+    animation: drop-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes drop-pulse {
+    0%,100% { box-shadow: inset 0 0 0 6px var(--accent-soft); }
+    50%     { box-shadow: inset 0 0 0 12px var(--accent-soft); }
+  }
+  .drop-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 24px 32px;
+    text-align: center;
+    color: var(--fg);
+  }
+  .drop-icon { font-size: 38px; line-height: 1; color: var(--accent); margin-bottom: 6px; }
+  .drop-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .drop-sub { font-size: 12px; color: var(--muted); }
 </style>

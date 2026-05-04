@@ -87,6 +87,7 @@
 <div class="diff">
   <div class="head">
     <span>Compare</span>
+    <span class="hint">Pick a peer doc to diff side-by-side. ⌘⇧C toggles a pair.</span>
     <select bind:value={peerId}>
       <option value="">— pick peer —</option>
       {#each candidates as d (d.id)}
@@ -225,6 +226,14 @@
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+  }
+  .head .hint {
+    flex: 1;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--muted);
+    font-size: 11px;
+    margin-left: 8px;
   }
   .head select {
     background: var(--surface-2);

@@ -1,23 +1,24 @@
 <script lang="ts">
   import SchemaPanel from './SchemaPanel.svelte';
   import DiffPanel from './DiffPanel.svelte';
+  import QueryPanel from './QueryPanel.svelte';
 
-  // Query and API tabs are intentionally hidden for now (their components still
-  // live in src/components/{QueryPanel,ApiPanel}.svelte and can be re-enabled
-  // by adding back to the Tab union and the tab strip below).
-  type Tab = 'schema' | 'diff';
+  // The API tab is intentionally hidden (component still in components/ApiPanel.svelte).
+  type Tab = 'schema' | 'diff' | 'query';
   let { tab = $bindable('schema' as Tab), onClose }: { tab: Tab; onClose: () => void } = $props();
 </script>
 
 <div class="side">
   <div class="tabs">
     <button class:active={tab === 'schema'} onclick={() => tab = 'schema'}>Schema</button>
+    <button class:active={tab === 'query'}  onclick={() => tab = 'query'}>Query</button>
     <button class:active={tab === 'diff'}   onclick={() => tab = 'diff'}>Compare</button>
     <span class="spacer"></span>
     <button class="close" onclick={onClose} title="Close panel" aria-label="close">×</button>
   </div>
   <div class="content">
     {#if tab === 'schema'}<SchemaPanel />
+    {:else if tab === 'query'}<QueryPanel />
     {:else}<DiffPanel />{/if}
   </div>
 </div>

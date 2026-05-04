@@ -1,7 +1,7 @@
 {
-  "name": "JSON OS",
+  "name": "JSON OS — JSON Editor Online",
   "short_name": "JSON OS",
-  "description": "Browser-based JSON workbench — view, edit, validate, query, transform, and share JSON locally.",
+  "description": "Free online JSON editor. Format, validate, repair, compare, and query JSON with MongoDB-style filters in your browser. Tree, text, and table views; JSON Schema; CSV export. No signup, local-first.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

@@ -11,9 +11,21 @@
   import { tags as t } from '@lezer/highlight';
   import { workspace, type DocStore } from '../core/store.svelte';
   import { ui } from '../core/ui-prefs.svelte';
+  import { compare } from '../core/compare.svelte';
+  import { diffHighlightExtension, setDiffNodes } from './text-diff';
+  import { selectionHighlightExtension, setSelectedPath, cursorPathListener } from './text-selection';
+  import { selection } from '../core/selection.svelte';
+  import type { DiffNode } from '../core/diff-engine';
+  import type { JsonPath } from '../core/types';
+  import { pathKey } from '../core/tree-flatten';
 
-  let { doc: docProp }: { doc?: DocStore } = $props();
+  type Props = { doc?: DocStore; slotIndex?: number };
+  let { doc: docProp, slotIndex }: Props = $props();
   let doc = $derived(docProp ?? workspace.active);
+  let diffSide = $derived(slotIndex !== undefined ? compare.side(slotIndex) : null);
+  let diffNodes = $derived<DiffNode[] | null>(
+    diffSide && compare.result ? [...compare.result.byPath.values()] : null,
+  );
 
   // CodeMirror theme bound to our CSS variables — works for both light and dark.
   const cssVarTheme = EditorView.theme({
@@ -141,9 +153,39 @@
         }),
         cssVarTheme,
         syntaxHighlighting(jsonHighlight),
+        diffHighlightExtension(),
+        selectionHighlightExtension(),
+        cursorPathListener((path) => {
+          const id = boundDoc?.id;
+          if (!id || !path) return;
+          // Don't echo back our own updates from the tree side.
+          const cur = selection.get(id);
+          if (selection.source === 'tree' && cur && pathKey(cur) === pathKey(path)) return;
+          selection.set(id, path, 'text');
+        }),
       ],
     });
     view = new EditorView({ state, parent: host });
+  });
+
+  // Receive selection updates from the tree side and paint the highlight.
+  // Ctrl+A in tree is a tree-only affordance; the editor has native select-all
+  // already, so we leave its mark untouched in that case.
+  $effect(() => {
+    if (!view) return;
+    const id = doc.id;
+    void selection.stamp(id);
+    if (selection.source === 'text') return;
+    if (selection.isSelectAll(id)) return;
+    const path = selection.get(id);
+    const sel: JsonPath | null = path && path.length > 0 ? path : null;
+    view.dispatch({ effects: setSelectedPath.of(sel) });
+  });
+
+  // Push the latest diff nodes into the editor whenever they change.
+  $effect(() => {
+    const nodes = diffNodes;
+    view?.dispatch({ effects: setDiffNodes.of(nodes) });
   });
 
   // Re-bind editor when doc prop changes (slot reused for a different doc)
@@ -186,6 +228,31 @@
   }
   :global(.cm-editor) { height: 100%; }
   :global(.cm-editor.cm-focused) { outline: none; }
+
+  /* Selection highlight (mark-level) — paired tree/text cross-view sync. */
+  :global(.cm-jx-selected) {
+    background: var(--accent-soft);
+    box-shadow: inset 0 0 0 1px var(--accent);
+    border-radius: 2px;
+  }
+
+  /* Diff highlights (line-level). See views/text-diff.ts */
+  :global(.cm-line.cm-diff-added) {
+    background: color-mix(in oklab, var(--ok)  18%, transparent);
+    box-shadow: inset 3px 0 0 var(--ok);
+  }
+  :global(.cm-line.cm-diff-removed) {
+    background: color-mix(in oklab, var(--err) 18%, transparent);
+    box-shadow: inset 3px 0 0 var(--err);
+  }
+  :global(.cm-line.cm-diff-changed) {
+    background: color-mix(in oklab, var(--warn) 22%, transparent);
+    box-shadow: inset 3px 0 0 var(--warn);
+  }
+  :global(.cm-line.cm-diff-moved) {
+    background: color-mix(in oklab, var(--accent) 18%, transparent);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
 
   /* Custom search panel — see views/search-panel.ts */
   :global(.cm-panels) {

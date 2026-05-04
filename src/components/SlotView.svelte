@@ -72,7 +72,7 @@
   <div class="body" class:paired={diffSide !== null} data-diff-side={diffSide}>
     {#if doc}
       {#if slot.view === 'text'}
-        <TextView {doc} />
+        <TextView {doc} slotIndex={index} />
       {:else if slot.view === 'tree'}
         <TreeView {doc} {diffByPath} {diffSide} slotIndex={index} />
       {:else}

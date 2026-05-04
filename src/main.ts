@@ -9,8 +9,11 @@ import App from './App.svelte'
 inject()
 injectSpeedInsights()
 
-const app = mount(App, {
-  target: document.getElementById('app')!,
-})
+// Remove the SEO fallback shell injected in index.html before Svelte mounts.
+// It's there for crawlers and first-paint, but should not coexist with the app.
+const target = document.getElementById('app')!
+target.innerHTML = ''
+
+const app = mount(App, { target })
 
 export default app
