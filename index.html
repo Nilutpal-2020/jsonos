@@ -296,8 +296,10 @@
   </head>
   <body>
     <div id="app">
-      <!-- Crawler / first-paint content. Svelte replaces this once main.ts mounts. -->
-      <div id="seo-fallback" style="max-width:780px;margin:0 auto;padding:32px 24px;font:15px/1.55 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#e8ecf2">
+      <!-- Crawler-only content. Hidden from users (display:none); kept in static
+           HTML so non-JS crawlers (Bing, social scrapers, AI bots) can index the
+           feature copy alongside the JSON-LD. Svelte clears it on mount. -->
+      <div id="seo-fallback" hidden aria-hidden="true" style="display:none">
         <h1 style="font-size:28px;margin:0 0 8px">JSON Editor Online — Free JSON Viewer, Formatter, Validator, Compare &amp; Query</h1>
         <p style="margin:0 0 16px;color:#8b95a5">JSON OS is a free, browser-based JSON editor. Format, validate, repair, compare, and filter JSON locally — no signup, no uploads, no server processing.</p>
 
