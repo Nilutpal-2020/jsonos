@@ -1,78 +1,91 @@
+<div align="center">
+
+<img src="public/favicon.svg" width="80" height="80" alt="JSON OS logo" />
+
 # JSON OS
 
-A browser-based JSON workbench. View, edit, validate, format, repair, query
-(JSONPath), transform, diff, and share JSON — all locally in your browser.
+**A free, local-first JSON workbench &amp; Markdown previewer in your browser.**
 
-- **Tree · text · table** views, switch independently per column
-- **Multi-column workspace** (up to 3) with drag-to-resize columns
-- **JSON Schema** validation (Ajv, lazy-loaded)
-- **JSONPath** runner
-- **Side-by-side compare** (auto-arranges columns from the Compare panel)
-- **API client** with response history persisted locally
-- **Read-only share links** via a Cloudflare Worker (or Vercel function)
-- **CSV export** from the table view
-- **Light · dark · system** themes
-- **Local-first**: parsing, validation, and storage all happen in the browser
-  (Web Worker for hot paths, IndexedDB for persistence)
+Format, validate, repair, compare, and query JSON. Render Markdown with Mermaid, KaTeX, and code highlighting. No signup, no uploads.
+
+[**Live app · jsonos.online**](https://jsonos.online) &nbsp;·&nbsp; [Tools](https://jsonos.online/tools/) &nbsp;·&nbsp; [Privacy](https://jsonos.online/privacy.html) &nbsp;·&nbsp; [Report a bug](../../issues/new?template=bug.yml) &nbsp;·&nbsp; [Request a feature](../../issues/new?template=feature.yml)
+
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Made with Svelte](https://img.shields.io/badge/svelte-5-FF3E00?logo=svelte&logoColor=white)](https://svelte.dev)
+[![Built with Vite](https://img.shields.io/badge/vite-8-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
+[![TypeScript](https://img.shields.io/badge/typescript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+</div>
+
+---
+
+## Why JSON OS?
+
+Most online JSON editors upload your data to a server. JSON OS runs **entirely in your browser** — your documents never leave your device. The hot path (parse, validate, format, repair, sort, schema check) runs in a Web Worker so the UI stays responsive on huge files.
+
+- &nbsp;✅ &nbsp;**Local-first** — Web Worker for compute, IndexedDB for persistence
+- &nbsp;✅ &nbsp;**No signup, no servers** — open the URL and you're in
+- &nbsp;✅ &nbsp;**Works offline** as a PWA after first load
+- &nbsp;✅ &nbsp;**Free and open source** under MIT
+
+## Features
+
+### JSON workbench
+- **Three views per column** — text (CodeMirror 6), tree (virtualized), table (sortable + filterable)
+- **Multi-column workspace** up to 3 panes with drag-to-resize
+- **Repair** — fix comments, smart quotes, trailing/missing commas, unquoted keys, hex/oct/bin numbers, Python literals (`True`, `False`, `None`), `undefined`, `NaN`, unclosed brackets
+- **JSON Schema** validation with Ajv + formats (lazy-loaded)
+- **MongoDB-style query** — `$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`, `$in`, `$nin`, `$regex`, `$exists`, `$type`, `$mod`, `$size`, `$all`, `$elemMatch`, `$and`, `$or`, `$nor`, `$not`
+- **Side-by-side compare** with sync-scroll, move detection, ignore rules (paths, `null` = missing, case-insensitive, trim, match arrays by id)
+- **CSV export** of any table view (UTF-8 BOM, Excel-friendly)
+- **Read-only share links** via Cloudflare Worker or Vercel function
+- **Find / replace** with regex, case, whole-word
+
+### Markdown previewer (`?tool=md`)
+- GitHub-flavored Markdown with live preview
+- **Mermaid** diagrams (flowchart, sequence, gantt, class, ER)
+- **KaTeX** math (inline `$...$` and block `$$...$$`)
+- Syntax-highlighted code (highlight.js)
+- Rich embeds (YouTube, CodePen, Gist)
+- Sanitized HTML output (DOMPurify)
+
+### UX
+- Light, dark, and system themes
+- Mobile-responsive layout
+- PWA install (iOS, Android, desktop)
+- Drag a `.json` file anywhere to load
+- Cmd/Ctrl+V paste in tree view
+- 20+ keyboard shortcuts (`?` to view all)
 
 ## Tech stack
 
-- Svelte 5 (runes) + Vite 8 + TypeScript
-- CodeMirror 6 (text view, themed via CSS vars)
-- @tanstack/virtual-core (tree + table virtualization)
-- jsonc-parser (parse with offsets / paths), Ajv (schema), jsonpath-plus
-- idb-keyval (IndexedDB) · Comlink (Web Worker RPC)
+| Layer        | Choice |
+| ---          | --- |
+| UI           | Svelte 5 (runes) + Vite 8 + TypeScript (strict) |
+| Editor       | CodeMirror 6 (themed via CSS vars) |
+| Virtualization | @tanstack/virtual-core |
+| Parser       | jsonc-parser (with offsets and paths) |
+| Schema       | Ajv 8 + ajv-formats (lazy-loaded in worker) |
+| Markdown     | marked + DOMPurify + highlight.js + KaTeX + Mermaid |
+| Persistence  | idb-keyval (IndexedDB) |
+| Workers      | Comlink RPC over Web Worker |
+| Share API    | Cloudflare Worker (KV) — optional |
+| Hosting      | Vercel |
 
-## Run locally
+## Quick start
 
 ```bash
 npm install
 npm run dev          # http://localhost:5173
 npm run build        # production build → dist/
 npm run preview      # serve the production build
-npm run check        # svelte-check + tsc
+npm run check        # svelte-check + tsc (no test runner configured)
 ```
 
-## Environment variables
+> Node ≥ 20 recommended.
 
-Copy `.env.example` → `.env` and fill in for your deploy:
-
-| Var | Purpose |
-| --- | --- |
-| `VITE_PUBLIC_URL` | Public origin (no trailing slash). Used in canonical / OG / sitemap / JSON-LD at build time. |
-| `VITE_SHARE_API`  | Endpoint of the share API. Defaults to `/api`. Set to absolute URL when the share API lives elsewhere. |
-
-## Deploy to Vercel
-
-The repo is Vercel-ready: `vercel.json` configures the build, SPA fallback,
-caching headers, and security headers. The Vite build outputs to `dist/`.
-
-```bash
-# Option 1: from the dashboard
-# - Import the repo in Vercel
-# - Framework preset: Vite (auto-detected)
-# - Add env vars: VITE_PUBLIC_URL (required for SEO),
-#   optional VITE_SHARE_API
-# - Deploy
-
-# Option 2: CLI
-npm i -g vercel
-vercel               # follow prompts; first deploy creates the project
-vercel --prod        # ship a production deploy
-```
-
-After deploy, set `VITE_PUBLIC_URL` in the Vercel project's env vars
-(Production + Preview). Redeploy so the build picks it up — it's substituted
-into `index.html`, `robots.txt`, and `sitemap.xml` by the Vite plugin.
-
-### Share API: pick one
-
-The frontend's `Share` button POSTs to `VITE_SHARE_API` (default `/api`).
-Two ready paths:
-
-**A. Cloudflare Worker (recommended; default)**
-The worker in [`worker/`](worker/) is self-contained, KV-backed, rate-limited,
-and TTL-based. Deploy:
+### Cloudflare share-link worker (optional)
 
 ```bash
 cd worker
@@ -84,43 +97,48 @@ npx wrangler kv namespace create SHARES --preview
 npx wrangler deploy
 ```
 
-Then in Vercel, set `VITE_SHARE_API=https://jsonos-share.<sub>.workers.dev/api`
-(replace with the URL `wrangler deploy` printed). Add your Vercel origin to
-`ALLOWED_ORIGINS` in `worker/wrangler.toml` and redeploy the worker.
-
-**B. All-in-one Vercel (Edge function + Vercel KV)**
-Templates live in [`examples/vercel-api/`](examples/vercel-api/). To enable:
+Then point the frontend at it:
 
 ```bash
-mkdir -p api/share
-mv examples/vercel-api/share.ts        api/share.ts
-mv examples/vercel-api/_share-id.ts    api/share/[id].ts
-npm install @vercel/kv
+VITE_SHARE_API=https://jsonos-share.<sub>.workers.dev/api npm run dev
 ```
 
-Then in Vercel: Storage → create a KV store and link it to the project. Set
-`ALLOWED_ORIGINS` env var (comma-separated origins; e.g. `https://your-domain.com`).
-Push to redeploy. Leave `VITE_SHARE_API` unset (defaults to `/api`).
+## Architecture
 
-## SEO
+```
+┌─────────────────────────────────────────────────────────┐
+│  App.svelte         workspace (multi-tab, multi-slot)   │
+│  ├─ TabBar, Toolbar, ValidationPanel, SidePanel         │
+│  └─ SlotView × N   ──> TextView / TreeView / TableView  │
+│                                                         │
+│  doc Proxy ─── always forwards to workspace.active      │
+│  DocStore   ($state runes; history, debounced parse)    │
+│                                                         │
+│  ── postMessage / Comlink ────────────────────────────  │
+│                                                         │
+│  Web Worker (json.worker.ts)                            │
+│  ├─ parse / format / minify / sortKeys / repair         │
+│  └─ Ajv validate (lazy-loaded)                          │
+│                                                         │
+│  IndexedDB                                              │
+│  ├─ jsonos-docs   per-doc PersistedDoc                  │
+│  └─ jsonos-meta   activeDocId etc.                      │
+└─────────────────────────────────────────────────────────┘
+```
 
-`index.html` ships with:
+See [`src/core/store.svelte.ts`](src/core/store.svelte.ts) and [`src/workers/json.worker.ts`](src/workers/json.worker.ts) for the meat.
 
-- Title + description with target keywords
-- Open Graph (title, description, image, URL, locale, dimensions)
-- Twitter Card (summary_large_image)
-- Canonical link
-- JSON-LD `SoftwareApplication` structured data
-- `theme-color` per `prefers-color-scheme`
-- Inline FOUC-prevention CSS that respects `data-theme`
-- Apple touch icon, mask icon, web app manifest
+## Deploy
 
-`public/robots.txt` and `public/sitemap.xml` are generated at build time with
-`VITE_PUBLIC_URL` substituted in (see the `publicAssetsTokenSubstitute` plugin
-in [`vite.config.ts`](vite.config.ts)).
+The repo is Vercel-ready (`vercel.json` configures build, SPA rewrites, caching, and security headers). Outputs to `dist/`.
 
-After your first deploy, submit `https://your-domain/sitemap.xml` to Google
-Search Console and Bing Webmaster Tools.
+```bash
+npm i -g vercel
+vercel               # first deploy
+vercel --prod
+```
+
+Set `VITE_PUBLIC_URL` (production + preview) so canonical/OG/sitemap URLs are correct. Optional `VITE_SHARE_API` for a remote share endpoint.
 
 ## Keyboard shortcuts
 
@@ -128,12 +146,49 @@ Search Console and Bing Webmaster Tools.
 | --- | --- |
 | `⌘Z` / `⌘⇧Z` | Undo / redo |
 | `⌘S` | Download active doc |
-| `⌘/` | Format |
+| `⌘/` | Format JSON |
 | `⌘\` | Toggle side panel |
 | `⌘⇧W` | Toggle text wrap |
-| `⌘T` | New doc (auto-incremented `untitled.json`) |
+| `⌘⇧K` | Open Query panel |
+| `⌘⇧C` | Toggle Compare pair |
+| `⌘T` | New doc |
 | `⌘1` / `⌘2` / `⌘3` | Focus column 1 / 2 / 3 |
+
+Press `?` inside the app for the full list.
+
+## Contributing
+
+Contributions are welcome — bug reports, feature requests, and PRs alike.
+
+1. Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup and conventions.
+2. Read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+3. Open an issue first for non-trivial changes so we can align on scope.
+
+Good first issues are tagged [`good first issue`](../../issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+
+## Roadmap
+
+- [ ] JSONPath / JMESPath query alternative
+- [ ] Schema generator (sample → JSON Schema)
+- [ ] Per-doc share links with expiry control
+- [ ] Diff export to patch files
+- [ ] Plugin API for custom transforms
+- [ ] More languages on landing pages
+
+## Privacy
+
+JSON OS does not upload your documents to any server. Parsing, validation, and storage happen locally. Read the [Privacy Policy](https://jsonos.online/privacy.html). Anonymous, cookieless usage analytics (Vercel) only — no PII.
 
 ## License
 
-MIT.
+[MIT](LICENSE) © JSON OS contributors
+
+## Acknowledgements
+
+Stands on the shoulders of giants: [Svelte](https://svelte.dev), [Vite](https://vitejs.dev), [CodeMirror](https://codemirror.net), [Ajv](https://ajv.js.org), [jsonc-parser](https://github.com/microsoft/node-jsonc-parser), [Mermaid](https://mermaid.js.org), [KaTeX](https://katex.org), [marked](https://marked.js.org), [highlight.js](https://highlightjs.org), [TanStack Virtual](https://tanstack.com/virtual), [Comlink](https://github.com/GoogleChromeLabs/comlink), [idb-keyval](https://github.com/jakearchibald/idb-keyval).
+
+---
+
+<div align="center">
+<sub>If JSON OS saved you time, consider <a href="https://github.com/sponsors">starring the repo</a> and sharing it.</sub>
+</div>

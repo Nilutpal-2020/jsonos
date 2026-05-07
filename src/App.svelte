@@ -9,6 +9,20 @@
   import { doc, workspace } from './core/store.svelte';
   import { ui } from './core/ui-prefs.svelte';
   import { compare } from './core/compare.svelte';
+  import { tool } from './core/tool-router.svelte';
+
+  // Lazy-load the markdown tool — keeps marked / mermaid / katex out of the JSON bundle.
+  let MarkdownTool = $state<any>(null);
+  let mdLoading = $state(false);
+  let mdError = $state('');
+  $effect(() => {
+    if (tool.current !== 'md' || MarkdownTool || mdLoading) return;
+    mdLoading = true;
+    import('./markdown/MarkdownTool.svelte')
+      .then((m) => { MarkdownTool = m.default; })
+      .catch((e) => { mdError = String((e as Error).message ?? e); })
+      .finally(() => { mdLoading = false; });
+  });
 
   type SideTab = 'schema' | 'diff' | 'query';
   let panelOpen = $state(false);
@@ -131,6 +145,8 @@
   }
 
   function onKey(e: KeyboardEvent) {
+    // The Markdown tool owns its own keymap.
+    if (tool.current === 'md') return;
     // If a focused widget already handled it (CodeMirror keymap with
     // Prec.highest, native form controls), don't double-fire.
     if (e.defaultPrevented) return;
@@ -155,6 +171,16 @@
 
 <svelte:window onkeydown={onKey} onresize={onWindowResize} />
 
+{#if tool.current === 'md'}
+  {#if MarkdownTool}
+    {@const Md = MarkdownTool}
+    <Md />
+  {:else if mdError}
+    <div class="md-loading"><div class="md-error">Failed to load Markdown tool: {mdError}</div></div>
+  {:else}
+    <div class="md-loading">Loading Markdown tool…</div>
+  {/if}
+{:else}
 <div
   class="app"
   class:dragging={appDragOver}
@@ -230,8 +256,19 @@
     {/if}
   </div>
 </div>
+{/if}
 
 <style>
+  .md-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    height: 100dvh;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .md-error { color: var(--err); }
   :global(:root),
   :global([data-theme="dark"]) {
     color-scheme: dark;

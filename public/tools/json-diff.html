@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>JSON Diff Online — Compare Two JSON Documents Side by Side · JSON OS</title>
+    <meta name="description" content="Free online JSON diff. Compare two JSON files side by side with sync-scroll, move detection, and ignore rules (paths, null=missing, case, trim). Color-coded changes. No uploads, runs locally." />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://jsonos.online/tools/json-diff" />
+    <link rel="alternate" hreflang="en" href="https://jsonos.online/tools/json-diff" />
+    <link rel="alternate" hreflang="x-default" href="https://jsonos.online/tools/json-diff" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#131720" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="JSON OS" />
+    <meta property="og:title" content="JSON Diff Online — Side-by-Side Compare · JSON OS" />
+    <meta property="og:description" content="Compare two JSON documents in your browser. Sync-scroll, move detection, ignore rules. Local, free, no uploads." />
+    <meta property="og:url" content="https://jsonos.online/tools/json-diff" />
+    <meta property="og:image" content="https://jsonos.online/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="JSON Diff Online — JSON OS" />
+    <meta name="twitter:description" content="Side-by-side JSON compare with sync-scroll. Local-first." />
+    <meta name="twitter:image" content="https://jsonos.online/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "JSON OS Diff",
+        "applicationCategory": "DeveloperApplication",
+        "applicationSubCategory": "JSONDiff",
+        "operatingSystem": "Web",
+        "url": "https://jsonos.online/tools/json-diff",
+        "isPartOf": { "@id": "https://jsonos.online/#software" },
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "JSON OS", "item": "https://jsonos.online/" },
+          { "@type": "ListItem", "position": 2, "name": "Tools", "item": "https://jsonos.online/tools/" },
+          { "@type": "ListItem", "position": 3, "name": "JSON Diff", "item": "https://jsonos.online/tools/json-diff" }
+        ]
+      }
+    </script>
+
+    <link rel="stylesheet" href="/_legal.css" />
+    <style>
+      .hero { max-width: 880px; margin: 0 auto; padding: 56px 24px 32px; }
+      .hero h1 { font-size: 32px; line-height: 1.2; margin: 0 0 12px; }
+      .hero .lede { font-size: 16px; color: var(--muted, #8b95a5); margin: 0 0 20px; }
+      .cta { display: inline-flex; gap: 8px; align-items: center; background: #2563eb; color: #fff; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; }
+      .features { max-width: 880px; margin: 0 auto; padding: 8px 24px 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+      .features div { background: rgba(127,127,127,0.06); border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; padding: 16px; }
+      .features h3 { margin: 0 0 6px; font-size: 14px; }
+      .features p { margin: 0; font-size: 13px; color: var(--muted, #6b7280); }
+      .breadcrumbs { max-width: 880px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
+      .breadcrumbs a { color: inherit; }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumbs"><a href="/">JSON OS</a> &rsaquo; <a href="/tools/">Tools</a> &rsaquo; JSON Diff</nav>
+    <main class="hero">
+      <h1>JSON Diff Online — Compare Two JSON Documents Side by Side</h1>
+      <p class="lede">Open both files as tabs, hit <kbd>⌘ ⇧ C</kbd> or click <strong>⇄ Compare</strong>, and the workspace switches to a synced two-pane diff. Differences are color-coded: green added, red removed, amber changed, blue moved. Ignore rules let you skip noise like timestamps or whitespace.</p>
+      <a class="cta" href="/?action=diff" rel="noopener">Open JSON Diff →</a>
+
+      <h2 style="margin-top:36px">How to compare two JSON files</h2>
+      <ol>
+        <li>Open the editor; load the first file.</li>
+        <li>Open a new tab (<kbd>⌘ T</kbd>) and load the second file.</li>
+        <li>Click <strong>⇄ Compare</strong> or press <kbd>⌘ ⇧ C</kbd>. With exactly two docs, columns auto-pair.</li>
+        <li>Use the Compare panel to toggle ignore rules; navigate with <kbd>⌘ [</kbd> / <kbd>⌘ ]</kbd>.</li>
+      </ol>
+    </main>
+    <section class="features">
+      <div><h3>Sync scroll</h3><p>Both panes scroll together by path, not by line.</p></div>
+      <div><h3>Move detection</h3><p>Items that just changed position are flagged separately from real changes.</p></div>
+      <div><h3>Ignore rules</h3><p>Skip paths, treat <code>null</code> as missing, ignore string case, trim whitespace, match arrays by id.</p></div>
+      <div><h3>Tree or text</h3><p>Choose either view — the diff stays in sync.</p></div>
+      <div><h3>Local-first</h3><p>Runs in a Web Worker. Files never leave your machine.</p></div>
+      <div><h3>Free forever</h3><p>No signup, no paywall, works offline.</p></div>
+    </section>
+    <footer style="text-align:center;padding:24px;color:var(--muted,#8b95a5);font-size:12px">
+      <a href="/" style="color:inherit">Open the editor</a> · <a href="/tools/json-formatter" style="color:inherit">Formatter</a> · <a href="/tools/json-validator" style="color:inherit">Validator</a> · <a href="/tools/markdown-editor" style="color:inherit">Markdown</a> · <a href="/privacy.html" style="color:inherit">Privacy</a> · <a href="/terms.html" style="color:inherit">Terms</a>
+    </footer>
+  </body>
+</html>

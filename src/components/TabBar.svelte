@@ -1,5 +1,6 @@
 <script lang="ts">
   import { workspace } from '../core/store.svelte';
+  import ToolSwitcher from './ToolSwitcher.svelte';
 
   let editingId = $state<string | null>(null);
   let draftName = $state('');
@@ -39,6 +40,7 @@
     </svg>
     <span class="brand-name">JSON OS</span>
   </a>
+  <ToolSwitcher />
   <span class="brand-sep" aria-hidden="true"></span>
 
   {#each workspace.docs as d (d.id)}
@@ -119,6 +121,11 @@
     transition: color 80ms;
   }
   .brand:hover { color: var(--fg); }
+  .tabs :global(.switcher) {
+    align-self: center;
+    margin: 0 6px 0 -2px;
+    flex-shrink: 0;
+  }
   .brand-mark {
     width: 18px;
     height: 18px;

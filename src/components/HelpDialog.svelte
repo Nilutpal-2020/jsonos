@@ -29,6 +29,83 @@
     window.location.href = `mailto:${FEEDBACK_EMAIL}?subject=${subject}&body=${body}`;
   }
 
+  // ───── Share JSON OS on social platforms ─────
+  const SHARE_URL = "https://jsonos.online/";
+  const SHARE_TITLE = "JSON OS — free, local-first JSON editor + Markdown previewer";
+  const SHARE_TEXT =
+    "Free online JSON editor and Markdown previewer. Format, validate, repair, compare, query JSON; render Markdown with Mermaid + KaTeX. Local-first, no signup.";
+
+  const SHARE_TARGETS: { id: string; label: string; href: string; icon: string }[] = [
+    {
+      id: "twitter",
+      label: "X / Twitter",
+      icon: "𝕏",
+      href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_TITLE)}&url=${encodeURIComponent(SHARE_URL)}`,
+    },
+    {
+      id: "linkedin",
+      label: "LinkedIn",
+      icon: "in",
+      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SHARE_URL)}`,
+    },
+    {
+      id: "reddit",
+      label: "Reddit",
+      icon: "r/",
+      href: `https://reddit.com/submit?url=${encodeURIComponent(SHARE_URL)}&title=${encodeURIComponent(SHARE_TITLE)}`,
+    },
+    {
+      id: "hn",
+      label: "Hacker News",
+      icon: "Y",
+      href: `https://news.ycombinator.com/submitlink?u=${encodeURIComponent(SHARE_URL)}&t=${encodeURIComponent(SHARE_TITLE)}`,
+    },
+    {
+      id: "facebook",
+      label: "Facebook",
+      icon: "f",
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SHARE_URL)}`,
+    },
+    {
+      id: "whatsapp",
+      label: "WhatsApp",
+      icon: "✆",
+      href: `https://api.whatsapp.com/send?text=${encodeURIComponent(`${SHARE_TITLE} ${SHARE_URL}`)}`,
+    },
+    {
+      id: "telegram",
+      label: "Telegram",
+      icon: "✈",
+      href: `https://t.me/share/url?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent(SHARE_TITLE)}`,
+    },
+    {
+      id: "email",
+      label: "Email",
+      icon: "✉",
+      href: `mailto:?subject=${encodeURIComponent(SHARE_TITLE)}&body=${encodeURIComponent(`${SHARE_TEXT}\n\n${SHARE_URL}`)}`,
+    },
+  ];
+
+  let copyState = $state<"" | "ok" | "err">("");
+  async function copyShareLink() {
+    try {
+      await navigator.clipboard.writeText(SHARE_URL);
+      copyState = "ok";
+    } catch {
+      copyState = "err";
+    }
+    setTimeout(() => (copyState = ""), 1500);
+  }
+  async function nativeShare() {
+    if (!navigator.share) {
+      copyShareLink();
+      return;
+    }
+    try {
+      await navigator.share({ title: SHARE_TITLE, text: SHARE_TEXT, url: SHARE_URL });
+    } catch { /* user cancelled */ }
+  }
+
   // Shortcut groups, kept declarative so additions are one-line.
   const SHORTCUTS: {
     group: string;
@@ -317,6 +394,33 @@
               {#each STACK as s}<li>{s}</li>{/each}
             </ul>
           </section>
+          <section>
+            <h4>Share JSON OS</h4>
+            <p class="muted small">If JSON OS saved you time, sharing the link helps others find it.</p>
+            <div class="share-row">
+              {#each SHARE_TARGETS as s}
+                <a
+                  class="share-btn"
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Share on ${s.label}`}
+                  title={`Share on ${s.label}`}
+                >
+                  <span class="ic" aria-hidden="true">{s.icon}</span>
+                  <span class="lb">{s.label}</span>
+                </a>
+              {/each}
+              <button class="share-btn" onclick={copyShareLink} title="Copy link">
+                <span class="ic" aria-hidden="true">⧉</span>
+                <span class="lb">{copyState === 'ok' ? 'Copied!' : copyState === 'err' ? 'Copy failed' : 'Copy link'}</span>
+              </button>
+              <button class="share-btn" onclick={nativeShare} title="Native share sheet">
+                <span class="ic" aria-hidden="true">↗</span>
+                <span class="lb">Share…</span>
+              </button>
+            </div>
+          </section>
         {:else}
           <section>
             <h4>Feedback</h4>
@@ -529,6 +633,45 @@
   .small {
     font-size: 11px;
     margin-top: 6px !important;
+  }
+
+  .share-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    border-radius: var(--radius);
+    padding: 5px 10px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    text-decoration: none;
+    transition: border-color 80ms, background 80ms;
+  }
+  .share-btn:hover {
+    border-color: var(--accent);
+    background: var(--row-hover-strong);
+  }
+  .share-btn .ic {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
   }
 
   .foot {

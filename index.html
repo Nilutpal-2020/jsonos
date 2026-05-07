@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
     <!-- Primary meta -->
-    <title>JSON Editor Online — Format, Validate, Compare &amp; Query · JSON OS</title>
-    <meta name="description" content="Free online JSON editor. Format, validate, repair, compare, and query JSON with MongoDB-style filters. Tree, text &amp; table views. No signup, runs in your browser." />
-    <meta name="keywords" content="json editor, json editor online, online json editor, free json editor, json viewer, json viewer online, json formatter, json beautifier, json prettify, json minifier, json validator, json schema validator, ajv online, json repair, fix json, json compare, json diff, side by side json, json query, mongodb query json, filter json online, json query tool, json tree viewer, json table editor, json to csv, csv export, json transform, json sort keys, json beautify, json lint, jsonlint alternative, jq online, jsonpath, online json tools, browser json editor, offline json tool, local json editor, no upload json editor" />
+    <title>JSON Editor &amp; Markdown Previewer Online — Format, Validate, Compare, Query, Render · JSON OS</title>
+    <meta name="description" content="Free online JSON editor and Markdown previewer. Format, validate, repair, compare and query JSON; write Markdown with live preview, Mermaid diagrams, KaTeX math and code highlighting. No signup, runs in your browser." />
+    <meta name="keywords" content="json editor, json editor online, online json editor, free json editor, json viewer, json viewer online, json formatter, json beautifier, json prettify, json minifier, json validator, json schema validator, ajv online, json repair, fix json, json compare, json diff, side by side json, json query, mongodb query json, filter json online, json query tool, json tree viewer, json table editor, json to csv, csv export, json transform, json sort keys, json beautify, json lint, jsonlint alternative, jq online, jsonpath, online json tools, browser json editor, offline json tool, local json editor, no upload json editor, markdown editor, markdown editor online, online markdown editor, free markdown editor, markdown preview, markdown previewer, live markdown preview, github flavored markdown, gfm editor, markdown viewer, markdown renderer, markdown to html, mermaid editor online, mermaid live editor, mermaid diagram editor, mermaid preview, flowchart editor, sequence diagram online, gantt chart markdown, katex editor, katex preview, latex math editor online, math markdown editor, syntax highlighting markdown, code block highlighter, markdown with mermaid, markdown with math, markdown with embeds, embed youtube markdown, embed codepen markdown, embed gist markdown, browser markdown editor, offline markdown editor, local markdown editor, no upload markdown editor, markdown notebook" />
     <meta name="author" content="JSON OS" />
     <meta name="application-name" content="JSON OS" />
     <meta name="generator" content="Vite + Svelte" />
@@ -30,26 +30,30 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="mask-icon" href="/favicon.svg" color="#5b9eff" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="JSON OS" />
+    <meta name="mobile-web-app-capable" content="yes" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="JSON OS" />
-    <meta property="og:title" content="JSON Editor Online — Free JSON Viewer, Formatter, Validator, Compare &amp; Query" />
-    <meta property="og:description" content="Free online JSON editor. Format, validate, repair, compare, and filter JSON with MongoDB-style queries. Tree · text · table views, JSON Schema, side-by-side diff. No signup, runs in your browser." />
+    <meta property="og:title" content="JSON OS — Online JSON Editor &amp; Markdown Previewer with Mermaid, Math &amp; Code" />
+    <meta property="og:description" content="Two free, browser-based workbenches in one app. JSON: format, validate, repair, compare, MongoDB-style query. Markdown: live preview with Mermaid diagrams, KaTeX math, syntax-highlighted code and rich embeds. No signup, no uploads." />
     <meta property="og:url" content="https://jsonos.online/" />
     <meta property="og:image" content="https://jsonos.online/og-image.png" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="JSON OS — online JSON editor with tree, text, and table views" />
+    <meta property="og:image:alt" content="JSON OS — online JSON editor and Markdown previewer with tree, text, table and live preview views" />
     <meta property="og:locale" content="en_US" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="JSON Editor Online — Free JSON Viewer, Formatter, Validator, Compare &amp; Query" />
-    <meta name="twitter:description" content="Free online JSON editor. Format, validate, repair, compare, and filter JSON with MongoDB-style queries. No signup, runs in your browser." />
+    <meta name="twitter:title" content="JSON OS — JSON Editor &amp; Markdown Previewer Online" />
+    <meta name="twitter:description" content="Format, validate &amp; query JSON, plus a live Markdown previewer with Mermaid, KaTeX math, code highlighting and embeds. Free, browser-based, local-first." />
     <meta name="twitter:image" content="https://jsonos.online/og-image.png" />
-    <meta name="twitter:image:alt" content="JSON OS — online JSON editor" />
+    <meta name="twitter:image:alt" content="JSON OS — JSON editor &amp; Markdown previewer" />
 
     <!-- Performance hints -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -64,19 +68,19 @@
       #app { min-height: 100vh; }
     </style>
 
-    <!-- Structured data: SoftwareApplication -->
+    <!-- Structured data: SoftwareApplication (umbrella product) -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "@id": "https://jsonos.online/#software",
         "name": "JSON OS",
-        "alternateName": ["jsonos", "JSON Editor Online"],
+        "alternateName": ["jsonos", "JSON Editor Online", "JSON OS Markdown"],
         "applicationCategory": "DeveloperApplication",
         "applicationSubCategory": "JSONEditor",
         "operatingSystem": "Web",
         "browserRequirements": "Requires modern browser with ES2022 support",
-        "description": "Free online JSON editor and viewer. Format, validate, repair, compare, and query JSON with MongoDB-style filters in your browser. Tree, text, and table views, JSON Schema validation, side-by-side diff, CSV export. No signup, no uploads, local-first.",
+        "description": "Free online JSON editor and Markdown previewer. Format, validate, repair, compare and query JSON with MongoDB-style filters; write Markdown with live preview, Mermaid diagrams, KaTeX math, syntax-highlighted code and rich embeds — all locally in your browser. No signup, no uploads, local-first.",
         "url": "https://jsonos.online/",
         "image": {
           "@type": "ImageObject",
@@ -84,7 +88,7 @@
           "width": 1200,
           "height": 630
         },
-        "softwareVersion": "1.1",
+        "softwareVersion": "1.2",
         "inLanguage": "en",
         "isAccessibleForFree": true,
         "publisher": { "@id": "https://jsonos.online/#org" },
@@ -95,6 +99,10 @@
           "priceCurrency": "USD",
           "availability": "https://schema.org/InStock"
         },
+        "hasPart": [
+          { "@id": "https://jsonos.online/#software-json" },
+          { "@id": "https://jsonos.online/#software-markdown" }
+        ],
         "featureList": [
           "Online JSON editor and viewer",
           "JSON formatter (beautify) and minifier",
@@ -112,11 +120,76 @@
           "Inline rename, value editing, duplicate, cut/copy/paste in tree view",
           "Find and replace with regex, case, and whole-word toggles",
           "Drop a .json file anywhere to load it; native Ctrl+V paste in tree",
+          "Markdown editor with live preview (GitHub-Flavored Markdown)",
+          "Mermaid diagrams in Markdown (flowchart, sequence, gantt, class, ER, mindmap)",
+          "KaTeX math rendering — inline $…$ and block $$…$$",
+          "Syntax-highlighted fenced code blocks with one-click copy",
+          "Rich embeds in Markdown: YouTube, Vimeo, CodePen, CodeSandbox, JSFiddle, GitHub Gist, Twitter / X",
+          "Three Markdown layouts: edit, split, preview-only",
+          "Markdown export to .md and standalone .html",
           "Light, dark, and system themes",
           "Local-first: parsing in a Web Worker, persistence in IndexedDB, no server uploads"
         ],
         "softwareHelp": "https://jsonos.online/#help",
         "permissions": "browser-storage"
+      }
+    </script>
+
+    <!-- Structured data: SoftwareApplication (JSON Workbench tool) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "@id": "https://jsonos.online/#software-json",
+        "name": "JSON Workbench",
+        "alternateName": ["JSON OS — JSON Editor", "JSON Editor Online"],
+        "applicationCategory": "DeveloperApplication",
+        "applicationSubCategory": "JSONEditor",
+        "operatingSystem": "Web",
+        "url": "https://jsonos.online/",
+        "isPartOf": { "@id": "https://jsonos.online/#software" },
+        "description": "Browser-based JSON editor with formatter, validator, repair, MongoDB-style query engine, JSON Schema validation, side-by-side diff and CSV export. Local-first, no signup.",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "publisher": { "@id": "https://jsonos.online/#org" }
+      }
+    </script>
+
+    <!-- Structured data: SoftwareApplication (Markdown Studio tool) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "@id": "https://jsonos.online/#software-markdown",
+        "name": "Markdown Studio",
+        "alternateName": ["JSON OS — Markdown", "Markdown Editor Online", "Online Markdown Previewer"],
+        "applicationCategory": "DeveloperApplication",
+        "applicationSubCategory": "MarkdownEditor",
+        "operatingSystem": "Web",
+        "browserRequirements": "Requires modern browser with ES2022 support",
+        "url": "https://jsonos.online/?tool=md",
+        "isPartOf": { "@id": "https://jsonos.online/#software" },
+        "description": "Free online Markdown editor and previewer with live rendering of GitHub-Flavored Markdown, Mermaid diagrams, KaTeX math, syntax-highlighted code and embeds (YouTube, Vimeo, CodePen, CodeSandbox, JSFiddle, GitHub Gist, Twitter/X). Local-first, runs in your browser.",
+        "image": "https://jsonos.online/og-image.png",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "publisher": { "@id": "https://jsonos.online/#org" },
+        "featureList": [
+          "Live Markdown preview (GitHub-Flavored Markdown)",
+          "Tables, task lists, footnotes, autolinks, strikethrough",
+          "Fenced code blocks with syntax highlighting (highlight.js)",
+          "Inline copy buttons on every code block",
+          "Mermaid diagrams: flowchart, sequence, gantt, class, ER, state, mindmap",
+          "KaTeX math rendering — inline $…$ and block $$…$$",
+          "Embeds: YouTube, Vimeo, CodePen, CodeSandbox, JSFiddle, GitHub Gist, Twitter/X",
+          "Three layouts: edit-only, split, preview-only",
+          "Editor shortcuts: bold, italic, code, link, headings, lists, quotes, tasks",
+          "Drag-and-drop .md import",
+          "Export as .md or standalone .html",
+          "Multi-tab workspace with rename and auto-save",
+          "Light, dark, and system themes",
+          "Local-first: rendering and storage stay in your browser"
+        ]
       }
     </script>
 
@@ -160,6 +233,56 @@
             "@type": "HowToStep",
             "name": "Compare two documents",
             "text": "Open a second tab, click ⇄ Compare. Two-doc workspaces auto-pair; otherwise pick a peer from the menu. Differences are color-coded and the panes scroll in sync."
+          }
+        ]
+      }
+    </script>
+
+    <!-- Structured data: HowTo (Markdown previewer) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": "How to write Markdown with live preview, Mermaid diagrams and math",
+        "description": "Open the Markdown Studio inside JSON OS, write GitHub-Flavored Markdown, drop in Mermaid code blocks for diagrams, $…$ for math, or paste a YouTube link to embed it — all rendered live in the browser.",
+        "totalTime": "PT2M",
+        "tool": [{ "@type": "HowToTool", "name": "Modern web browser" }],
+        "step": [
+          {
+            "@type": "HowToStep",
+            "name": "Open Markdown Studio",
+            "text": "Visit jsonos.online and click the Tools switcher → Markdown Studio, or open jsonos.online/?tool=md directly.",
+            "url": "https://jsonos.online/?tool=md"
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Write or paste Markdown",
+            "text": "Type GitHub-Flavored Markdown in the editor, paste from the clipboard, or drag-and-drop a .md file. The right pane re-renders as you type."
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Use formatting shortcuts",
+            "text": "Cmd+B for bold, Cmd+I for italic, Cmd+E for inline code, Cmd+K for a link. Toolbar buttons insert headings, bullets, numbered lists, blockquotes, task items, and code blocks."
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Add a Mermaid diagram",
+            "text": "Open a fenced code block with the language ```mermaid and write Mermaid syntax (flowchart, sequence, gantt, class, ER, state, mindmap). The preview replaces the block with an inline SVG."
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Render math with KaTeX",
+            "text": "Wrap inline math in $…$ and block math in $$…$$. KaTeX renders TeX expressions; math is extracted before Markdown parsing so braces and underscores are not mangled."
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Embed a video or playground",
+            "text": "Paste a URL on its own line — the renderer turns YouTube, Vimeo, CodePen, CodeSandbox, JSFiddle, GitHub Gist and Twitter/X links into an iframe or card."
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Export the result",
+            "text": "Save downloads the source as .md. Use ⎘ HTML to copy the rendered HTML or ↧ HTML to download a self-contained .html file with light-theme styles inlined."
           }
         ]
       }
@@ -284,6 +407,54 @@
               "@type": "Answer",
               "text": "Yes. Press ? or open the Help dialog for the full list. Highlights: Cmd+/ format, Cmd+Z undo, Cmd+S download, Cmd+T new tab, Cmd+\\ toggle side panel, Cmd+Shift+K query, Cmd+Shift+C compare, Cmd+Shift+W toggle wrap, Cmd+1/2/3 focus column."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "Does JSON OS include a Markdown editor?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. JSON OS ships with Markdown Studio, a separate workbench for writing and previewing Markdown. Click the Tools switcher in the top bar and pick Markdown Studio, or open jsonos.online/?tool=md directly. It supports GitHub-Flavored Markdown, Mermaid diagrams, KaTeX math, syntax-highlighted code blocks and embeds for YouTube, Vimeo, CodePen, CodeSandbox, JSFiddle, GitHub Gist and Twitter/X."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I render a Mermaid diagram in Markdown?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Open a fenced code block with the language identifier ```mermaid and write Mermaid syntax inside. The Markdown Studio replaces the block with an inline SVG that follows your active light or dark theme. Supported diagram types include flowchart, sequence, gantt, class, ER, state, mindmap, journey and more. Mermaid is lazy-loaded on first use, so it doesn't bloat the JSON workbench."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does the Markdown previewer support math?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, via KaTeX. Wrap inline expressions in $…$ and block expressions in $$…$$. The renderer extracts math before the Markdown parser runs, so symbols like underscores and braces inside equations are never mangled by Markdown syntax."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Which embed providers does the Markdown previewer support?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Paste a URL on its own line and these providers turn into a player or card: YouTube, Vimeo, CodePen, CodeSandbox, JSFiddle, GitHub Gist (rendered via the official gist.js script) and Twitter/X (styled card link). Iframe sources are restricted to the providers above — DOMPurify strips iframes that point anywhere else."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I export Markdown as HTML?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. The Markdown Studio toolbar offers three export paths: Save downloads the source as .md, ⎘ HTML copies the rendered HTML to your clipboard, and ↧ HTML downloads a standalone .html file with light-theme styles inlined so it opens cleanly in any browser."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is the Markdown editor safe? Does it sanitise HTML?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. The output of the Markdown parser is run through DOMPurify, which strips on-handlers, javascript: URLs and any unknown <script> tags. The only exception is the GitHub Gist embed script, which is allowed only for src URLs matching gist.github.com. Iframes are restricted to a known allowlist of embed providers."
+            }
           }
         ]
       }
@@ -295,10 +466,10 @@
            HTML so non-JS crawlers (Bing, social scrapers, AI bots) can index the
            feature copy alongside the JSON-LD. Svelte clears it on mount. -->
       <div id="seo-fallback" hidden aria-hidden="true" style="display:none">
-        <h1 style="font-size:28px;margin:0 0 8px">JSON OS — Free JSON Viewer, Formatter, Validator, Compare &amp; Query</h1>
-        <p style="margin:0 0 16px;color:#8b95a5">JSON OS is a free, browser-based JSON editor. Format, validate, repair, compare, and filter JSON locally — no signup, no uploads, no server processing.</p>
+        <h1 style="font-size:28px;margin:0 0 8px">JSON OS — Free JSON Editor &amp; Markdown Previewer Online</h1>
+        <p style="margin:0 0 16px;color:#8b95a5">JSON OS is a free, browser-based workbench with two tools: a JSON editor (format, validate, repair, compare, query) and a Markdown previewer (live preview with Mermaid diagrams, KaTeX math, code highlighting and embeds). Everything runs locally — no signup, no uploads, no server processing.</p>
 
-        <h2 style="font-size:18px;margin:24px 0 8px">What you can do</h2>
+        <h2 style="font-size:18px;margin:24px 0 8px">JSON Workbench</h2>
         <ul style="margin:0 0 16px;padding-left:20px">
           <li><strong>View &amp; edit JSON</strong> in tree, text, or table — switch any column independently.</li>
           <li><strong>Format / beautify / minify / sort keys</strong> with one click.</li>
@@ -312,15 +483,30 @@
           <li><strong>Local-first</strong>: parsing in a Web Worker, persistence in IndexedDB; nothing leaves your device.</li>
         </ul>
 
+        <h2 style="font-size:18px;margin:24px 0 8px">Markdown Studio <span style="font-size:12px;color:#8b95a5;font-weight:normal">— open at <a href="/?tool=md" style="color:#5b9eff">jsonos.online/?tool=md</a></span></h2>
+        <p style="margin:0 0 12px;color:#8b95a5">A second workbench inside JSON OS for writing and previewing Markdown. GitHub-Flavored Markdown, live preview, Mermaid diagrams, KaTeX math, syntax-highlighted code, and provider embeds — all rendered locally in your browser.</p>
+        <ul style="margin:0 0 16px;padding-left:20px">
+          <li><strong>Live Markdown preview</strong>: GitHub-Flavored Markdown with tables, task lists, footnotes, autolinks and strikethrough, re-rendered as you type.</li>
+          <li><strong>Mermaid diagrams</strong>: <code>```mermaid</code> code blocks render inline as SVG. Supports flowchart, sequence, gantt, class, ER, state and mindmap diagrams.</li>
+          <li><strong>KaTeX math</strong>: inline <code>$E = mc^2$</code> and block <code>$$…$$</code>. Math is extracted before parsing so braces and underscores stay intact.</li>
+          <li><strong>Code highlighting</strong>: fenced code blocks (TypeScript, JavaScript, HTML, CSS, JSON, and many more) with hover Copy buttons.</li>
+          <li><strong>Embeds</strong>: paste a URL on its own line — YouTube, Vimeo, CodePen, CodeSandbox, JSFiddle, GitHub Gist and Twitter/X turn into players or cards. Iframe sources are restricted to a safe allowlist.</li>
+          <li><strong>Three layouts</strong>: edit-only, split editor + preview, or preview-only. Toggle with <code>Cmd+Shift+P</code>.</li>
+          <li><strong>Editor shortcuts</strong>: <code>Cmd+B</code> bold, <code>Cmd+I</code> italic, <code>Cmd+E</code> inline code, <code>Cmd+K</code> link, plus toolbar buttons for headings, lists, quotes, tasks, code blocks and Mermaid blocks.</li>
+          <li><strong>Multi-tab workspace</strong> with drag-and-drop <code>.md</code> import, inline rename, undo / redo, and auto-save to IndexedDB.</li>
+          <li><strong>Export</strong> as <code>.md</code> source, copy rendered HTML, or download a standalone <code>.html</code> file with light-theme styles inlined.</li>
+          <li><strong>Sanitised output</strong>: rendered HTML is run through DOMPurify; scripts and untrusted iframes are stripped.</li>
+        </ul>
+
         <h2 style="font-size:18px;margin:24px 0 8px">Get started</h2>
-        <p style="margin:0 0 8px">Paste JSON (Cmd+V), open a file, or drop a <code>.json</code> file anywhere on this page. Press <strong>?</strong> for the shortcut cheatsheet.</p>
+        <p style="margin:0 0 8px">Paste JSON or Markdown (Cmd+V), open a file, or drop a <code>.json</code> / <code>.md</code> file anywhere on this page. Use the Tools switcher in the top bar to move between the JSON Workbench and Markdown Studio. Press <strong>?</strong> in either tool for the shortcut cheat sheet.</p>
 
         <p style="margin:24px 0 0;color:#8b95a5;font-size:13px">Loading the JSON OS workbench… If this message stays, your browser may have JavaScript disabled. <a href="/privacy.html" style="color:#5b9eff">Privacy</a> · <a href="/terms.html" style="color:#5b9eff">Terms</a></p>
       </div>
       <noscript>
         <div style="padding:24px;font:14px/1.5 system-ui,sans-serif;max-width:560px;margin:48px auto;color:#e8ecf2">
-          <h1 style="margin:0 0 8px">JSON OS — Online JSON Editor</h1>
-          <p>This app needs JavaScript. Enable it to view, edit, format, validate, query, and compare JSON in your browser.</p>
+          <h1 style="margin:0 0 8px">JSON OS — Online JSON Editor &amp; Markdown Previewer</h1>
+          <p>This app needs JavaScript. Enable it to view, edit, format, validate, query, and compare JSON, or to write and preview Markdown with Mermaid diagrams and KaTeX math.</p>
           <p>Read more: <a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms of Service</a>.</p>
         </div>
       </noscript>

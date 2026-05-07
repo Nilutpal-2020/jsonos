@@ -1,0 +1,83 @@
+name: 🐛 Bug report
+description: Something is broken or not working as expected
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please fill in the details below so we can reproduce it.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear and concise description of what the bug is.
+      placeholder: When I do X, Y happens but I expected Z.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps; include a sample JSON if relevant.
+      placeholder: |
+        1. Open jsonos.online
+        2. Paste this JSON: ...
+        3. Click Format
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / GIFs
+      description: Drag and drop here. Optional but very helpful.
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser & version
+      placeholder: Chrome 130 / Safari 18 / Firefox 130
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: macOS 15 / Windows 11 / Ubuntu 24.04 / iOS 18 / Android 15
+    validations:
+      required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: App version (commit / build date)
+      description: If you know it. Otherwise leave blank.
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors
+      description: Open DevTools (F12 → Console) and paste any red errors.
+      render: shell
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Conduct
+      options:
+        - label: I have searched existing issues and this is not a duplicate
+          required: true
+        - label: I agree to follow this project's [Code of Conduct](../blob/main/CODE_OF_CONDUCT.md)
+          required: true

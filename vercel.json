@@ -54,6 +54,27 @@
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
+        { "key": "Service-Worker-Allowed", "value": "/" }
+      ]
+    },
+    {
+      "source": "/BingSiteAuth.xml",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600" },
+        { "key": "Content-Type", "value": "application/xml; charset=utf-8" }
+      ]
+    },
+    {
+      "source": "/google([a-z0-9]+)\\.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600" },
+        { "key": "Content-Type", "value": "text/html; charset=utf-8" }
+      ]
     }
   ]
 }

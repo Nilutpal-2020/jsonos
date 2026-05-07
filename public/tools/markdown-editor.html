@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Markdown Editor Online — Live Preview, Mermaid &amp; KaTeX · JSON OS</title>
+    <meta name="description" content="Free online Markdown editor with live preview, Mermaid diagrams, KaTeX math, GitHub-flavored Markdown, and syntax-highlighted code. Runs in your browser — no signup, no uploads." />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://jsonos.online/tools/markdown-editor" />
+    <link rel="alternate" hreflang="en" href="https://jsonos.online/tools/markdown-editor" />
+    <link rel="alternate" hreflang="x-default" href="https://jsonos.online/tools/markdown-editor" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#131720" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="JSON OS" />
+    <meta property="og:title" content="Markdown Editor Online — Mermaid + Math · JSON OS" />
+    <meta property="og:description" content="Live-preview Markdown with Mermaid diagrams, KaTeX math, code highlighting, and rich embeds. Local-first, free." />
+    <meta property="og:url" content="https://jsonos.online/tools/markdown-editor" />
+    <meta property="og:image" content="https://jsonos.online/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Markdown Editor Online — JSON OS" />
+    <meta name="twitter:description" content="Live preview, Mermaid, KaTeX, GFM. Free, local-first." />
+    <meta name="twitter:image" content="https://jsonos.online/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "JSON OS Markdown",
+        "applicationCategory": "DeveloperApplication",
+        "applicationSubCategory": "MarkdownEditor",
+        "operatingSystem": "Web",
+        "url": "https://jsonos.online/tools/markdown-editor",
+        "isPartOf": { "@id": "https://jsonos.online/#software" },
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "JSON OS", "item": "https://jsonos.online/" },
+          { "@type": "ListItem", "position": 2, "name": "Tools", "item": "https://jsonos.online/tools/" },
+          { "@type": "ListItem", "position": 3, "name": "Markdown Editor", "item": "https://jsonos.online/tools/markdown-editor" }
+        ]
+      }
+    </script>
+
+    <link rel="stylesheet" href="/_legal.css" />
+    <style>
+      .hero { max-width: 880px; margin: 0 auto; padding: 56px 24px 32px; }
+      .hero h1 { font-size: 32px; line-height: 1.2; margin: 0 0 12px; }
+      .hero .lede { font-size: 16px; color: var(--muted, #8b95a5); margin: 0 0 20px; }
+      .cta { display: inline-flex; gap: 8px; align-items: center; background: #2563eb; color: #fff; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; }
+      .features { max-width: 880px; margin: 0 auto; padding: 8px 24px 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+      .features div { background: rgba(127,127,127,0.06); border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; padding: 16px; }
+      .features h3 { margin: 0 0 6px; font-size: 14px; }
+      .features p { margin: 0; font-size: 13px; color: var(--muted, #6b7280); }
+      .breadcrumbs { max-width: 880px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
+      .breadcrumbs a { color: inherit; }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumbs"><a href="/">JSON OS</a> &rsaquo; <a href="/tools/">Tools</a> &rsaquo; Markdown Editor</nav>
+    <main class="hero">
+      <h1>Markdown Editor Online — Live Preview with Mermaid &amp; KaTeX</h1>
+      <p class="lede">Write GitHub-flavored Markdown with instant preview. Render Mermaid diagrams, KaTeX math, syntax-highlighted code, and rich embeds. Everything runs locally in your browser — no signup, no uploads.</p>
+      <a class="cta" href="/?tool=md" rel="noopener">Open Markdown Editor →</a>
+
+      <h2 style="margin-top:36px">What you can do</h2>
+      <ul>
+        <li><strong>GitHub-flavored Markdown</strong>: tables, task lists, fenced code, autolinks, strikethrough.</li>
+        <li><strong>Mermaid</strong>: flowcharts, sequence, gantt, class, ER diagrams in fenced <code>mermaid</code> blocks.</li>
+        <li><strong>KaTeX</strong>: inline <code>$...$</code> and block <code>$$...$$</code> math.</li>
+        <li><strong>Code highlighting</strong>: many languages via highlight.js.</li>
+        <li><strong>Embeds</strong>: YouTube, CodePen, Gist via simple URL syntax.</li>
+        <li><strong>Local-first</strong>: documents persist to IndexedDB on your device.</li>
+      </ul>
+    </main>
+    <section class="features">
+      <div><h3>Live preview</h3><p>Side-by-side or full preview, scroll-synced.</p></div>
+      <div><h3>Diagrams</h3><p>Mermaid flowcharts and sequence diagrams render in-place.</p></div>
+      <div><h3>Math</h3><p>KaTeX renders fast, no MathJax overhead.</p></div>
+      <div><h3>Privacy</h3><p>Nothing leaves your machine.</p></div>
+      <div><h3>Offline</h3><p>Once loaded, works without a network.</p></div>
+      <div><h3>Free</h3><p>No signup, no paywall.</p></div>
+    </section>
+    <footer style="text-align:center;padding:24px;color:var(--muted,#8b95a5);font-size:12px">
+      <a href="/" style="color:inherit">Open the editor</a> · <a href="/tools/json-formatter" style="color:inherit">JSON Formatter</a> · <a href="/tools/json-validator" style="color:inherit">JSON Validator</a> · <a href="/tools/json-diff" style="color:inherit">JSON Diff</a> · <a href="/privacy.html" style="color:inherit">Privacy</a> · <a href="/terms.html" style="color:inherit">Terms</a>
+    </footer>
+  </body>
+</html>

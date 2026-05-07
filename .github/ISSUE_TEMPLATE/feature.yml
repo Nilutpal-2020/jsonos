@@ -1,0 +1,65 @@
+name: 💡 Feature request
+description: Suggest a new capability or improvement
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! For bigger features please open this issue first to align before writing code.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the user need, not the solution.
+      placeholder: I'm trying to ___ and currently I have to ___
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How could JSON OS solve this?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you thought about.
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups / examples
+      description: Sketches, screenshots, or links to similar tools.
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Where does this fit?
+      options:
+        - JSON workbench
+        - Markdown previewer
+        - Workspace / multi-column
+        - Schema / validation
+        - Compare / diff
+        - Query
+        - Sharing
+        - PWA / offline
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Conduct
+      options:
+        - label: I have searched existing issues and this is not a duplicate
+          required: true
+        - label: I agree to follow this project's [Code of Conduct](../blob/main/CODE_OF_CONDUCT.md)
+          required: true

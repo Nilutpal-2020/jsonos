@@ -78,6 +78,7 @@
     { kind: 'item', icon: '⌨',  label: 'Keyboard shortcuts', onSelect: () => openHelpAt('shortcuts') },
     { kind: 'divider' },
     { kind: 'item', icon: 'ⓘ',  label: 'About JSON OS',      onSelect: () => openHelpAt('about') },
+    { kind: 'item', icon: '↗',  label: 'Share JSON OS',      onSelect: () => openHelpAt('about') },
     { kind: 'item', icon: '✉',  label: 'Send feedback',      onSelect: () => openHelpAt('feedback') },
     { kind: 'divider' },
     { kind: 'item', icon: '🔒', label: 'Privacy Policy', hint: '↗',

@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Send feedback
+    url: mailto:jsonos.online@gmail.com
+    about: Email the maintainers directly
+  - name: 🔒 Report a security vulnerability
+    url: https://github.com/.github/SECURITY.md
+    about: Please email jsonos.online@gmail.com — do NOT open a public issue
+  - name: 📖 Read the docs
+    url: https://jsonos.online
+    about: Open the app and press "?" for the help dialog
