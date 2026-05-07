@@ -34,7 +34,7 @@ $$
 flowchart LR
   A[Edit] --> B{Render}
   B -->|markdown| C[HTML]
-  B -->|mermaid|  D[SVG diagram]
+  B -->|mermaid| D[SVG diagram]
 \`\`\`
 
 ## Embeds

@@ -7,6 +7,8 @@
   }: { open: boolean; tab: Tab } = $props();
 
   const FEEDBACK_EMAIL = "jsonos.online@gmail.com";
+  // TODO: replace with the real repo slug once published.
+  const GITHUB_URL = "https://github.com/Nilutpal-2020/jsonos";
 
   function close() {
     open = false;
@@ -364,6 +366,20 @@
               repair, and compare JSON locally — no servers, no uploads, no
               accounts.
             </p>
+            <div class="share-row">
+              <a class="share-btn primary-link" href={GITHUB_URL} target="_blank" rel="noopener noreferrer" title="Open the repository on GitHub">
+                <span class="ic" aria-hidden="true">★</span>
+                <span class="lb">Star on GitHub</span>
+              </a>
+              <a class="share-btn" href="{GITHUB_URL}/issues" target="_blank" rel="noopener noreferrer" title="Report a bug or request a feature">
+                <span class="ic" aria-hidden="true">!</span>
+                <span class="lb">Issues</span>
+              </a>
+              <a class="share-btn" href="{GITHUB_URL}/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer" title="How to contribute">
+                <span class="ic" aria-hidden="true">＋</span>
+                <span class="lb">Contribute</span>
+              </a>
+            </div>
           </section>
           <section>
             <h4>Highlights</h4>
@@ -659,6 +675,19 @@
   .share-btn:hover {
     border-color: var(--accent);
     background: var(--row-hover-strong);
+  }
+  .share-btn.primary-link {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-fg);
+  }
+  .share-btn.primary-link:hover {
+    filter: brightness(1.08);
+    background: var(--accent);
+  }
+  .share-btn.primary-link .ic {
+    background: rgba(255,255,255,0.18);
+    color: var(--accent-fg);
   }
   .share-btn .ic {
     display: inline-flex;
