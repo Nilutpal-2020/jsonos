@@ -31,6 +31,9 @@
     background: var(--surface);
     border-left: 1px solid var(--border);
   }
+  @media (max-width: 768px) {
+    .side { border-left: 0; }
+  }
   .tabs {
     display: flex;
     align-items: center;

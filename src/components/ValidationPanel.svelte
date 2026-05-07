@@ -39,6 +39,11 @@
     overflow: auto;
     padding: 6px 12px;
   }
+  @media (max-width: 540px) {
+    .panel { padding: 6px 8px; max-height: 120px; font-size: 11px; }
+    li { flex-wrap: wrap; gap: 4px 8px; }
+    .loc { min-width: 0; }
+  }
   .ok {
     display: flex;
     align-items: center;

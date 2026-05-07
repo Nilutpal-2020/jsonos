@@ -110,6 +110,7 @@
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
     font-size: 12px;
+    flex-wrap: wrap;
   }
   .doc-pick {
     background: var(--surface);
@@ -121,6 +122,11 @@
     flex: 1;
     min-width: 0;
     max-width: 240px;
+  }
+  @media (max-width: 540px) {
+    .head { gap: 4px; padding: 4px 6px; }
+    .doc-pick { max-width: 140px; flex: 1 1 100px; }
+    .seg button { padding: 3px 8px; }
   }
   .seg { display: flex; }
   .seg button {

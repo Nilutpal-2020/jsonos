@@ -152,7 +152,15 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     max-width: 220px;
     min-width: 90px;
+    flex-shrink: 0;
     transition: background 80ms, color 80ms;
+  }
+  @media (max-width: 540px) {
+    .tab {
+      padding: 6px 10px;
+      min-width: 80px;
+      max-width: 160px;
+    }
   }
   .tab:hover { background: var(--surface); color: var(--fg); }
   .tab.active {

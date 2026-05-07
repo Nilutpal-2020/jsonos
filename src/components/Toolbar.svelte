@@ -256,8 +256,9 @@
     background: var(--surface-2);
     border-bottom: 1px solid var(--border);
     font-size: 13px;
+    flex-wrap: wrap;
   }
-  .group { display: flex; gap: 4px; }
+  .group { display: flex; gap: 4px; flex-wrap: wrap; }
   .sep { width: 1px; height: 20px; background: var(--border); }
   .spacer { flex: 1; }
   .filename {
@@ -340,4 +341,26 @@
   }
   .repair-toast.err ul, .repair-toast.ok ul { color: var(--fg); }
   .repair-toast li { padding: 1px 0; }
+
+  @media (max-width: 768px) {
+    .toolbar {
+      gap: 6px;
+      padding: 6px 8px;
+    }
+    .sep { display: none; }
+    .filename {
+      max-width: 140px;
+      font-size: 11px;
+    }
+    button {
+      padding: 5px 9px;
+      font-size: 12px;
+    }
+  }
+  @media (max-width: 540px) {
+    .filename { display: none; }
+    .spacer { flex-basis: 100%; height: 0; }
+    button { padding: 6px 10px; }
+    .panel-toggle { padding: 5px 10px; }
+  }
 </style>

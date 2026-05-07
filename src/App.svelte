@@ -344,6 +344,7 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
+    height: 100dvh;
   }
   .layout {
     flex: 1;
@@ -360,6 +361,22 @@
     min-width: 0;
   }
   .side { min-width: 0; min-height: 0; }
+
+  /* Mobile: panel becomes full-width overlay; resizer hidden. */
+  @media (max-width: 768px) {
+    .layout.has-panel {
+      grid-template-columns: 1fr;
+    }
+    .panel-resizer { display: none; }
+    .side {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .hint-bar { display: none; }
+  }
   .panel-resizer {
     width: 6px;
     cursor: col-resize;
