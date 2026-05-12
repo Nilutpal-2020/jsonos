@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>JSON Query Tool Online — Filter JSON like MongoDB · JSON OS</title>
+    <meta name="description" content="Free online JSON query tool. Filter, search, and extract JSON data using a powerful MongoDB-style query engine. Find elements using $eq, $gt, $in, $regex and more. Local-first." />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://jsonos.online/tools/json-query" />
+    <link rel="alternate" hreflang="en" href="https://jsonos.online/tools/json-query" />
+    <link rel="alternate" hreflang="x-default" href="https://jsonos.online/tools/json-query" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#131720" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)" />
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="JSON OS" />
+    <meta property="og:title" content="JSON Query Tool Online — Filter JSON Data · JSON OS" />
+    <meta property="og:description" content="Filter and extract JSON data using a powerful MongoDB-style query engine locally in your browser. Free and secure." />
+    <meta property="og:url" content="https://jsonos.online/tools/json-query" />
+    <meta property="og:image" content="https://jsonos.online/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="JSON Query Tool Online — JSON OS" />
+    <meta name="twitter:description" content="Query JSON using MongoDB syntax ($eq, $in, $gt). Completely free and runs entirely in your browser." />
+    <meta name="twitter:image" content="https://jsonos.online/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "JSON OS Query Engine",
+        "applicationCategory": "DeveloperApplication",
+        "applicationSubCategory": "JSONQueryTool",
+        "operatingSystem": "Web",
+        "url": "https://jsonos.online/tools/json-query",
+        "isPartOf": { "@id": "https://jsonos.online/#software" },
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "JSON OS", "item": "https://jsonos.online/" },
+          { "@type": "ListItem", "position": 2, "name": "Tools", "item": "https://jsonos.online/tools/" },
+          { "@type": "ListItem", "position": 3, "name": "JSON Query", "item": "https://jsonos.online/tools/json-query" }
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What query syntax is supported?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The tool uses a MongoDB-style query engine. You can use operators like $eq, $ne, $gt, $gte, $lt, $lte, $in, $nin, $exists, $type, $regex, $mod, $size, $all, $elemMatch, $and, $or, $nor, and $not."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I filter an array of objects?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes! Just set the target path to your array (e.g., $.users) and provide a query object (e.g., {\"age\": {\"$gt\": 18}}). The tool will return a list of all objects that match the criteria."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does the query run locally?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, all queries are executed securely within your web browser. No data is sent to a server."
+            }
+          }
+        ]
+      }
+    </script>
+
+    <link rel="stylesheet" href="/_legal.css" />
+    <style>
+      .hero { max-width: 880px; margin: 0 auto; padding: 56px 24px 32px; }
+      .hero h1 { font-size: 32px; line-height: 1.2; margin: 0 0 12px; }
+      .hero .lede { font-size: 16px; color: var(--muted, #8b95a5); margin: 0 0 20px; }
+      .cta { display: inline-flex; gap: 8px; align-items: center; background: #2563eb; color: #fff; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; }
+      .cta:hover { filter: brightness(1.08); }
+      .features { max-width: 880px; margin: 0 auto; padding: 8px 24px 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+      .features div { background: rgba(127,127,127,0.06); border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; padding: 16px; }
+      .features h3 { margin: 0 0 6px; font-size: 14px; }
+      .features p { margin: 0; font-size: 13px; color: var(--muted, #6b7280); }
+      .breadcrumbs { max-width: 880px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
+      .breadcrumbs a { color: inherit; }
+      .faq-section { max-width: 880px; margin: 0 auto; padding: 0 24px 48px; }
+      .faq-section h2 { font-size: 24px; margin-bottom: 24px; }
+      .faq-item { margin-bottom: 16px; border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; overflow: hidden; }
+      .faq-item summary { font-weight: 600; padding: 16px; cursor: pointer; background: rgba(127,127,127,0.03); outline: none; }
+      .faq-item p { padding: 0 16px 16px; margin: 0; color: var(--muted, #8b95a5); font-size: 14px; line-height: 1.5; }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumbs"><a href="/">JSON OS</a> &rsaquo; <a href="/tools/">Tools</a> &rsaquo; JSON Query</nav>
+    <main class="hero">
+      <h1>JSON Query Tool Online — MongoDB-style Filtering</h1>
+      <p class="lede">Filter, search, and extract specific records from massive JSON datasets directly in your browser. Use familiar MongoDB query syntax like <code>$gt</code>, <code>$in</code>, and <code>$regex</code>.</p>
+      <a class="cta" href="/?action=query" rel="noopener">Open JSON Query Tool →</a>
+
+      <h2 style="margin-top:36px">How to query JSON online</h2>
+      <ol>
+        <li>Paste your JSON document into the JSON OS workspace.</li>
+        <li>Press <kbd>Cmd/Ctrl + Shift + K</kbd> or click the <strong>Query</strong> icon in the side panel.</li>
+        <li>Set the target JSON path (e.g., <code>$.users</code> to target an array of users).</li>
+        <li>Write your MongoDB-style query, for example: <code>{ "age": { "$gt": 18 }, "status": "active" }</code>.</li>
+        <li>Results are highlighted instantly and mapped to their exact location in the document.</li>
+      </ol>
+    </main>
+
+    <section class="features">
+      <div><h3>MongoDB Syntax</h3><p>Leverage your existing MongoDB knowledge. We support full logical, comparison, and array operators.</p></div>
+      <div><h3>Live Highlighting</h3><p>Query results instantly map to the document tree, making it easy to see exactly where matches occurred.</p></div>
+      <div><h3>Deep Extraction</h3><p>Extract specific nested structures instead of reading through megabytes of raw text.</p></div>
+      <div><h3>Browser Native</h3><p>No backend execution means no waiting for network requests. Query runs instantly via Web Workers.</p></div>
+    </section>
+
+    <section class="faq-section">
+      <h2>Frequently Asked Questions</h2>
+      
+      <details class="faq-item">
+        <summary>What query syntax is supported?</summary>
+        <p>The tool uses a MongoDB-style query engine. You can use operators like $eq, $ne, $gt, $gte, $lt, $lte, $in, $nin, $exists, $type, $regex, $mod, $size, $all, $elemMatch, $and, $or, $nor, and $not.</p>
+      </details>
+      
+      <details class="faq-item">
+        <summary>Can I filter an array of objects?</summary>
+        <p>Yes! Just set the target path to your array (e.g., <code>$.users</code>) and provide a query object (e.g., <code>{"age": {"$gt": 18}}</code>). The tool will return a list of all objects that match the criteria.</p>
+      </details>
+      
+      <details class="faq-item">
+        <summary>Does the query run locally?</summary>
+        <p>Yes, all queries are executed securely within your web browser. No data is sent to a server.</p>
+      </details>
+    </section>
+
+    <footer style="text-align:center;padding:24px;color:var(--muted,#8b95a5);font-size:12px">
+      <a href="/" style="color:inherit">Open the tool</a> · <a href="/tools/json-editor" style="color:inherit">Editor</a> · <a href="/tools/json-formatter" style="color:inherit">Formatter</a> · <a href="/tools/json-diff" style="color:inherit">Diff</a> · <a href="/tools/markdown-editor" style="color:inherit">Markdown</a> · <a href="/privacy.html" style="color:inherit">Privacy</a>
+    </footer>
+  </body>
+</html>

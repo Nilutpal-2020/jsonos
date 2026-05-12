@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Markdown Previewer Online — Live Rendering with GitHub Flavored Markdown · JSON OS</title>
+    <meta name="description" content="Free online Markdown previewer. Live render GitHub Flavored Markdown, Mermaid diagrams, and KaTeX math instantly in your browser. No signup needed." />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://jsonos.online/tools/markdown-previewer" />
+    <link rel="alternate" hreflang="en" href="https://jsonos.online/tools/markdown-previewer" />
+    <link rel="alternate" hreflang="x-default" href="https://jsonos.online/tools/markdown-previewer" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#131720" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)" />
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="JSON OS" />
+    <meta property="og:title" content="Markdown Previewer Online — Live Rendering · JSON OS" />
+    <meta property="og:description" content="Live render GitHub Flavored Markdown, Mermaid diagrams, and KaTeX math instantly in your browser." />
+    <meta property="og:url" content="https://jsonos.online/tools/markdown-previewer" />
+    <meta property="og:image" content="https://jsonos.online/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Markdown Previewer Online — JSON OS" />
+    <meta name="twitter:description" content="A fast, local-first Markdown previewer supporting Mermaid and Math. Runs entirely in your browser." />
+    <meta name="twitter:image" content="https://jsonos.online/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "JSON OS Markdown Previewer",
+        "applicationCategory": "DeveloperApplication",
+        "applicationSubCategory": "MarkdownEditor",
+        "operatingSystem": "Web",
+        "url": "https://jsonos.online/tools/markdown-previewer",
+        "isPartOf": { "@id": "https://jsonos.online/#software" },
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "JSON OS", "item": "https://jsonos.online/" },
+          { "@type": "ListItem", "position": 2, "name": "Tools", "item": "https://jsonos.online/tools/" },
+          { "@type": "ListItem", "position": 3, "name": "Markdown Previewer", "item": "https://jsonos.online/tools/markdown-previewer" }
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Does this previewer support GitHub Flavored Markdown (GFM)?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes! The live preview fully supports tables, task lists, strikethrough, autolinks, and footnotes exactly like GitHub."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I export the rendered Markdown to HTML?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, you can export your document as a standalone .html file or copy the raw rendered HTML directly to your clipboard."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is there a split-pane view?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, you can toggle between 'Edit Only', 'Split View', and 'Preview Only' modes for the perfect writing experience."
+            }
+          }
+        ]
+      }
+    </script>
+
+    <link rel="stylesheet" href="/_legal.css" />
+    <style>
+      .hero { max-width: 880px; margin: 0 auto; padding: 56px 24px 32px; }
+      .hero h1 { font-size: 32px; line-height: 1.2; margin: 0 0 12px; }
+      .hero .lede { font-size: 16px; color: var(--muted, #8b95a5); margin: 0 0 20px; }
+      .cta { display: inline-flex; gap: 8px; align-items: center; background: #2563eb; color: #fff; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; }
+      .cta:hover { filter: brightness(1.08); }
+      .features { max-width: 880px; margin: 0 auto; padding: 8px 24px 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+      .features div { background: rgba(127,127,127,0.06); border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; padding: 16px; }
+      .features h3 { margin: 0 0 6px; font-size: 14px; }
+      .features p { margin: 0; font-size: 13px; color: var(--muted, #6b7280); }
+      .breadcrumbs { max-width: 880px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
+      .breadcrumbs a { color: inherit; }
+      .faq-section { max-width: 880px; margin: 0 auto; padding: 0 24px 48px; }
+      .faq-section h2 { font-size: 24px; margin-bottom: 24px; }
+      .faq-item { margin-bottom: 16px; border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; overflow: hidden; }
+      .faq-item summary { font-weight: 600; padding: 16px; cursor: pointer; background: rgba(127,127,127,0.03); outline: none; }
+      .faq-item p { padding: 0 16px 16px; margin: 0; color: var(--muted, #8b95a5); font-size: 14px; line-height: 1.5; }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumbs"><a href="/">JSON OS</a> &rsaquo; <a href="/tools/">Tools</a> &rsaquo; Markdown Previewer</nav>
+    <main class="hero">
+      <h1>Markdown Previewer Online</h1>
+      <p class="lede">Write Markdown and watch it render instantly. Features built-in support for GitHub Flavored Markdown (GFM), Mermaid diagrams, and KaTeX math equations.</p>
+      <a class="cta" href="/?tool=md" rel="noopener">Open Markdown Previewer →</a>
+
+      <h2 style="margin-top:36px">How to preview Markdown</h2>
+      <ol>
+        <li>Open the Markdown Studio within JSON OS.</li>
+        <li>Ensure you're in the <strong>Split View</strong>.</li>
+        <li>Type your markdown on the left side. The preview on the right will update instantaneously as you type.</li>
+        <li>Embed YouTube videos or CodePens by simply pasting the URL on its own line.</li>
+      </ol>
+    </main>
+
+    <section class="features">
+      <div><h3>GitHub Flavored</h3><p>Full support for tables, task lists, footnotes, and syntax-highlighted code blocks.</p></div>
+      <div><h3>Diagrams &amp; Math</h3><p>Natively renders Mermaid.js diagrams and KaTeX mathematical expressions.</p></div>
+      <div><h3>Rich Embeds</h3><p>Paste links to YouTube, CodePen, Twitter, or GitHub Gists to automatically embed them.</p></div>
+      <div><h3>Export to HTML</h3><p>Download your rendered document as a standalone HTML file that retains all styling.</p></div>
+    </section>
+
+    <section class="faq-section">
+      <h2>Frequently Asked Questions</h2>
+      
+      <details class="faq-item">
+        <summary>Does this previewer support GitHub Flavored Markdown (GFM)?</summary>
+        <p>Yes! The live preview fully supports tables, task lists, strikethrough, autolinks, and footnotes exactly like GitHub.</p>
+      </details>
+      
+      <details class="faq-item">
+        <summary>Can I export the rendered Markdown to HTML?</summary>
+        <p>Yes, you can export your document as a standalone .html file or copy the raw rendered HTML directly to your clipboard.</p>
+      </details>
+      
+      <details class="faq-item">
+        <summary>Is there a split-pane view?</summary>
+        <p>Yes, you can toggle between 'Edit Only', 'Split View', and 'Preview Only' modes for the perfect writing experience.</p>
+      </details>
+    </section>
+
+    <footer style="text-align:center;padding:24px;color:var(--muted,#8b95a5);font-size:12px">
+      <a href="/?tool=md" style="color:inherit">Open the previewer</a> · <a href="/tools/json-editor" style="color:inherit">JSON Editor</a> · <a href="/tools/mermaid-markdown-editor" style="color:inherit">Mermaid Editor</a> · <a href="/privacy.html" style="color:inherit">Privacy</a>
+    </footer>
+  </body>
+</html>

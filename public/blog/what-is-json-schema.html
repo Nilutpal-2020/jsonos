@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>What is JSON Schema and How to Validate JSON — JSON OS Blog</title>
+    <meta name="description" content="Learn what JSON Schema is, why developers need it, and how to use tools like Ajv to automatically validate JSON data payloads securely in your browser." />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://jsonos.online/blog/what-is-json-schema" />
+    <link rel="alternate" hreflang="en" href="https://jsonos.online/blog/what-is-json-schema" />
+    <link rel="alternate" hreflang="x-default" href="https://jsonos.online/blog/what-is-json-schema" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#131720" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="JSON OS" />
+    <meta property="og:title" content="What is JSON Schema and How to Validate JSON Automatically" />
+    <meta property="og:description" content="Learn what JSON Schema is, why developers need it, and how to validate JSON data." />
+    <meta property="og:url" content="https://jsonos.online/blog/what-is-json-schema" />
+    <meta property="og:image" content="https://jsonos.online/og-image.png" />
+    
+    <link rel="stylesheet" href="/_legal.css" />
+    <style>
+      .article-container { max-width: 720px; margin: 0 auto; padding: 56px 24px 64px; }
+      .article-container h1 { font-size: 36px; line-height: 1.2; margin: 0 0 16px; }
+      .article-meta { color: var(--muted, #8b95a5); font-size: 14px; margin-bottom: 48px; border-bottom: 1px solid rgba(127,127,127,0.18); padding-bottom: 24px; }
+      .article-content { line-height: 1.7; color: #d1d5db; font-size: 16px; }
+      @media (prefers-color-scheme: light) { .article-content { color: #374151; } }
+      .article-content h2 { margin: 40px 0 16px; font-size: 24px; color: inherit; }
+      .article-content p { margin: 0 0 20px; }
+      .article-content pre { background: rgba(127,127,127,0.08); padding: 16px; border-radius: 8px; overflow: auto; font-size: 14px; line-height: 1.4; margin-bottom: 24px; }
+      .article-content code { background: rgba(127,127,127,0.15); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+      .breadcrumbs { max-width: 720px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
+      .breadcrumbs a { color: inherit; }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumbs"><a href="/">JSON OS</a> &rsaquo; <a href="/blog/">Blog</a> &rsaquo; What is JSON Schema</nav>
+    <main class="article-container">
+      <h1>What is JSON Schema and How to Validate JSON Automatically</h1>
+      <div class="article-meta">Published on April 28, 2026 • 4 min read</div>
+      
+      <div class="article-content">
+        <p>If you're a developer working with APIs, configuration files, or data storage, you deal with JSON every day. But how do you know if the JSON data you're receiving is correctly structured? That's where <strong>JSON Schema</strong> comes in.</p>
+
+        <h2>What is JSON Schema?</h2>
+        <p>JSON Schema is a vocabulary that allows you to annotate and validate JSON documents. It acts as a contract for your data. Just like strongly typed languages ensure variables are the correct type, JSON Schema ensures your JSON objects have the right keys, the correct value types, and follow specific formatting rules.</p>
+        
+        <p>A simple JSON Schema looks like this:</p>
+        <pre><code>{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "age": { "type": "number", "minimum": 0 },
+    "email": { "type": "string", "format": "email" }
+  },
+  "required": ["name", "email"]
+}</code></pre>
+
+        <h2>Why is Validation Important?</h2>
+        <p>Without validation, your application might try to access <code>user.age.toFixed()</code> when <code>age</code> was accidentally sent as a string (or wasn't sent at all). This leads to runtime crashes, security vulnerabilities, and bad user experiences.</p>
+        
+        <h2>How to Validate JSON using Ajv</h2>
+        <p><a href="https://ajv.js.org/">Ajv</a> (Another JSON Schema Validator) is the industry standard engine for validating JSON against a schema. It is extremely fast and fully supports the latest drafts of the JSON Schema specification.</p>
+
+        <p>To validate your JSON quickly without setting up a Node.js project, you can use a free online tool like <a href="/tools/json-validator">JSON OS Validator</a>. It runs Ajv completely in your browser.</p>
+
+        <ol>
+          <li>Open the JSON OS Validator.</li>
+          <li>Paste your JSON document in the main editor.</li>
+          <li>Press <code>Cmd + \</code> to open the side panel, select the <strong>Schema</strong> tab, and paste your JSON Schema.</li>
+        </ol>
+
+        <p>If there are any errors (like a missing "email" or a negative "age"), the editor will highlight the exact line and column where the error occurred, along with the specific <code>instancePath</code>.</p>
+
+        <h2>Conclusion</h2>
+        <p>Using JSON Schema guarantees that your data is predictable. Next time you're building an API or a config file, draft a schema and validate it instantly using local-first tools like JSON OS.</p>
+      </div>
+    </main>
+
+    <footer style="text-align:center;padding:24px;color:var(--muted,#8b95a5);font-size:12px;border-top:1px solid rgba(127,127,127,0.18)">
+      <a href="/tools/json-validator" style="color:inherit">Try the JSON Validator</a> · <a href="/blog/" style="color:inherit">More Articles</a> · <a href="/" style="color:inherit">JSON OS</a>
+    </footer>
+  </body>
+</html>

@@ -53,6 +53,39 @@
       }
     </script>
 
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How do I compare two JSON files?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Load the first file in one tab, open a new tab, and load the second file. Click the 'Compare' button and the workspace will switch to a synced two-pane diff."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I ignore specific JSON paths?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, our JSON diff tool supports Ignore Rules. You can explicitly ignore specific paths, treat null values as missing, ignore case, and trim whitespace to reduce diff noise."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my data uploaded to your server to be compared?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The entire comparison is run locally in your web browser. We do not upload your data to any server."
+            }
+          }
+        ]
+      }
+    </script>
+
     <link rel="stylesheet" href="/_legal.css" />
     <style>
       .hero { max-width: 880px; margin: 0 auto; padding: 56px 24px 32px; }
@@ -65,6 +98,11 @@
       .features p { margin: 0; font-size: 13px; color: var(--muted, #6b7280); }
       .breadcrumbs { max-width: 880px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
       .breadcrumbs a { color: inherit; }
+      .faq-section { max-width: 880px; margin: 0 auto; padding: 0 24px 48px; }
+      .faq-section h2 { font-size: 24px; margin-bottom: 24px; }
+      .faq-item { margin-bottom: 16px; border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; overflow: hidden; }
+      .faq-item summary { font-weight: 600; padding: 16px; cursor: pointer; background: rgba(127,127,127,0.03); outline: none; }
+      .faq-item p { padding: 0 16px 16px; margin: 0; color: var(--muted, #8b95a5); font-size: 14px; line-height: 1.5; }
     </style>
   </head>
   <body>
@@ -89,6 +127,24 @@
       <div><h3>Tree or text</h3><p>Choose either view — the diff stays in sync.</p></div>
       <div><h3>Local-first</h3><p>Runs in a Web Worker. Files never leave your machine.</p></div>
       <div><h3>Free forever</h3><p>No signup, no paywall, works offline.</p></div>
+    </section>
+    <section class="faq-section">
+      <h2>Frequently Asked Questions</h2>
+      
+      <details class="faq-item">
+        <summary>How do I compare two JSON files?</summary>
+        <p>Load the first file in one tab, open a new tab, and load the second file. Click the 'Compare' button and the workspace will switch to a synced two-pane diff.</p>
+      </details>
+      
+      <details class="faq-item">
+        <summary>Can I ignore specific JSON paths?</summary>
+        <p>Yes, our JSON diff tool supports Ignore Rules. You can explicitly ignore specific paths, treat null values as missing, ignore case, and trim whitespace to reduce diff noise.</p>
+      </details>
+      
+      <details class="faq-item">
+        <summary>Is my data uploaded to your server to be compared?</summary>
+        <p>No. The entire comparison is run locally in your web browser. We do not upload your data to any server.</p>
+      </details>
     </section>
     <footer style="text-align:center;padding:24px;color:var(--muted,#8b95a5);font-size:12px">
       <a href="/" style="color:inherit">Open the editor</a> · <a href="/tools/json-formatter" style="color:inherit">Formatter</a> · <a href="/tools/json-validator" style="color:inherit">Validator</a> · <a href="/tools/markdown-editor" style="color:inherit">Markdown</a> · <a href="/privacy.html" style="color:inherit">Privacy</a> · <a href="/terms.html" style="color:inherit">Terms</a>
