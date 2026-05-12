@@ -53,6 +53,39 @@
       }
     </script>
 
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Can I render Mermaid diagrams?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, just create a fenced code block with the 'mermaid' language identifier. Flowcharts, sequence diagrams, and more will render live."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does the KaTeX math work?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Wrap your LaTeX math equations in $...$ for inline math or $$...$$ for block math, and they will render instantly."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are my markdown documents saved?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, your documents are auto-saved locally to your browser's IndexedDB. They are completely private and never uploaded."
+            }
+          }
+        ]
+      }
+    </script>
+
     <link rel="stylesheet" href="/_legal.css" />
     <style>
       .hero { max-width: 880px; margin: 0 auto; padding: 56px 24px 32px; }
@@ -65,6 +98,11 @@
       .features p { margin: 0; font-size: 13px; color: var(--muted, #6b7280); }
       .breadcrumbs { max-width: 880px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
       .breadcrumbs a { color: inherit; }
+      .faq-section { max-width: 880px; margin: 0 auto; padding: 0 24px 48px; }
+      .faq-section h2 { font-size: 24px; margin-bottom: 24px; }
+      .faq-item { margin-bottom: 16px; border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; overflow: hidden; }
+      .faq-item summary { font-weight: 600; padding: 16px; cursor: pointer; background: rgba(127,127,127,0.03); outline: none; }
+      .faq-item p { padding: 0 16px 16px; margin: 0; color: var(--muted, #8b95a5); font-size: 14px; line-height: 1.5; }
     </style>
   </head>
   <body>
@@ -91,6 +129,24 @@
       <div><h3>Privacy</h3><p>Nothing leaves your machine.</p></div>
       <div><h3>Offline</h3><p>Once loaded, works without a network.</p></div>
       <div><h3>Free</h3><p>No signup, no paywall.</p></div>
+    </section>
+    <section class="faq-section">
+      <h2>Frequently Asked Questions</h2>
+      
+      <details class="faq-item">
+        <summary>Can I render Mermaid diagrams?</summary>
+        <p>Yes, just create a fenced code block with the 'mermaid' language identifier. Flowcharts, sequence diagrams, and more will render live.</p>
+      </details>
+      
+      <details class="faq-item">
+        <summary>How does the KaTeX math work?</summary>
+        <p>Wrap your LaTeX math equations in $...$ for inline math or $$...$$ for block math, and they will render instantly.</p>
+      </details>
+      
+      <details class="faq-item">
+        <summary>Are my markdown documents saved?</summary>
+        <p>Yes, your documents are auto-saved locally to your browser's IndexedDB. They are completely private and never uploaded.</p>
+      </details>
     </section>
     <footer style="text-align:center;padding:24px;color:var(--muted,#8b95a5);font-size:12px">
       <a href="/" style="color:inherit">Open the editor</a> · <a href="/tools/json-formatter" style="color:inherit">JSON Formatter</a> · <a href="/tools/json-validator" style="color:inherit">JSON Validator</a> · <a href="/tools/json-diff" style="color:inherit">JSON Diff</a> · <a href="/privacy.html" style="color:inherit">Privacy</a> · <a href="/terms.html" style="color:inherit">Terms</a>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>The Best Markdown Editor with Mermaid and KaTeX Math Support — JSON OS Blog</title>
+    <meta name="description" content="Discover how to natively render Mermaid flowcharts and KaTeX mathematical equations directly in your Markdown documents using JSON OS Markdown Studio." />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://jsonos.online/blog/markdown-editor-with-mermaid-and-math" />
+    <link rel="alternate" hreflang="en" href="https://jsonos.online/blog/markdown-editor-with-mermaid-and-math" />
+    <link rel="alternate" hreflang="x-default" href="https://jsonos.online/blog/markdown-editor-with-mermaid-and-math" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#131720" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="JSON OS" />
+    <meta property="og:title" content="The Best Markdown Editor with Mermaid and KaTeX Math" />
+    <meta property="og:description" content="How to natively render complex flowcharts and mathematical equations directly in your browser." />
+    <meta property="og:url" content="https://jsonos.online/blog/markdown-editor-with-mermaid-and-math" />
+    <meta property="og:image" content="https://jsonos.online/og-image.png" />
+    
+    <link rel="stylesheet" href="/_legal.css" />
+    <style>
+      .article-container { max-width: 720px; margin: 0 auto; padding: 56px 24px 64px; }
+      .article-container h1 { font-size: 36px; line-height: 1.2; margin: 0 0 16px; }
+      .article-meta { color: var(--muted, #8b95a5); font-size: 14px; margin-bottom: 48px; border-bottom: 1px solid rgba(127,127,127,0.18); padding-bottom: 24px; }
+      .article-content { line-height: 1.7; color: #d1d5db; font-size: 16px; }
+      @media (prefers-color-scheme: light) { .article-content { color: #374151; } }
+      .article-content h2 { margin: 40px 0 16px; font-size: 24px; color: inherit; }
+      .article-content p { margin: 0 0 20px; }
+      .article-content pre { background: rgba(127,127,127,0.08); padding: 16px; border-radius: 8px; overflow: auto; font-size: 14px; line-height: 1.4; margin-bottom: 24px; }
+      .article-content code { background: rgba(127,127,127,0.15); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+      .breadcrumbs { max-width: 720px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
+      .breadcrumbs a { color: inherit; }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumbs"><a href="/">JSON OS</a> &rsaquo; <a href="/blog/">Blog</a> &rsaquo; Markdown with Mermaid &amp; Math</nav>
+    <main class="article-container">
+      <h1>The Best Markdown Editor with Mermaid and KaTeX Math Support</h1>
+      <div class="article-meta">Published on May 12, 2026 • 6 min read</div>
+      
+      <div class="article-content">
+        <p>Standard Markdown is fantastic for writing basic text, lists, and links. But if you are a technical writer, engineer, or data scientist, you quickly run into its limitations. What happens when you need to draw a system architecture flowchart or write a complex LaTeX equation?</p>
+
+        <p>This is where standard Markdown falls short, forcing writers to create diagrams in external tools, export them as images, and embed them. If the diagram needs an update, the whole process must be repeated.</p>
+
+        <h2>Enter Markdown Studio</h2>
+        <p>The <a href="/tools/mermaid-markdown-editor">Markdown Studio</a> inside JSON OS was built to solve this exact problem. It is a live-rendering Markdown editor that runs completely in your browser, and it natively supports both Mermaid.js and KaTeX.</p>
+
+        <h2>Drawing Diagrams with Mermaid</h2>
+        <p>Mermaid is a JavaScript-based diagramming and charting tool that renders Markdown-inspired text definitions to create and modify diagrams dynamically.</p>
+        
+        <p>To use it in our editor, simply start a fenced code block and specify <code>mermaid</code> as the language:</p>
+        <pre><code>```mermaid
+graph TD;
+    A[Client]--&gt;B[Load Balancer];
+    B--&gt;C[Server 1];
+    B--&gt;D[Server 2];
+```</code></pre>
+
+        <p>The editor will instantly render this as a beautiful, theme-aware SVG diagram right beside your text.</p>
+
+        <h2>Writing Math with KaTeX</h2>
+        <p>If you need to include mathematical formulas, standard Markdown won't help you. JSON OS integrates KaTeX, an incredibly fast math typesetting library for the web.</p>
+
+        <p>You can write inline equations by wrapping your LaTeX syntax in single dollar signs <code>$E = mc^2$</code>, or create block-level equations using double dollar signs:</p>
+
+        <pre><code>$$
+f(x) = \int_{-\infty}^\infty \hat f(\xi)\,e^{2 \pi i \xi x} \,d\xi
+$$</code></pre>
+
+        <h2>Everything Stays on Your Machine</h2>
+        <p>The best part about the Markdown Studio? It requires no server backends, no image hosting, and no accounts. Your documents are automatically saved to your browser's IndexedDB. When you're finished, you can export your entire document—diagrams, math, and all—into a single, portable HTML file.</p>
+      </div>
+    </main>
+
+    <footer style="text-align:center;padding:24px;color:var(--muted,#8b95a5);font-size:12px;border-top:1px solid rgba(127,127,127,0.18)">
+      <a href="/tools/mermaid-markdown-editor" style="color:inherit">Try the Markdown Studio</a> · <a href="/blog/" style="color:inherit">More Articles</a> · <a href="/" style="color:inherit">JSON OS</a>
+    </footer>
+  </body>
+</html>

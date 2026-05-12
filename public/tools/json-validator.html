@@ -53,6 +53,39 @@
       }
     </script>
 
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How does JSON Schema validation work?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Open the side panel, paste your JSON Schema, and the active document is continuously validated. Errors will appear instantly with their line, column, and instance path."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Which validator engine is used?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "We use Ajv (Another JSON Schema Validator), an industry-standard validation engine that fully supports the latest JSON Schema drafts and custom format checks."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does the validation check format types?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, it fully supports string formats like email, uri, date-time, ipv4, ipv6, uuid, and regular expressions."
+            }
+          }
+        ]
+      }
+    </script>
+
     <link rel="stylesheet" href="/_legal.css" />
     <style>
       .hero { max-width: 880px; margin: 0 auto; padding: 56px 24px 32px; }
@@ -65,6 +98,11 @@
       .features p { margin: 0; font-size: 13px; color: var(--muted, #6b7280); }
       .breadcrumbs { max-width: 880px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
       .breadcrumbs a { color: inherit; }
+      .faq-section { max-width: 880px; margin: 0 auto; padding: 0 24px 48px; }
+      .faq-section h2 { font-size: 24px; margin-bottom: 24px; }
+      .faq-item { margin-bottom: 16px; border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; overflow: hidden; }
+      .faq-item summary { font-weight: 600; padding: 16px; cursor: pointer; background: rgba(127,127,127,0.03); outline: none; }
+      .faq-item p { padding: 0 16px 16px; margin: 0; color: var(--muted, #8b95a5); font-size: 14px; line-height: 1.5; }
       pre { background: rgba(127,127,127,0.08); padding: 12px; border-radius: 6px; overflow:auto; font-size: 12px; }
     </style>
   </head>
@@ -101,6 +139,24 @@
       <div><h3>Lazy-loaded</h3><p>Ajv loads only when you open the schema tab — no overhead otherwise.</p></div>
       <div><h3>Local-first</h3><p>Runs in a Web Worker. Your schema and document never leave your device.</p></div>
       <div><h3>Free forever</h3><p>No signup, no paywall, works offline.</p></div>
+    </section>
+    <section class="faq-section">
+      <h2>Frequently Asked Questions</h2>
+      
+      <details class="faq-item">
+        <summary>How does JSON Schema validation work?</summary>
+        <p>Open the side panel, paste your JSON Schema, and the active document is continuously validated. Errors will appear instantly with their line, column, and instance path.</p>
+      </details>
+      
+      <details class="faq-item">
+        <summary>Which validator engine is used?</summary>
+        <p>We use Ajv (Another JSON Schema Validator), an industry-standard validation engine that fully supports the latest JSON Schema drafts and custom format checks.</p>
+      </details>
+      
+      <details class="faq-item">
+        <summary>Does the validation check format types?</summary>
+        <p>Yes, it fully supports string formats like email, uri, date-time, ipv4, ipv6, uuid, and regular expressions.</p>
+      </details>
     </section>
     <footer style="text-align:center;padding:24px;color:var(--muted,#8b95a5);font-size:12px">
       <a href="/" style="color:inherit">Open the editor</a> · <a href="/tools/json-formatter" style="color:inherit">Formatter</a> · <a href="/tools/json-diff" style="color:inherit">Diff</a> · <a href="/tools/markdown-editor" style="color:inherit">Markdown</a> · <a href="/privacy.html" style="color:inherit">Privacy</a> · <a href="/terms.html" style="color:inherit">Terms</a>

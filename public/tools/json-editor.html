@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>JSON Formatter Online — Beautify, Pretty Print &amp; Minify JSON · JSON OS</title>
-    <meta name="description" content="Free online JSON formatter. Beautify (pretty print) or minify any JSON in your browser with one click. No signup, no uploads — runs locally. Format with 2- or 4-space indent, sort keys, copy or download the result." />
+    <title>JSON Editor Online — Free Browser-based JSON Workspace · JSON OS</title>
+    <meta name="description" content="Free online JSON editor. View, edit, format, and validate JSON directly in your browser. Features tree, text, and table views, deep search, and auto-repair. Local-first, no signup." />
     <meta name="robots" content="index, follow, max-image-preview:large" />
-    <link rel="canonical" href="https://jsonos.online/tools/json-formatter" />
-    <link rel="alternate" hreflang="en" href="https://jsonos.online/tools/json-formatter" />
-    <link rel="alternate" hreflang="x-default" href="https://jsonos.online/tools/json-formatter" />
+    <link rel="canonical" href="https://jsonos.online/tools/json-editor" />
+    <link rel="alternate" hreflang="en" href="https://jsonos.online/tools/json-editor" />
+    <link rel="alternate" hreflang="x-default" href="https://jsonos.online/tools/json-editor" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#131720" media="(prefers-color-scheme: dark)" />
@@ -17,26 +17,26 @@
     <!-- Open Graph / Twitter -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="JSON OS" />
-    <meta property="og:title" content="JSON Formatter Online — Beautify &amp; Minify JSON · JSON OS" />
-    <meta property="og:description" content="Free, local-first JSON beautifier and minifier. Format with 2- or 4-space indent, sort keys, copy or download. Runs entirely in your browser." />
-    <meta property="og:url" content="https://jsonos.online/tools/json-formatter" />
+    <meta property="og:title" content="JSON Editor Online — Free Browser-based Workspace · JSON OS" />
+    <meta property="og:description" content="Free, local-first JSON editor. View, edit, format, and validate JSON. Runs entirely in your browser." />
+    <meta property="og:url" content="https://jsonos.online/tools/json-editor" />
     <meta property="og:image" content="https://jsonos.online/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="JSON Formatter Online — JSON OS" />
-    <meta name="twitter:description" content="Beautify and minify JSON locally in your browser. No signup, no uploads." />
+    <meta name="twitter:title" content="JSON Editor Online — JSON OS" />
+    <meta name="twitter:description" content="Edit JSON locally in your browser with tree, text, and table views. No signup, no uploads." />
     <meta name="twitter:image" content="https://jsonos.online/og-image.png" />
 
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
-        "name": "JSON OS Formatter",
+        "name": "JSON OS Editor",
         "applicationCategory": "DeveloperApplication",
-        "applicationSubCategory": "JSONFormatter",
+        "applicationSubCategory": "JSONEditor",
         "operatingSystem": "Web",
-        "url": "https://jsonos.online/tools/json-formatter",
+        "url": "https://jsonos.online/tools/json-editor",
         "isPartOf": { "@id": "https://jsonos.online/#software" },
         "isAccessibleForFree": true,
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
@@ -49,11 +49,10 @@
         "itemListElement": [
           { "@type": "ListItem", "position": 1, "name": "JSON OS", "item": "https://jsonos.online/" },
           { "@type": "ListItem", "position": 2, "name": "Tools", "item": "https://jsonos.online/tools/" },
-          { "@type": "ListItem", "position": 3, "name": "JSON Formatter", "item": "https://jsonos.online/tools/json-formatter" }
+          { "@type": "ListItem", "position": 3, "name": "JSON Editor", "item": "https://jsonos.online/tools/json-editor" }
         ]
       }
     </script>
-
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -61,26 +60,26 @@
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "How do I format JSON?",
+            "name": "Is this JSON Editor free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Simply paste your unformatted JSON text into the editor. Press Cmd+/ or click the Format button. Your JSON will instantly be beautified with proper indentation."
+              "text": "Yes, JSON OS is completely free. There are no paywalls, no signup requirements, and no premium features."
             }
           },
           {
             "@type": "Question",
-            "name": "Does this tool minify JSON?",
+            "name": "Is my JSON data secure?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes! We also provide a Minify button that strips all unnecessary whitespace and newlines from your JSON document."
+              "text": "Yes. The editor operates locally in your browser using a Web Worker. Your JSON data is never uploaded to any server, making it safe for sensitive information."
             }
           },
           {
             "@type": "Question",
-            "name": "Will this fix broken JSON?",
+            "name": "Can I edit JSON in a tree view?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, the JSON Formatter has an Auto-repair feature that automatically fixes trailing commas, missing quotes around keys, single quotes, and comments."
+              "text": "Yes, our editor features a robust tree view that lets you inline rename keys, edit values, duplicate nodes, and convert data types seamlessly."
             }
           }
         ]
@@ -108,52 +107,49 @@
     </style>
   </head>
   <body>
-    <nav class="breadcrumbs"><a href="/">JSON OS</a> &rsaquo; <a href="/tools/">Tools</a> &rsaquo; JSON Formatter</nav>
+    <nav class="breadcrumbs"><a href="/">JSON OS</a> &rsaquo; <a href="/tools/">Tools</a> &rsaquo; JSON Editor</nav>
     <main class="hero">
-      <h1>JSON Formatter Online — Beautify &amp; Minify JSON in Your Browser</h1>
-      <p class="lede">Paste any JSON to instantly pretty-print it with 2- or 4-space indent, sort object keys, or compact it to a single line. Everything runs locally — no signup, no uploads, no servers.</p>
-      <a class="cta" href="/?action=format" rel="noopener">Open JSON Formatter →</a>
+      <h1>JSON Editor Online — Free Browser-based Workspace</h1>
+      <p class="lede">A powerful, local-first JSON editor. View, edit, format, and validate your JSON data securely in your browser. Switch seamlessly between text, tree, and table views.</p>
+      <a class="cta" href="/" rel="noopener">Open JSON Editor →</a>
 
-      <h2 style="margin-top:36px">How to format JSON online</h2>
+      <h2 style="margin-top:36px">How to edit JSON online</h2>
       <ol>
         <li>Open the editor and paste your JSON (Cmd/Ctrl + V), open a file, or drop a <code>.json</code> file anywhere on the page.</li>
-        <li>Click <strong>Format</strong> (or press <kbd>⌘ /</kbd>) to beautify with 2-space indent.</li>
-        <li>Click <strong>Minify</strong> to compact to a single line; <strong>Sort</strong> to alphabetize keys deeply.</li>
-        <li>Copy with <strong>Copy</strong> or download with <strong>Save</strong>.</li>
+        <li>Switch between <strong>Text</strong>, <strong>Tree</strong>, and <strong>Table</strong> views to interact with your data.</li>
+        <li>In Tree view, right-click to add, duplicate, or delete nodes. In Text view, write freely with syntax highlighting.</li>
+        <li>Changes are instantly synced across all views and auto-saved locally.</li>
       </ol>
-
-      <h2>Why JSON OS Formatter</h2>
     </main>
+
     <section class="features">
-      <div><h3>Local-first</h3><p>Parsing runs in a Web Worker on your machine. Nothing is uploaded.</p></div>
-      <div><h3>Auto-repair</h3><p>Trailing commas, smart quotes, unquoted keys, comments — fix and format in one step.</p></div>
-      <div><h3>Three views</h3><p>Switch between text, tree, and table views over the same document.</p></div>
-      <div><h3>Validate inline</h3><p>Errors highlighted in source with line and column.</p></div>
-      <div><h3>Schema check</h3><p>Validate against JSON Schema (Ajv) with format checks.</p></div>
-      <div><h3>Free forever</h3><p>No signup, no paywall, works offline once loaded.</p></div>
+      <div><h3>Secure &amp; Local</h3><p>Your data never leaves your device. All processing happens in your browser.</p></div>
+      <div><h3>Three Views</h3><p>Edit in standard text, explore in a collapsible tree, or view arrays as tables.</p></div>
+      <div><h3>Auto-repair</h3><p>Automatically fix common JSON syntax errors like trailing commas or single quotes.</p></div>
+      <div><h3>Multi-column</h3><p>Open multiple panels to view the same document in different ways simultaneously.</p></div>
     </section>
 
     <section class="faq-section">
       <h2>Frequently Asked Questions</h2>
       
       <details class="faq-item">
-        <summary>How do I format JSON?</summary>
-        <p>Simply paste your unformatted JSON text into the editor. Press Cmd+/ or click the Format button. Your JSON will instantly be beautified with proper indentation.</p>
+        <summary>Is this JSON Editor free?</summary>
+        <p>Yes, JSON OS is completely free. There are no paywalls, no signup requirements, and no premium features.</p>
       </details>
       
       <details class="faq-item">
-        <summary>Does this tool minify JSON?</summary>
-        <p>Yes! We also provide a Minify button that strips all unnecessary whitespace and newlines from your JSON document.</p>
+        <summary>Is my JSON data secure?</summary>
+        <p>Yes. The editor operates locally in your browser using a Web Worker. Your JSON data is never uploaded to any server, making it safe for sensitive information.</p>
       </details>
       
       <details class="faq-item">
-        <summary>Will this fix broken JSON?</summary>
-        <p>Yes, the JSON Formatter has an Auto-repair feature that automatically fixes trailing commas, missing quotes around keys, single quotes, and comments.</p>
+        <summary>Can I edit JSON in a tree view?</summary>
+        <p>Yes, our editor features a robust tree view that lets you inline rename keys, edit values, duplicate nodes, and convert data types seamlessly.</p>
       </details>
     </section>
 
     <footer style="text-align:center;padding:24px;color:var(--muted,#8b95a5);font-size:12px">
-      <a href="/" style="color:inherit">Open the editor</a> · <a href="/tools/json-validator" style="color:inherit">Validator</a> · <a href="/tools/json-diff" style="color:inherit">Diff</a> · <a href="/tools/markdown-editor" style="color:inherit">Markdown</a> · <a href="/privacy.html" style="color:inherit">Privacy</a> · <a href="/terms.html" style="color:inherit">Terms</a>
+      <a href="/" style="color:inherit">Open the editor</a> · <a href="/tools/json-validator" style="color:inherit">Validator</a> · <a href="/tools/json-formatter" style="color:inherit">Formatter</a> · <a href="/tools/json-diff" style="color:inherit">Diff</a> · <a href="/tools/markdown-editor" style="color:inherit">Markdown</a> · <a href="/privacy.html" style="color:inherit">Privacy</a>
     </footer>
   </body>
 </html>
