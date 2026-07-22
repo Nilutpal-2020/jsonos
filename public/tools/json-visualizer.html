@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>JSON Visualizer Online — Interactive Tree, Table & Object Viewer · JSON OS</title>
+    <meta name="description" content="Free online JSON visualizer and object viewer. Visualize JSON data as an interactive collapsible tree, structured data grid, or side-by-side comparison view. Fast, virtualized for large files, local-first." />
+    <meta name="keywords" content="visualize json data, visualize json, show json, visualise json, online json object viewer, json visualizer, json file online viewer, json tree viewer, json table editor" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://jsonos.online/tools/json-visualizer" />
+    <link rel="alternate" hreflang="en" href="https://jsonos.online/tools/json-visualizer" />
+    <link rel="alternate" hreflang="x-default" href="https://jsonos.online/tools/json-visualizer" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#131720" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="JSON OS" />
+    <meta property="og:title" content="JSON Visualizer Online — Interactive Tree &amp; Object Viewer · JSON OS" />
+    <meta property="og:description" content="Visualize complex JSON data in seconds. Expandable tree nodes, table view for array objects, search, filter, and compare side-by-side." />
+    <meta property="og:url" content="https://jsonos.online/tools/json-visualizer" />
+    <meta property="og:image" content="https://jsonos.online/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="JSON Visualizer Online — JSON OS" />
+    <meta name="twitter:description" content="Visualize and inspect JSON data in virtualized tree and table views." />
+    <meta name="twitter:image" content="https://jsonos.online/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "JSON Visualizer Online",
+        "applicationCategory": "DeveloperApplication",
+        "applicationSubCategory": "JSONVisualizer",
+        "operatingSystem": "Web",
+        "url": "https://jsonos.online/tools/json-visualizer",
+        "isPartOf": { "@id": "https://jsonos.online/#software" },
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "JSON OS", "item": "https://jsonos.online/" },
+          { "@type": "ListItem", "position": 2, "name": "Tools", "item": "https://jsonos.online/tools/" },
+          { "@type": "ListItem", "position": 3, "name": "JSON Visualizer", "item": "https://jsonos.online/tools/json-visualizer" }
+        ]
+      }
+    </script>
+
+    <link rel="stylesheet" href="/_legal.css" />
+    <style>
+      .hero { max-width: 880px; margin: 0 auto; padding: 56px 24px 32px; }
+      .hero h1 { font-size: 32px; line-height: 1.2; margin: 0 0 12px; }
+      .hero .lede { font-size: 16px; color: var(--muted, #8b95a5); margin: 0 0 20px; }
+      .cta { display: inline-flex; gap: 8px; align-items: center; background: #2563eb; color: #fff; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; }
+      .features { max-width: 880px; margin: 0 auto; padding: 8px 24px 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+      .features div { background: rgba(127,127,127,0.06); border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; padding: 16px; }
+      .features h3 { margin: 0 0 6px; font-size: 14px; }
+      .features p { margin: 0; font-size: 13px; color: var(--muted, #6b7280); }
+      .breadcrumbs { max-width: 880px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
+      .breadcrumbs a { color: inherit; }
+      .faq-section { max-width: 880px; margin: 0 auto; padding: 0 24px 48px; }
+      .faq-section h2 { font-size: 24px; margin-bottom: 24px; }
+      .faq-item { margin-bottom: 16px; border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; overflow: hidden; }
+      .faq-item summary { font-weight: 600; padding: 16px; cursor: pointer; background: rgba(127,127,127,0.03); outline: none; }
+      .faq-item p { padding: 0 16px 16px; margin: 0; color: var(--muted, #8b95a5); font-size: 14px; line-height: 1.5; }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumbs"><a href="/">JSON OS</a> &rsaquo; <a href="/tools/">Tools</a> &rsaquo; JSON Visualizer</nav>
+    <main class="hero">
+      <h1>JSON Visualizer Online — Interactive Object & Tree Viewer</h1>
+      <p class="lede">Explore and visualize complex JSON structures with an interactive collapsible tree view, multi-column workspace, and tabular grid for array data. Handles multi-megabyte files smoothly with virtualization.</p>
+      <a class="cta" href="/?view=tree" rel="noopener">Open JSON Visualizer →</a>
+
+      <h2 style="margin-top:36px">Visualization Modes</h2>
+      <ul>
+        <li><strong>Interactive Tree:</strong> Click carets to expand or collapse nodes, edit keys/values inline, duplicate or delete elements.</li>
+        <li><strong>Data Grid Table:</strong> View arrays of objects as searchable, sortable tables with CSV export.</li>
+        <li><strong>Synchronized Split View:</strong> Cross-highlight nodes between text editor and tree visualizer in real time.</li>
+      </ul>
+    </main>
+
+    <section class="features">
+      <div><h3>Virtualized Rendering</h3><p>Smooth 60fps performance even on 50,000+ line JSON files.</p></div>
+      <div><h3>Array Table Grid</h3><p>Turn nested JSON arrays into tabular spreadsheets with one click.</p></div>
+      <div><h3>Search & Filter</h3><p>Query paths with MongoDB-style filter operators and highlight matches.</p></div>
+      <div><h3>Local & Secure</h3><p>Runs 100% inside your browser Web Worker — no files are uploaded.</p></div>
+    </section>
+
+    <section class="faq-section">
+      <h2>Frequently Asked Questions</h2>
+      <details class="faq-item">
+        <summary>How do I visualize a large JSON file online?</summary>
+        <p>Drop your file directly into JSON OS. The visualizer parses it in a Web Worker and renders a virtualized tree view so your browser never freezes.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Can I edit values directly inside the tree view?</summary>
+        <p>Yes! Click any key to rename it or click any value to edit it inline. Right-click any row to insert, duplicate, or delete nodes.</p>
+      </details>
+    </section>
+
+    <footer style="text-align:center;padding:24px;color:var(--muted,#8b95a5);font-size:12px">
+      <a href="/" style="color:inherit">Open JSON OS</a> · <a href="/tools/json-editor" style="color:inherit">JSON Editor</a> · <a href="/tools/json-query" style="color:inherit">JSON Query</a> · <a href="/privacy.html" style="color:inherit">Privacy</a>
+    </footer>
+  </body>
+</html>

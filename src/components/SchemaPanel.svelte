@@ -2,14 +2,118 @@
   import { workspace } from '../core/store.svelte';
   let active = $derived(workspace.active);
   const placeholder = 'Paste JSON Schema, e.g. {"type": "object", "required": ["name"]}';
+
+  const PRESETS = [
+    {
+      label: 'User Profile',
+      schema: JSON.stringify(
+        {
+          $schema: 'https://json-schema.org/draft/2020-12/schema',
+          title: 'UserProfile',
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            username: { type: 'string', minLength: 3 },
+            email: { type: 'string', format: 'email' },
+            role: { type: 'string', enum: ['admin', 'user', 'guest'] }
+          },
+          required: ['id', 'username', 'email']
+        },
+        null,
+        2
+      )
+    },
+    {
+      label: 'API Response',
+      schema: JSON.stringify(
+        {
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          title: 'APIResponse',
+          type: 'object',
+          properties: {
+            status: { type: 'integer', enum: [200, 400, 404, 500] },
+            message: { type: 'string' },
+            data: { type: 'array' }
+          },
+          required: ['status', 'data']
+        },
+        null,
+        2
+      )
+    },
+    {
+      label: 'GeoJSON',
+      schema: JSON.stringify(
+        {
+          $schema: 'https://json-schema.org/draft/2020-12/schema',
+          title: 'GeoJSON',
+          type: 'object',
+          properties: {
+            type: { type: 'string', const: 'Feature' },
+            geometry: {
+              type: 'object',
+              properties: {
+                type: { type: 'string', enum: ['Point', 'LineString', 'Polygon'] },
+                coordinates: { type: 'array' }
+              },
+              required: ['type', 'coordinates']
+            }
+          },
+          required: ['type', 'geometry']
+        },
+        null,
+        2
+      )
+    },
+    {
+      label: 'Avro to JSON',
+      schema: JSON.stringify(
+        {
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          title: 'AvroRecord',
+          type: 'object',
+          properties: {
+            type: { type: 'string', const: 'record' },
+            name: { type: 'string' },
+            fields: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  type: { type: ['string', 'array', 'object'] }
+                },
+                required: ['name', 'type']
+              }
+            }
+          },
+          required: ['type', 'name', 'fields']
+        },
+        null,
+        2
+      )
+    }
+  ];
+
+  function loadPreset(schema: string) {
+    active.setSchema(schema);
+  }
 </script>
 
 <div class="schema">
   <div class="head">
-    <span>JSON Schema</span>
+    <span>JSON Schema (Ajv)</span>
     <button class="clear" onclick={() => active.setSchema('')} disabled={!active.schemaText}>Clear</button>
   </div>
-  <div class="hint">Paste a JSON Schema; violations appear inline and in the editor gutter.</div>
+  <div class="hint">Paste a JSON Schema or pick a preset template; Ajv validates violations inline.</div>
+
+  <div class="presets">
+    <span class="preset-lbl">Presets:</span>
+    {#each PRESETS as p}
+      <button class="preset-chip" onclick={() => loadPreset(p.schema)}>{p.label}</button>
+    {/each}
+  </div>
+
   <textarea
     class="editor"
     spellcheck="false"
@@ -22,9 +126,9 @@
     {#if active.schemaCompileError}
       <div class="err">{active.schemaCompileError}</div>
     {:else if !active.schemaText}
-      <div class="muted">No schema loaded.</div>
+      <div class="muted">No schema loaded. Pick a preset chip above or paste a schema.</div>
     {:else if active.schemaErrors.length === 0}
-      <div class="ok">Document matches schema.</div>
+      <div class="ok">✓ Document matches JSON Schema definition.</div>
     {:else}
       <div class="err-head">{active.schemaErrors.length} schema violation{active.schemaErrors.length === 1 ? '' : 's'}</div>
       <ul>
@@ -61,6 +165,36 @@
     line-height: 1.45;
     border-bottom: 1px solid var(--border);
   }
+  .presets {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+  }
+  .preset-lbl {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    margin-right: 2px;
+  }
+  .preset-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    border-radius: 999px;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 10.5px;
+    transition: border-color 80ms, color 80ms;
+  }
+  .preset-chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
   .clear {
     background: transparent;
     border: 1px solid var(--border);
@@ -90,7 +224,7 @@
     max-height: 180px;
     overflow: auto;
   }
-  .ok { color: var(--ok); }
+  .ok { color: var(--ok); font-weight: 600; }
   .err, .err-head { color: var(--err); margin-bottom: 4px; }
   .err-head { font-weight: 600; }
   .muted { color: var(--muted); }

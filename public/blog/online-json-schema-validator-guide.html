@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Online JSON Schema Validator Guide: Validate JSON Schema with Ajv, Types &amp; Formats — JSON OS Blog</title>
+    <meta name="description" content="A complete guide on using an online JSON schema validator. Learn how Ajv validates JSON Schema Draft-07 & 2020-12, how to specify data types, formats, required properties, and debug validation errors locally." />
+    <meta name="keywords" content="online json schema validator, json schema validator online, json schema validation online, ajv json schema validator, validate json schema online, json schema type, json schema format, json schema definition, schema validation online" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://jsonos.online/blog/online-json-schema-validator-guide" />
+    <link rel="alternate" hreflang="en" href="https://jsonos.online/blog/online-json-schema-validator-guide" />
+    <link rel="alternate" hreflang="x-default" href="https://jsonos.online/blog/online-json-schema-validator-guide" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#131720" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="JSON OS" />
+    <meta property="og:title" content="Online JSON Schema Validator Guide: Validate JSON Schema with Ajv, Types &amp; Formats" />
+    <meta property="og:description" content="Learn how to validate JSON Schema online using Ajv, master type and format declarations, and debug errors fast." />
+    <meta property="og:url" content="https://jsonos.online/blog/online-json-schema-validator-guide" />
+    <meta property="og:image" content="https://jsonos.online/og-image.png" />
+
+    <link rel="stylesheet" href="/_legal.css" />
+    <style>
+      .article-container { max-width: 720px; margin: 0 auto; padding: 56px 24px 64px; }
+      .article-container h1 { font-size: 34px; line-height: 1.2; margin: 0 0 16px; }
+      .article-meta { color: var(--muted, #8b95a5); font-size: 14px; margin-bottom: 48px; border-bottom: 1px solid rgba(127,127,127,0.18); padding-bottom: 24px; }
+      .article-content { line-height: 1.75; color: #d1d5db; font-size: 16px; }
+      @media (prefers-color-scheme: light) { .article-content { color: #374151; } }
+      .article-content h2 { margin: 40px 0 16px; font-size: 24px; color: inherit; }
+      .article-content h3 { margin: 28px 0 12px; font-size: 19px; color: inherit; }
+      .article-content p { margin: 0 0 20px; }
+      .article-content ul, .article-content ol { margin: 0 0 24px; padding-left: 24px; }
+      .article-content li { margin-bottom: 8px; }
+      .article-content pre { background: rgba(127,127,127,0.08); padding: 16px; border-radius: 8px; overflow: auto; font-size: 14px; line-height: 1.45; margin-bottom: 24px; }
+      .article-content code { background: rgba(127,127,127,0.15); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+      .breadcrumbs { max-width: 720px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
+      .breadcrumbs a { color: inherit; }
+      .callout { background: rgba(37, 99, 235, 0.12); border-left: 4px solid #2563eb; padding: 16px 20px; border-radius: 0 8px 8px 0; margin-bottom: 24px; }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumbs"><a href="/">JSON OS</a> &rsaquo; <a href="/blog/">Blog</a> &rsaquo; Online JSON Schema Validator Guide</nav>
+    <main class="article-container">
+      <h1>Online JSON Schema Validator Guide: Validate JSON Schema with Ajv, Types &amp; Formats</h1>
+      <div class="article-meta">Published on July 22, 2026 • 6 min read</div>
+
+      <div class="article-content">
+        <p>When developing REST APIs, microservices, or complex web applications, ensuring that incoming payload structures match expected specifications is critical. An <strong>online JSON schema validator</strong> allows developers to instantly test, validate, and debug JSON payloads against a formal JSON Schema definition right inside the browser.</p>
+
+        <div class="callout">
+          <strong>Quick Tool:</strong> Need to validate a JSON document against a schema right now? Launch the <a href="/tools/json-schema-validator" style="color:#5b9eff">JSON Schema Validator Online</a> powered by Ajv.
+        </div>
+
+        <h2>What is JSON Schema Validation?</h2>
+        <p>JSON Schema is an IETF draft specification that provides a contract for JSON data. Rather than writing imperative code to check if <code>user.email</code> is a string or if <code>order.items</code> has at least one item, a JSON Schema declaratively outlines the required shape, allowed types, and formatting constraints.</p>
+
+        <h2>Core Keywords: JSON Schema Types &amp; Formats</h2>
+        <p>Every JSON Schema definition uses primitive keywords to restrict payload values:</p>
+
+        <h3>1. JSON Schema Type Keyword</h3>
+        <p>The <code>type</code> keyword defines valid data primitives. Supported values include:</p>
+        <ul>
+          <li><code>string</code> — textual data (e.g. <code>"Alice"</code>)</li>
+          <li><code>number</code> — floating-point or integer numbers (e.g. <code>42.5</code>)</li>
+          <li><code>integer</code> — whole numbers without decimals (e.g. <code>10</code>)</li>
+          <li><code>boolean</code> — <code>true</code> or <code>false</code></li>
+          <li><code>object</code> — key-value maps</li>
+          <li><code>array</code> — ordered list of values</li>
+          <li><code>null</code> — explicit null value</li>
+        </ul>
+
+        <h3>2. JSON Schema Format Keyword</h3>
+        <p>The <code>format</code> keyword provides semantic validation for string values. Popular format specifiers supported by Ajv include:</p>
+        <ul>
+          <li><code>email</code> — validates RFC 5322 email addresses (e.g., <code>user@example.com</code>)</li>
+          <li><code>uuid</code> — validates 36-character UUID strings (v1-v5)</li>
+          <li><code>date-time</code> — ISO 8601 date-time timestamps (e.g., <code>2026-07-22T21:59:00Z</code>)</li>
+          <li><code>ipv4</code> / <code>ipv6</code> — valid IP address formats</li>
+          <li><code>uri</code> — fully qualified URIs</li>
+          <li><code>regex</code> — valid regular expression patterns</li>
+        </ul>
+
+        <h2>Example JSON Schema Definition</h2>
+        <p>Here is a complete JSON Schema for an e-commerce customer payload:</p>
+        <pre><code>{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/customer.schema.json",
+  "title": "Customer",
+  "type": "object",
+  "properties": {
+    "customerId": { "type": "string", "format": "uuid" },
+    "name": { "type": "string", "minLength": 2, "maxLength": 50 },
+    "email": { "type": "string", "format": "email" },
+    "loyaltyPoints": { "type": "integer", "minimum": 0 },
+    "isActive": { "type": "boolean" }
+  },
+  "required": ["customerId", "name", "email"]
+}</code></pre>
+
+        <h2>Why Ajv is the Preferred Online Validator Engine</h2>
+        <p><a href="https://ajv.js.org/" target="_blank" rel="noopener">Ajv (Another JSON Schema Validator)</a> is widely recognized as the fastest JSON Schema validator available for JavaScript engines. It compiles schemas into optimized code, fully supports Draft-07 and Draft 2020-12 standards, and returns exact error locations including the <code>instancePath</code> and line numbers.</p>
+
+        <h2>How to Validate JSON Schema Online in JSON OS</h2>
+        <ol>
+          <li>Open <a href="/tools/json-schema-validator">JSON OS Schema Validator</a> in your browser.</li>
+          <li>Paste or drop your JSON document into the left text editor.</li>
+          <li>Open the side panel (<kbd>⌘ \</kbd>) and select the <strong>Schema</strong> tab.</li>
+          <li>Paste your JSON Schema definition or click one of the preset template chips (e.g., <em>User Profile</em> or <em>API Response</em>).</li>
+          <li>Errors are mapped to the exact line and column in the gutter, showing precise validation messages.</li>
+        </ol>
+
+        <h2>Conclusion</h2>
+        <p>Using an online JSON schema validator powered by Ajv ensures your data contract is solid before going to production. Try <a href="/">JSON OS</a> today for fast, private, browser-based schema validation!</p>
+      </div>
+    </main>
+
+    <footer style="text-align:center;padding:24px;color:var(--muted,#8b95a5);font-size:12px;border-top:1px solid rgba(127,127,127,0.18)">
+      <a href="/tools/json-schema-validator" style="color:inherit">JSON Schema Validator Tool</a> · <a href="/blog/" style="color:inherit">More Blog Articles</a> · <a href="/" style="color:inherit">JSON OS</a>
+    </footer>
+  </body>
+</html>

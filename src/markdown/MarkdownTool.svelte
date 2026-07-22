@@ -47,6 +47,79 @@
   }
   function closeHelpMenu() { helpMenu = null; }
 
+  // Snippets Menu
+  let snippetMenu = $state<{ x: number; y: number } | null>(null);
+  function openSnippetMenu(e: MouseEvent) {
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    snippetMenu = { x: r.left, y: r.bottom + 4 };
+  }
+  function closeSnippetMenu() { snippetMenu = null; }
+
+  const snippetItems: MenuItem[] = [
+    { kind: 'item', label: '📊 Mermaid Diagrams', disabled: true, onSelect: () => {} },
+    { kind: 'item', icon: '📈', label: 'Flowchart (graph TD)', onSelect: () => {
+      editorRef?.insertSnippet('\n```mermaid\ngraph TD\n  A[Start] --> B{Is it working?}\n  B -- Yes --> C[Great!]\n  B -- No --> D[Debug]\n```\n');
+    }},
+    { kind: 'item', icon: '🔄', label: 'Sequence Diagram', onSelect: () => {
+      editorRef?.insertSnippet('\n```mermaid\nsequenceDiagram\n  autonumber\n  Client->>Server: POST /api/v1/data\n  Server-->>Client: 200 OK { "status": "success" }\n```\n');
+    }},
+    { kind: 'item', icon: '📅', label: 'Gantt Timeline Chart', onSelect: () => {
+      editorRef?.insertSnippet('\n```mermaid\ngantt\n  title Launch Roadmap\n  section Phase 1\n  Design : a1, 2026-08-01, 10d\n  Build  : after a1, 20d\n```\n');
+    }},
+    { kind: 'item', icon: '🧠', label: 'Mindmap', onSelect: () => {
+      editorRef?.insertSnippet('\n```mermaid\nmindmap\n  root((JSON OS))\n    JSON Workbench\n      Format & Repair\n      Ajv Validation\n    Markdown Studio\n      Mermaid Diagrams\n      KaTeX Math\n```\n');
+    }},
+    { kind: 'item', icon: '🏛️', label: 'Class Diagram', onSelect: () => {
+      editorRef?.insertSnippet('\n```mermaid\nclassDiagram\n  Vehicle <|-- Car\n  Vehicle : +string make\n  Vehicle : +drive()\n```\n');
+    }},
+    { kind: 'item', icon: '🗄️', label: 'Entity Relationship (ER)', onSelect: () => {
+      editorRef?.insertSnippet('\n```mermaid\nerDiagram\n  USER ||--o{ ORDER : places\n  ORDER ||--|{ LINE_ITEM : contains\n```\n');
+    }},
+    { kind: 'divider' },
+    { kind: 'item', label: '🧮 KaTeX Math Expressions', disabled: true, onSelect: () => {} },
+    { kind: 'item', icon: '∑', label: 'Inline Math ($E = mc^2$)', onSelect: () => {
+      editorRef?.insertSnippet(' $E = mc^2$ ');
+    }},
+    { kind: 'item', icon: '∫', label: 'Block Math Equation ($$ ... $$)', onSelect: () => {
+      editorRef?.insertSnippet('\n$$\n\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\n$$\n');
+    }},
+    { kind: 'item', icon: '🔢', label: 'Matrix ($$\\begin{pmatrix}...$$)', onSelect: () => {
+      editorRef?.insertSnippet('\n$$\n\\begin{pmatrix}\na & b \\\\\nc & d\n\\end{pmatrix}\n$$\n');
+    }},
+    { kind: 'divider' },
+    { kind: 'item', label: '📋 Structural Helpers', disabled: true, onSelect: () => {} },
+    { kind: 'item', icon: '▦', label: 'GFM Data Table (3x3)', onSelect: () => {
+      editorRef?.insertSnippet('\n| Column 1 | Column 2 | Column 3 |\n| --- | --- | --- |\n| Cell 1 | Cell 2 | Cell 3 |\n| Cell 4 | Cell 5 | Cell 6 |\n');
+    }},
+    { kind: 'item', icon: '🎬', label: 'YouTube Video Embed', onSelect: () => {
+      editorRef?.insertSnippet('\nhttps://www.youtube.com/watch?v=dQw4w9WgXcQ\n');
+    }},
+  ];
+
+  // Document metrics & outline
+  let outlineOpen = $state(false);
+  let docStats = $derived.by(() => {
+    const text = active?.text ?? '';
+    const words = (text.match(/\S+/g) || []).length;
+    const chars = text.length;
+    const lines = text.split('\n').length;
+    const readMin = Math.max(1, Math.ceil(words / 200));
+    return { words, chars, lines, readMin };
+  });
+
+  let headings = $derived.by(() => {
+    const text = active?.text ?? '';
+    const lines = text.split('\n');
+    const out: { level: number; text: string; line: number }[] = [];
+    lines.forEach((lineText, idx) => {
+      const m = lineText.match(/^(#{1,6})\s+(.+)$/);
+      if (m) {
+        out.push({ level: m[1].length, text: m[2].trim(), line: idx + 1 });
+      }
+    });
+    return out;
+  });
+
   const helpItems: MenuItem[] = [
     { kind: 'item', icon: '📖', label: 'Docs',         onSelect: () => openHelpAt('docs') },
     { kind: 'item', icon: '✎',  label: 'Syntax cheat sheet', onSelect: () => openHelpAt('syntax') },
@@ -273,6 +346,7 @@
       <button onclick={() => editorRef?.applyLine('- [ ] ')} title="Task">☐</button>
       <button onclick={() => editorRef?.applyWrap('\n```\n', '\n```\n')} title="Code block">⌜⌟</button>
       <button onclick={() => editorRef?.applyWrap('\n```mermaid\n', '\n```\n')} title="Mermaid block">⇄</button>
+      <button onclick={openSnippetMenu} title="Insert Mermaid diagram, KaTeX math, or Table template" class="snippet-btn">📊 Snippets ▾</button>
     </div>
 
     <div class="sep"></div>
@@ -299,6 +373,7 @@
       <button class:on={layout === 'preview'} onclick={() => setLayout('preview')} title="Preview only (⌘⇧P)">◧</button>
     </div>
 
+    <button class="panel-toggle" class:on={outlineOpen} onclick={() => (outlineOpen = !outlineOpen)} title="Toggle Table of Contents Outline">📋</button>
     <button class="panel-toggle" class:on={ui.wrap} onclick={() => ui.toggleWrap()} title="Toggle text wrap">⤶</button>
     <ThemeToggle />
     <button
@@ -325,17 +400,50 @@
         <MdPreview doc={active} bind:this={previewRef} />
       </div>
     {/if}
+
+    {#if outlineOpen}
+      <div class="outline-drawer">
+        <div class="outline-head">
+          <span>Outline ({headings.length})</span>
+          <button class="x-btn" onclick={() => (outlineOpen = false)}>×</button>
+        </div>
+        <div class="outline-body">
+          {#if headings.length === 0}
+            <div class="outline-empty">No headings (# H1, ## H2) found.</div>
+          {:else}
+            <ul>
+              {#each headings as h}
+                <li class="lvl-{h.level}">
+                  <span class="h-prefix">{'#'.repeat(h.level)}</span>
+                  <span class="h-text">{h.text}</span>
+                  <span class="h-line">L{h.line}</span>
+                </li>
+              {/each}
+            </ul>
+          {/if}
+        </div>
+      </div>
+    {/if}
   </div>
 
-  <div class="hint-bar" aria-hidden="true">
-    <kbd>⌘B</kbd> bold ·
-    <kbd>⌘I</kbd> italic ·
-    <kbd>⌘E</kbd> code ·
-    <kbd>⌘K</kbd> link ·
-    <kbd>⌘S</kbd> save ·
-    <kbd>⌘T</kbd> new ·
-    <kbd>⌘⇧P</kbd> preview ·
-    <kbd>?</kbd> help
+  <div class="hint-bar">
+    <div class="doc-stats">
+      <strong>{docStats.words}</strong> words ·
+      <strong>{docStats.chars}</strong> chars ·
+      <strong>{docStats.lines}</strong> lines ·
+      ~<strong>{docStats.readMin}</strong> min read
+    </div>
+    <div class="spacer"></div>
+    <div class="kbd-hints" aria-hidden="true">
+      <kbd>⌘B</kbd> bold ·
+      <kbd>⌘I</kbd> italic ·
+      <kbd>⌘E</kbd> code ·
+      <kbd>⌘K</kbd> link ·
+      <kbd>⌘S</kbd> save ·
+      <kbd>⌘T</kbd> new ·
+      <kbd>⌘⇧P</kbd> preview ·
+      <kbd>?</kbd> help
+    </div>
   </div>
 </div>
 
@@ -343,9 +451,95 @@
   <ContextMenu x={helpMenu.x} y={helpMenu.y} items={helpItems} onClose={closeHelpMenu} />
 {/if}
 
+{#if snippetMenu}
+  <ContextMenu x={snippetMenu.x} y={snippetMenu.y} items={snippetItems} onClose={closeSnippetMenu} />
+{/if}
+
 <MdHelpDialog bind:open={helpOpen} bind:tab={helpTab} />
 
 <style>
+  .snippet-btn {
+    font-weight: 600;
+    color: var(--accent) !important;
+  }
+  .outline-drawer {
+    width: 240px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+  }
+  .outline-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .x-btn {
+    background: transparent;
+    border: 0;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 4px;
+  }
+  .x-btn:hover { color: var(--fg); }
+  .outline-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+  }
+  .outline-empty {
+    padding: 12px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .outline-body ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .outline-body li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--fg);
+    cursor: pointer;
+  }
+  .outline-body li:hover {
+    background: var(--row-hover);
+  }
+  .outline-body li.lvl-2 { padding-left: 20px; }
+  .outline-body li.lvl-3 { padding-left: 28px; }
+  .outline-body li.lvl-4 { padding-left: 36px; }
+  .h-prefix { color: var(--accent); font-family: ui-monospace, monospace; font-size: 10px; }
+  .h-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .h-line { color: var(--muted); font-size: 10px; font-family: ui-monospace, monospace; }
+
+  .hint-bar {
+    display: flex;
+    align-items: center;
+  }
+  .doc-stats {
+    font-size: 11px;
+    color: var(--fg);
+  }
+  .doc-stats strong {
+    color: var(--accent);
+  }
+  .kbd-hints {
+    color: var(--muted);
+  }
+
   .md-app {
     display: flex;
     flex-direction: column;
