@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>JSON to TypeScript Converter Online — Generate TS Interfaces · JSON OS</title>
+    <meta name="description" content="Free online JSON to TypeScript converter. Infer strongly-typed TypeScript interfaces, nested object types, and array unions from any JSON payload. 100% browser-based." />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://jsonos.online/tools/json-to-typescript" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#131720" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="JSON OS" />
+    <meta property="og:title" content="JSON to TypeScript Converter Online — JSON OS" />
+    <meta property="og:description" content="Infer TypeScript interfaces from JSON. 100% local-first, no signup, no servers." />
+    <meta property="og:url" content="https://jsonos.online/tools/json-to-typescript" />
+    <meta property="og:image" content="https://jsonos.online/og-image.png" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "JSON to TypeScript Converter",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web",
+        "url": "https://jsonos.online/tools/json-to-typescript",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "JSON OS", "item": "https://jsonos.online/" },
+          { "@type": "ListItem", "position": 2, "name": "Tools", "item": "https://jsonos.online/tools/" },
+          { "@type": "ListItem", "position": 3, "name": "JSON to TypeScript", "item": "https://jsonos.online/tools/json-to-typescript" }
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How do I convert JSON to TypeScript interfaces?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Paste your JSON object or array into JSON OS. Open the Types panel and select TypeScript. The app will instantly generate clean, nested TypeScript interface definitions."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this tool upload my JSON data to a server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Type generation runs 100% locally inside your browser using a Web Worker. Your data never leaves your device."
+            }
+          }
+        ]
+      }
+    </script>
+
+    <link rel="stylesheet" href="/_legal.css" />
+    <style>
+      .hero { max-width: 880px; margin: 0 auto; padding: 56px 24px 32px; }
+      .hero h1 { font-size: 32px; line-height: 1.2; margin: 0 0 12px; }
+      .hero .lede { font-size: 16px; color: var(--muted, #8b95a5); margin: 0 0 20px; }
+      .cta { display: inline-flex; gap: 8px; align-items: center; background: #2563eb; color: #fff; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; }
+      .cta:hover { filter: brightness(1.08); }
+      .features { max-width: 880px; margin: 0 auto; padding: 8px 24px 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+      .features div { background: rgba(127,127,127,0.06); border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; padding: 16px; }
+      .features h3 { margin: 0 0 6px; font-size: 14px; }
+      .features p { margin: 0; font-size: 13px; color: var(--muted, #6b7280); }
+      .breadcrumbs { max-width: 880px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
+      .breadcrumbs a { color: inherit; }
+      .faq-section { max-width: 880px; margin: 0 auto; padding: 0 24px 48px; }
+      .faq-section h2 { font-size: 24px; margin-bottom: 24px; }
+      .faq-item { margin-bottom: 16px; border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; overflow: hidden; }
+      .faq-item summary { font-weight: 600; padding: 16px; cursor: pointer; background: rgba(127,127,127,0.03); outline: none; }
+      .faq-item p { padding: 0 16px 16px; margin: 0; color: var(--muted, #8b95a5); font-size: 14px; line-height: 1.5; }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumbs"><a href="/">JSON OS</a> &rsaquo; <a href="/tools/">Tools</a> &rsaquo; JSON to TypeScript</nav>
+    <main class="hero">
+      <h1>JSON to TypeScript Converter Online — Generate TS Interfaces</h1>
+      <p class="lede">Convert any JSON object or array into strongly-typed TypeScript interfaces. Supports nested objects, optional fields, and array unions. Runs 100% locally in your browser.</p>
+      <a class="cta" href="/?tab=types&target=typescript">Open JSON to TypeScript Converter →</a>
+
+      <h2 style="margin-top:36px">How to convert JSON to TypeScript</h2>
+      <ol>
+        <li>Paste your JSON document into the workbench.</li>
+        <li>Open the <strong>Types</strong> panel from the toolbar or press <kbd>⌘ K</kbd>.</li>
+        <li>Set root interface name (default: <code>Root</code>).</li>
+        <li>Copy generated TypeScript code or download the <code>.ts</code> file.</li>
+      </ol>
+    </main>
+
+    <section class="features">
+      <div><h3>Nested Interfaces</h3><p>Automatically splits complex nested objects into clean, reusable child interfaces.</p></div>
+      <div><h3>Array Unions</h3><p>Handles mixed-type arrays and extracts unique item types (e.g. <code>(string | number)[]</code>).</p></div>
+      <div><h3>Local &amp; Secure</h3><p>Generates types in Web Worker without uploading code to any server.</p></div>
+    </section>
+
+    <section class="faq-section">
+      <h2>Frequently Asked Questions</h2>
+      <details class="faq-item">
+        <summary>How do I convert JSON to TypeScript interfaces?</summary>
+        <p>Simply paste your JSON into the workbench, open the Types panel, and copy the generated TypeScript interface definitions instantly.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Does this tool upload my data?</summary>
+        <p>No, type inference runs entirely in your browser using a local Web Worker.</p>
+      </details>
+    </section>
+
+    <footer style="text-align:center;padding:24px;color:var(--muted,#8b95a5);font-size:12px">
+      <a href="/">JSON OS</a> · <a href="/tools/json-to-zod">JSON to Zod</a> · <a href="/tools/json-to-pydantic">JSON to Pydantic</a> · <a href="/tools/json-to-go-struct">JSON to Go</a> · <a href="/privacy.html">Privacy</a>
+    </footer>
+  </body>
+</html>

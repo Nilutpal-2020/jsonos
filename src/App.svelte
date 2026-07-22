@@ -105,7 +105,26 @@
   });
 
   onMount(() => {
-    workspace.init();
+    workspace.init().then(() => {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab") as SideTab | null;
+      const actionParam = params.get("action");
+      const viewParam = params.get("view");
+
+      if (tabParam && ["schema", "diff", "query", "types", "anonymize", "api"].includes(tabParam)) {
+        sideTab = tabParam;
+        panelOpen = true;
+      }
+      if (viewParam && ["text", "tree", "table", "chart"].includes(viewParam)) {
+        workspace.setSlotView(0, viewParam as any);
+      }
+      if (actionParam === "repair") {
+        doc.repair();
+      } else if (actionParam === "format") {
+        doc.format(2);
+      }
+    });
+
     const handleSideTabEvent = (e: Event) => {
       const tab = (e as CustomEvent).detail as SideTab;
       if (tab) {
