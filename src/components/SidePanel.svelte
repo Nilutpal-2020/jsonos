@@ -4,8 +4,9 @@
   import QueryPanel from './QueryPanel.svelte';
   import TypeGenPanel from './TypeGenPanel.svelte';
   import AnonymizerPanel from './AnonymizerPanel.svelte';
+  import ApiPanel from './ApiPanel.svelte';
 
-  type Tab = 'schema' | 'diff' | 'query' | 'types' | 'anonymize';
+  type Tab = 'schema' | 'diff' | 'query' | 'types' | 'anonymize' | 'api';
   let { tab = $bindable('schema' as Tab), onClose }: { tab: Tab; onClose: () => void } = $props();
 </script>
 
@@ -15,6 +16,7 @@
     <button class:active={tab === 'query'}  onclick={() => tab = 'query'}>Query</button>
     <button class:active={tab === 'types'}  onclick={() => tab = 'types'}>Types</button>
     <button class:active={tab === 'anonymize'} onclick={() => tab = 'anonymize'}>🔒 Redact</button>
+    <button class:active={tab === 'api'}    onclick={() => tab = 'api'}>⚡ API</button>
     <button class:active={tab === 'diff'}   onclick={() => tab = 'diff'}>Compare</button>
     <span class="spacer"></span>
     <button class="close" onclick={onClose} title="Close panel" aria-label="close">×</button>
@@ -24,6 +26,7 @@
     {:else if tab === 'query'}<QueryPanel />
     {:else if tab === 'types'}<TypeGenPanel />
     {:else if tab === 'anonymize'}<AnonymizerPanel />
+    {:else if tab === 'api'}<ApiPanel />
     {:else}<DiffPanel />{/if}
   </div>
 </div>

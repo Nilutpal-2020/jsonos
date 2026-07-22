@@ -2,26 +2,46 @@
   import { onMount } from 'svelte';
   import {
     apiHistory, newId, authPrefs, applyAuth, originOf,
-    type ApiHistoryEntry, type AuthKind, type AuthConfig,
+    type ApiHistoryEntry, type AuthConfig,
   } from '../core/api-history';
   import { workspace } from '../core/store.svelte';
+  import { parseCurl, generateCurl } from '../core/curl-parser';
 
   type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD';
   const METHODS: Method[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD'];
 
   let method = $state<Method>('GET');
   let url = $state('https://jsonplaceholder.typicode.com/todos/1');
-  let headersText = $state('');
+  let headersText = $state('Accept: application/json');
   let body = $state('');
   let sending = $state(false);
   let error = $state('');
   let history = $state<ApiHistoryEntry[]>([]);
   let selectedId = $state<string | null>(null);
 
+  // cURL modal & toasts
+  let importCurlOpen = $state(false);
+  let curlInputText = $state('');
+  let toastMsg = $state('');
+
   // Auth state
   let auth = $state<AuthConfig>({ kind: 'none' });
   let authOpen = $state(false);
   let revealSecret = $state(false);
+
+  // Active doc derived state
+  let activeDoc = $derived(workspace.active);
+  let activeDocValid = $derived(activeDoc ? activeDoc.parse.errors.length === 0 : false);
+
+  let bodySyntaxError = $derived.by(() => {
+    if (method === 'GET' || method === 'HEAD' || !body.trim()) return '';
+    try {
+      JSON.parse(body);
+      return '';
+    } catch (e) {
+      return (e as Error).message;
+    }
+  });
 
   let origin = $derived(originOf(url));
   let selected = $derived(history.find((h) => h.id === selectedId) ?? null);
@@ -30,12 +50,8 @@
     history = await apiHistory.list();
   });
 
-  // Load saved auth when origin changes (debounced via async await)
-  let lastOrigin = '';
   $effect(() => {
     const o = origin;
-    if (o === lastOrigin) return;
-    lastOrigin = o;
     (async () => {
       if (!o) return;
       const cfg = await authPrefs.load(o);
@@ -59,15 +75,83 @@
     return out;
   }
 
+  function headersToString(headers: Record<string, string>): string {
+    return Object.entries(headers)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join('\n');
+  }
+
+  function handleImportCurl() {
+    if (!curlInputText.trim()) return;
+    const parsed = parseCurl(curlInputText);
+    if (parsed.method) method = parsed.method as Method;
+    if (parsed.url) url = parsed.url;
+    if (Object.keys(parsed.headers).length > 0) {
+      headersText = headersToString(parsed.headers);
+    }
+    if (parsed.body) body = parsed.body;
+
+    importCurlOpen = false;
+    curlInputText = '';
+    showToast('cURL command imported!');
+  }
+
+  async function handleCopyCurl() {
+    const headersObj = parseHeaders(headersText);
+    applyAuth(headersObj, auth);
+    const curlStr = generateCurl(method, url, headersObj, body);
+    try {
+      await navigator.clipboard.writeText(curlStr);
+      showToast('✓ Copied as cURL');
+    } catch {}
+  }
+
+  function useActiveDocAsBody() {
+    if (!activeDoc) {
+      showToast('❌ No active document found');
+      return;
+    }
+    if (!activeDocValid) {
+      error = `Cannot load "${activeDoc.name}": Document contains JSON syntax errors. Fix or ⚡ Repair JSON first.`;
+      showToast('⚠️ Cannot load: Active document has syntax errors');
+      return;
+    }
+    body = activeDoc.text;
+    error = '';
+    if (method === 'GET' || method === 'HEAD') {
+      method = 'POST';
+    }
+    showToast(`✓ Loaded "${activeDoc.name}" as Request Body`);
+  }
+
+  function loadResponseToTab(respText: string) {
+    if (!respText) return;
+    workspace.newDoc(respText, 'api-response.json');
+    showToast('✓ Response loaded into Workbench!');
+  }
+
+  function showToast(msg: string) {
+    toastMsg = msg;
+    setTimeout(() => (toastMsg = ''), 2400);
+  }
+
   async function send() {
     error = '';
+    const hasBody = method !== 'GET' && method !== 'HEAD' && body.trim().length > 0;
+
+    if (hasBody && bodySyntaxError) {
+      error = `Invalid JSON in Request Body: ${bodySyntaxError}. Please fix before sending.`;
+      showToast('⚠️ Cannot send: Request body has JSON syntax errors');
+      return;
+    }
+
     sending = true;
     await persistAuth();
     const id = newId();
     const startedAt = Date.now();
     const requestHeaders = parseHeaders(headersText);
     applyAuth(requestHeaders, auth);
-    const hasBody = method !== 'GET' && method !== 'HEAD' && body.trim().length > 0;
+
     if (hasBody && !requestHeaders['Content-Type'] && !requestHeaders['content-type']) {
       requestHeaders['Content-Type'] = 'application/json';
     }
@@ -118,385 +202,439 @@
     selectedId = entry.id;
   }
 
-  function loadFromEntry(e: ApiHistoryEntry) {
-    method = e.method as Method;
-    url = e.url;
-    headersText = Object.entries(e.requestHeaders).map(([k, v]) => `${k}: ${v}`).join('\n');
-    body = e.requestBody ?? '';
-    selectedId = e.id;
+  function restoreHistory(h: ApiHistoryEntry) {
+    selectedId = h.id;
+    method = h.method as Method;
+    url = h.url;
+    headersText = headersToString(h.requestHeaders);
+    body = h.requestBody ?? '';
   }
 
-  function openResponseInDoc(e: ApiHistoryEntry) {
-    const isJson = /json/i.test(e.responseContentType) || /^[\s]*[{\[]/.test(e.responseBody);
-    let text = e.responseBody;
-    if (isJson) {
-      try { text = JSON.stringify(JSON.parse(e.responseBody), null, 2); } catch {}
-    }
-    const name = `${e.method} ${new URL(e.url, location.href).pathname}.json`.replace(/\s+/g, '_').slice(0, 80);
-    workspace.newDoc(text, name);
-  }
-
-  async function deleteEntry(id: string) {
+  async function removeHistory(id: string, e: Event) {
+    e.stopPropagation();
     await apiHistory.remove(id);
     history = await apiHistory.list();
     if (selectedId === id) selectedId = null;
   }
-
-  async function clearAll() {
-    if (!confirm('Clear all API history?')) return;
-    await apiHistory.clear();
-    history = [];
-    selectedId = null;
-  }
-
-  function fmtTime(ts: number): string {
-    const d = new Date(ts);
-    return d.toLocaleString();
-  }
-
-  function statusClass(s: number): string {
-    if (s === 0) return 'err';
-    if (s < 300) return 'ok';
-    if (s < 400) return 'redir';
-    return 'err';
-  }
 </script>
 
-<div class="api">
-  <div class="head">
-    <span>API Client</span>
-    <button class="clear" onclick={clearAll} disabled={history.length === 0}>Clear history</button>
+<div class="api-panel">
+  <!-- Top Bar: Request Config -->
+  <div class="req-bar">
+    <select bind:value={method} class="method-select">
+      {#each METHODS as m}
+        <option value={m}>{m}</option>
+      {/each}
+    </select>
+    <input type="text" bind:value={url} placeholder="https://api.example.com/data" class="url-input" />
+    <button class="send-btn" onclick={send} disabled={sending || (!!body.trim() && !!bodySyntaxError)}>
+      {sending ? 'Sending…' : 'Send ⚡'}
+    </button>
   </div>
 
-  <div class="form">
-    <div class="row">
-      <select bind:value={method} class="method">
-        {#each METHODS as m}<option value={m}>{m}</option>{/each}
-      </select>
-      <input class="url" bind:value={url} placeholder="https://api.example.com/path" spellcheck="false" />
-      <button class="send" onclick={send} disabled={sending || !url}>
-        {sending ? '…' : 'Send'}
-      </button>
-    </div>
-    <div class="auth-bar">
-      <button class="auth-toggle" onclick={() => authOpen = !authOpen} title="Auth settings">
-        {authOpen ? '▾' : '▸'} Auth
-      </button>
-      <select bind:value={auth.kind} class="auth-kind">
-        <option value="none">None</option>
-        <option value="bearer">Bearer Token</option>
-        <option value="basic">Basic Auth</option>
-        <option value="header">Custom Header</option>
-      </select>
-      {#if origin && auth.kind !== 'none'}
-        <span class="auth-host" title="Persisted for this origin">{origin}</span>
-      {/if}
-      <span class="spacer"></span>
-      {#if auth.kind !== 'none'}
-        <button class="reveal" onclick={() => revealSecret = !revealSecret} title="Show/hide secrets">
-          {revealSecret ? '🙈' : '👁'}
-        </button>
-      {/if}
-    </div>
+  <!-- Action Helpers -->
+  <div class="tools-row">
+    <button class="tool-btn" onclick={() => (importCurlOpen = !importCurlOpen)}>📋 Import cURL</button>
+    <button class="tool-btn" onclick={handleCopyCurl}>⎘ Copy cURL</button>
+    <button class="tool-btn" onclick={() => (authOpen = !authOpen)}>
+      🔒 Auth: {auth.kind.toUpperCase()}
+    </button>
+  </div>
 
-    {#if authOpen && auth.kind === 'bearer'}
-      <input
-        class="auth-input"
-        type={revealSecret ? 'text' : 'password'}
-        bind:value={auth.bearer}
-        placeholder="token"
-        spellcheck="false"
-        autocomplete="off"
-      />
-    {:else if authOpen && auth.kind === 'basic'}
-      <div class="auth-row">
-        <input
-          class="auth-input"
-          type="text"
-          bind:value={auth.basicUser}
-          placeholder="username"
-          spellcheck="false"
-          autocomplete="off"
-        />
-        <input
-          class="auth-input"
-          type={revealSecret ? 'text' : 'password'}
-          bind:value={auth.basicPass}
-          placeholder="password"
-          spellcheck="false"
-          autocomplete="off"
-        />
-      </div>
-    {:else if authOpen && auth.kind === 'header'}
-      <div class="auth-row">
-        <input
-          class="auth-input header-name"
-          type="text"
-          bind:value={auth.headerName}
-          placeholder="X-Api-Key"
-          spellcheck="false"
-        />
-        <input
-          class="auth-input"
-          type={revealSecret ? 'text' : 'password'}
-          bind:value={auth.headerValue}
-          placeholder="value"
-          spellcheck="false"
-          autocomplete="off"
-        />
-      </div>
-    {/if}
+  {#if toastMsg}
+    <div class="toast-banner">{toastMsg}</div>
+  {/if}
 
-    <textarea
-      class="headers"
-      bind:value={headersText}
-      placeholder="Accept: application/json&#10;X-Trace-Id: abc"
-      spellcheck="false"
-    ></textarea>
-    {#if method !== 'GET' && method !== 'HEAD'}
+  {#if error}
+    <div class="error-banner">⚠️ {error}</div>
+  {/if}
+
+  <!-- cURL Import Modal -->
+  {#if importCurlOpen}
+    <div class="curl-modal">
+      <span class="modal-title">Paste cURL Command</span>
       <textarea
-        class="body"
-        bind:value={body}
-        placeholder="Request body (JSON)"
-        spellcheck="false"
+        bind:value={curlInputText}
+        placeholder={`curl -X POST "https://api.example.com/v1/items" \\
+  -H "Authorization: Bearer token123" \\
+  -d '{"name": "test"}'`}
+        rows="4"
+        class="curl-input"
       ></textarea>
-    {/if}
-    {#if error}<div class="err-msg">{error}</div>{/if}
-  </div>
-
-  <div class="history">
-    <div class="hist-head">History ({history.length})</div>
-    {#if history.length === 0}
-      <div class="muted">No requests yet.</div>
-    {:else}
-      <ul>
-        {#each history as h (h.id)}
-          <li class:active={selectedId === h.id}>
-            <button class="hist-row" onclick={() => loadFromEntry(h)}>
-              <span class="m">{h.method}</span>
-              <span class="s {statusClass(h.status)}">{h.status || '×'}</span>
-              <span class="u" title={h.url}>{h.url}</span>
-              <span class="d">{h.durationMs}ms</span>
-            </button>
-            <button class="x" onclick={() => deleteEntry(h.id)} title="Delete" aria-label="delete">×</button>
-          </li>
-        {/each}
-      </ul>
-    {/if}
-  </div>
-
-  {#if selected}
-    <div class="resp">
-      <div class="resp-head">
-        <span class="status {statusClass(selected.status)}">
-          {selected.status} {selected.statusText}
-        </span>
-        <span class="muted">{selected.durationMs}ms · {fmtTime(selected.startedAt)}</span>
-        <span class="spacer"></span>
-        <button onclick={() => openResponseInDoc(selected!)} title="Open response in new tab">→ Doc</button>
+      <div class="modal-actions">
+        <button class="action-btn primary" onclick={handleImportCurl}>Import</button>
+        <button class="action-btn" onclick={() => (importCurlOpen = false)}>Cancel</button>
       </div>
     </div>
   {/if}
+
+  <!-- Auth Settings Drawer -->
+  {#if authOpen}
+    <div class="auth-drawer">
+      <div class="auth-row">
+        <span class="label">Auth Type:</span>
+        <select bind:value={auth.kind} class="ctrl-select">
+          <option value="none">None</option>
+          <option value="bearer">Bearer Token</option>
+          <option value="basic">Basic Auth</option>
+          <option value="header">Custom Header</option>
+        </select>
+      </div>
+
+      {#if auth.kind === 'bearer'}
+        <input type="text" bind:value={auth.bearer} placeholder="Token value (ey...)" class="ctrl-input" />
+      {:else if auth.kind === 'basic'}
+        <input type="text" bind:value={auth.basicUser} placeholder="Username" class="ctrl-input" />
+        <input type={revealSecret ? 'text' : 'password'} bind:value={auth.basicPass} placeholder="Password" class="ctrl-input" />
+      {:else if auth.kind === 'header'}
+        <input type="text" bind:value={auth.headerName} placeholder="Header Name (e.g. X-API-Key)" class="ctrl-input" />
+        <input type="text" bind:value={auth.headerValue} placeholder="Header Value" class="ctrl-input" />
+      {/if}
+    </div>
+  {/if}
+
+  <!-- Headers & Body Inputs -->
+  <div class="input-grid">
+    <div class="input-block">
+      <span class="block-label">Request Headers</span>
+      <textarea bind:value={headersText} placeholder="Accept: application/json&#10;X-Custom: 123" rows="2"></textarea>
+    </div>
+
+    <div class="input-block">
+      <div class="block-header">
+        <span class="block-label">Request Body (JSON)</span>
+        <button
+          class="active-doc-btn"
+          onclick={useActiveDocAsBody}
+          disabled={!activeDocValid}
+          title={activeDocValid ? `Load active file (${activeDoc?.name}) as body` : `Active file (${activeDoc?.name}) contains JSON syntax errors`}
+        >
+          📥 Load Active Doc ({activeDoc?.name ?? 'none'})
+        </button>
+      </div>
+
+      {#if !activeDocValid && activeDoc}
+        <div class="doc-warn-banner">
+          ⚠️ Active file <strong>{activeDoc.name}</strong> has JSON syntax errors. ⚡ Repair it before loading as body.
+        </div>
+      {/if}
+
+      {#if bodySyntaxError}
+        <div class="body-err-banner">
+          ⚠️ Request Body JSON Error: {bodySyntaxError}
+        </div>
+      {/if}
+
+      <textarea bind:value={body} placeholder={'{\n  "title": "foo"\n}'} rows="4"></textarea>
+    </div>
+  </div>
+
+  <!-- Response Inspection Card -->
+  {#if selected}
+    <div class="resp-card">
+      <div class="resp-header">
+        <div class="status-badge" class:ok={selected.ok} class:err={!selected.ok}>
+          {selected.status > 0 ? `${selected.status} ${selected.statusText}` : 'ERROR'}
+        </div>
+        <span class="duration">{selected.durationMs} ms</span>
+        <div class="spacer"></div>
+        {#if selected.responseBody}
+          <button class="open-tab-btn" onclick={() => loadResponseToTab(selected.responseBody)}>
+            ⚡ Open Response in Workbench Tab
+          </button>
+        {/if}
+      </div>
+
+      {#if selected.error}
+        <div class="err-box">{selected.error}</div>
+      {/if}
+
+      <div class="resp-body">
+        <pre><code>{selected.responseBody.slice(0, 5000)}{selected.responseBody.length > 5000 ? '\n...[truncated]' : ''}</code></pre>
+      </div>
+    </div>
+  {/if}
+
+  <!-- History Timeline -->
+  <div class="history-section">
+    <span class="section-title">Request History ({history.length})</span>
+    <div class="history-list">
+      {#each history as h (h.id)}
+        <button
+          type="button"
+          class="hist-item"
+          class:selected={h.id === selectedId}
+          onclick={() => restoreHistory(h)}
+        >
+          <span class="hist-method">{h.method}</span>
+          <span class="hist-url">{h.url}</span>
+          <span class="hist-status" class:ok={h.ok}>{h.status || 'ERR'}</span>
+          <span class="remove-btn" role="button" tabindex="0" onclick={(e) => removeHistory(h.id, e)} onkeydown={(e) => e.key === 'Enter' && removeHistory(h.id, e)}>×</span>
+        </button>
+      {/each}
+    </div>
+  </div>
 </div>
 
 <style>
-  .api {
+  .api-panel {
     display: flex;
     flex-direction: column;
     height: 100%;
+    gap: 10px;
+    padding: 12px;
     background: var(--surface);
-    overflow: hidden;
+    color: var(--fg);
+    overflow-y: auto;
   }
-  .head {
+
+  .req-bar {
+    display: flex;
+    gap: 6px;
+  }
+  .method-select {
+    background: var(--surface-2);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 6px;
+    font-weight: 700;
+    font-size: 12px;
+  }
+  .url-input {
+    flex: 1;
+    background: var(--surface);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 6px 8px;
+    font-size: 12px;
+    font-family: ui-monospace, monospace;
+  }
+  .send-btn {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border: 0;
+    border-radius: var(--radius);
+    padding: 6px 12px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .tools-row {
+    display: flex;
+    gap: 6px;
+  }
+  .tool-btn {
+    background: var(--surface-2);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  .toast-banner {
+    background: var(--ok-bg, rgba(34, 197, 94, 0.15));
+    color: var(--ok, #22c55e);
+    border: 1px solid var(--ok, #22c55e);
+    padding: 4px 8px;
+    border-radius: var(--radius);
+    font-size: 11px;
+    text-align: center;
+    font-weight: 600;
+  }
+  .error-banner {
+    background: color-mix(in oklab, #dc2626 15%, var(--surface));
+    color: #ef4444;
+    border: 1px solid #ef4444;
+    padding: 6px 10px;
+    border-radius: var(--radius);
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .curl-modal, .auth-drawer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px;
+  }
+  .modal-title, .block-label, .section-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .curl-input, textarea {
+    width: 100%;
+    background: var(--surface);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 6px;
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    box-sizing: border-box;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 6px;
+  }
+  .action-btn {
+    background: var(--surface);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .action-btn.primary {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border: 0;
+  }
+
+  .input-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .block-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 6px 10px;
-    border-bottom: 1px solid var(--border);
-    font-size: 12px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    margin-bottom: 4px;
   }
-  .clear {
-    background: transparent;
+  .active-doc-btn {
+    background: var(--surface-2);
+    color: var(--fg);
     border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 3px;
-    padding: 2px 8px;
+    border-radius: var(--radius);
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 600;
     cursor: pointer;
+  }
+  .active-doc-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .doc-warn-banner {
+    background: color-mix(in oklab, #eab308 15%, var(--surface));
+    color: #eab308;
+    border: 1px solid #eab308;
+    padding: 4px 8px;
+    border-radius: var(--radius);
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+
+  .body-err-banner {
+    background: color-mix(in oklab, #dc2626 15%, var(--surface));
+    color: #ef4444;
+    border: 1px solid #ef4444;
+    padding: 4px 8px;
+    border-radius: var(--radius);
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+
+  .resp-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .resp-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .status-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--muted);
+    color: #fff;
+  }
+  .status-badge.ok { background: #16a34a; }
+  .status-badge.err { background: #dc2626; }
+  .duration { font-size: 11px; color: var(--muted); }
+  .open-tab-btn {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border: 0;
+    border-radius: var(--radius);
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .resp-body {
+    max-height: 180px;
+    overflow: auto;
+    background: var(--surface);
+    padding: 8px;
+    border-radius: var(--radius);
+  }
+  .resp-body pre {
+    margin: 0;
+    font-family: ui-monospace, monospace;
     font-size: 11px;
   }
-  .clear:hover:not(:disabled) { color: var(--fg); }
-  .clear:disabled { opacity: 0.5; cursor: not-allowed; }
-  .form {
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--border);
+
+  .history-section {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    margin-top: 8px;
   }
-  .row {
+  .history-list {
     display: flex;
-    gap: 6px;
+    flex-direction: column;
+    gap: 4px;
   }
-  .method, .url, .send {
-    background: var(--surface-2);
-    color: var(--fg);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    padding: 4px 8px;
-    font: 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    outline: none;
-  }
-  .url { flex: 1; min-width: 0; }
-  .send {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--accent-fg);
-    cursor: pointer;
-    padding: 4px 14px;
-  }
-  .send:disabled { opacity: 0.5; cursor: not-allowed; }
-  .auth-bar {
+  .hist-item {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 11px;
-  }
-  .auth-toggle {
-    background: transparent;
-    border: 0;
-    color: var(--muted);
-    cursor: pointer;
-    padding: 2px 4px;
-    font: inherit;
-  }
-  .auth-toggle:hover { color: var(--fg); }
-  .auth-kind {
-    background: var(--surface-2);
-    color: var(--fg);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    padding: 2px 6px;
-    font: 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  }
-  .auth-host {
-    color: var(--muted);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 220px;
-  }
-  .reveal {
-    background: transparent;
-    border: 0;
-    cursor: pointer;
-    padding: 2px 4px;
-    font-size: 12px;
-  }
-  .auth-row { display: flex; gap: 6px; }
-  .auth-input {
-    flex: 1;
-    background: var(--surface-2);
-    color: var(--fg);
-    border: 1px solid var(--border);
-    border-radius: 3px;
+    gap: 8px;
+    width: 100%;
     padding: 4px 8px;
-    font: 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    outline: none;
-    min-width: 0;
-  }
-  .auth-input.header-name { flex: 0 0 140px; }
-  .spacer { flex: 1; }
-  .headers, .body {
-    background: var(--surface-2);
+    background: var(--surface);
     color: var(--fg);
     border: 1px solid var(--border);
-    border-radius: 3px;
-    padding: 4px 8px;
-    font: 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    resize: vertical;
-    min-height: 48px;
-    outline: none;
-  }
-  .body { min-height: 80px; }
-  .err-msg { color: var(--err); font-size: 12px; }
-  .history {
-    flex: 1;
-    overflow: auto;
-    padding: 6px 10px;
-  }
-  .hist-head {
+    border-radius: var(--radius);
     font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-  }
-  ul { list-style: none; margin: 0; padding: 0; }
-  li {
-    display: flex;
-    align-items: center;
-    border-radius: 3px;
-  }
-  li:hover { background: var(--row-hover); }
-  li.active { background: var(--row-hover-strong); }
-  .hist-row {
-    flex: 1;
-    background: transparent;
-    border: 0;
-    color: var(--fg);
+    font-family: inherit;
     text-align: left;
     cursor: pointer;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    padding: 4px 6px;
-    font: 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    overflow: hidden;
   }
-  .m { color: var(--accent); width: 50px; flex-shrink: 0; }
-  .s { width: 32px; flex-shrink: 0; text-align: center; font-weight: 600; }
-  .s.ok { color: var(--ok); }
-  .s.redir { color: var(--num); }
-  .s.err { color: var(--err); }
-  .u { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
-  .d { color: var(--muted); flex-shrink: 0; }
-  .x {
-    background: transparent;
-    border: 0;
-    color: var(--muted);
-    cursor: pointer;
-    padding: 0 6px;
-    font-size: 14px;
+  .hist-item.selected {
+    border-color: var(--accent);
+    background: var(--accent-soft);
   }
-  .x:hover { color: var(--err); }
-  .resp {
-    border-top: 1px solid var(--border);
-    padding: 6px 10px;
-  }
-  .resp-head {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 11px;
-  }
-  .status { font-weight: 600; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-  .status.ok { color: var(--ok); }
-  .status.redir { color: var(--num); }
-  .status.err { color: var(--err); }
-  .muted { color: var(--muted); }
-  .spacer { flex: 1; }
-  .resp-head button {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 3px;
-    padding: 2px 8px;
-    cursor: pointer;
-    font: inherit;
-  }
-  .resp-head button:hover { color: var(--fg); }
+  .hist-method { font-weight: 700; color: var(--accent); }
+  .hist-url { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: ui-monospace, monospace; }
+  .hist-status { font-weight: 600; color: #dc2626; }
+  .hist-status.ok { color: #16a34a; }
+  .remove-btn { border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+  .remove-btn:hover { color: var(--fg); }
 </style>

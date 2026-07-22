@@ -207,6 +207,17 @@
       },
     },
     {
+      id: "api-sandbox",
+      category: "Action",
+      title: "In-Browser API Client & cURL Importer",
+      description: "Send HTTP GET/POST/PUT requests, import/export cURL, inspect headers",
+      keywords: "api client curl import export fetch http request postman sandbox",
+      icon: "⚡",
+      action: () => {
+        window.dispatchEvent(new CustomEvent("jsonos:open-side-tab", { detail: "api" }));
+      },
+    },
+    {
       id: "toggle-wrap",
       category: "Action",
       title: "Toggle Text Wrap",
