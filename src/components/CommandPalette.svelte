@@ -174,6 +174,28 @@
       },
     },
     {
+      id: "type-gen",
+      category: "Action",
+      title: "Generate TypeScript / Zod / Python / Rust / Go Types",
+      description: "Infer types and data models from current JSON payload",
+      keywords: "generate types typescript zod python rust go schema model json",
+      icon: "⚙️",
+      action: () => {
+        window.dispatchEvent(new CustomEvent("jsonos:open-side-tab", { detail: "types" }));
+      },
+    },
+    {
+      id: "anonymize",
+      category: "Action",
+      title: "Redact & Anonymize PII / Secrets",
+      description: "Detect and mask emails, passwords, API keys, JWT tokens, credit cards, IPs",
+      keywords: "redact anonymize mask secrets pii email password credit card ip jwt token",
+      icon: "🔒",
+      action: () => {
+        window.dispatchEvent(new CustomEvent("jsonos:open-side-tab", { detail: "anonymize" }));
+      },
+    },
+    {
       id: "toggle-wrap",
       category: "Action",
       title: "Toggle Text Wrap",

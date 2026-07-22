@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>How to Compare Two JSON Files Online: Visual Diff &amp; Structural Comparison — JSON OS Blog</title>
+    <meta name="description" content="Learn how to compare two JSON files online. Master structural AST diffing, detecting property additions, deletions, and modified values with side-by-side split view." />
+    <meta name="keywords" content="compare two json files online, json diff viewer online, json comparison tool, json diff online, compare json data, find differences in json" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://jsonos.online/blog/how-to-compare-json-files-online" />
+    <link rel="alternate" hreflang="en" href="https://jsonos.online/blog/how-to-compare-json-files-online" />
+    <link rel="alternate" hreflang="x-default" href="https://jsonos.online/blog/how-to-compare-json-files-online" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#131720" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="JSON OS" />
+    <meta property="og:title" content="How to Compare Two JSON Files Online: Visual Diff &amp; Structural Comparison" />
+    <meta property="og:description" content="Compare complex JSON objects side-by-side. Discover why semantic structural diffing outperforms standard line-by-line diff tools." />
+    <meta property="og:url" content="https://jsonos.online/blog/how-to-compare-json-files-online" />
+    <meta property="og:image" content="https://jsonos.online/og-image.png" />
+
+    <link rel="stylesheet" href="/_legal.css" />
+    <style>
+      .article-container { max-width: 720px; margin: 0 auto; padding: 56px 24px 64px; }
+      .article-container h1 { font-size: 34px; line-height: 1.2; margin: 0 0 16px; }
+      .article-meta { color: var(--muted, #8b95a5); font-size: 14px; margin-bottom: 48px; border-bottom: 1px solid rgba(127,127,127,0.18); padding-bottom: 24px; }
+      .article-content { line-height: 1.75; color: #d1d5db; font-size: 16px; }
+      @media (prefers-color-scheme: light) { .article-content { color: #374151; } }
+      .article-content h2 { margin: 40px 0 16px; font-size: 24px; color: inherit; }
+      .article-content h3 { margin: 28px 0 12px; font-size: 19px; color: inherit; }
+      .article-content p { margin: 0 0 20px; }
+      .article-content ul, .article-content ol { margin: 0 0 24px; padding-left: 24px; }
+      .article-content li { margin-bottom: 8px; }
+      .article-content pre { background: rgba(0,0,0,0.3); padding: 14px 18px; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 13px; overflow-x: auto; border: 1px solid rgba(127,127,127,0.2); margin-bottom: 24px; }
+      .breadcrumbs { max-width: 720px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
+      .breadcrumbs a { color: inherit; }
+      .callout { background: rgba(37, 99, 235, 0.12); border-left: 4px solid #2563eb; padding: 16px 20px; border-radius: 0 8px 8px 0; margin-bottom: 24px; }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumbs"><a href="/">JSON OS</a> &rsaquo; <a href="/blog/">Blog</a> &rsaquo; How to Compare Two JSON Files Online</nav>
+    <main class="article-container">
+      <h1>How to Compare Two JSON Files Online: Visual Diff &amp; Structural Comparison</h1>
+      <div class="article-meta">Published on July 22, 2026 • 5 min read</div>
+
+      <div class="article-content">
+        <p>When debugging REST API updates, comparing staging and production configs, or tracking down data regressions, comparing two JSON files is a daily development task. However, standard text diff tools (like basic <code>diff</code> or text-based comparison websites) often fail because re-ordered keys or formatting differences pollute the diff with hundreds of false positives.</p>
+
+        <div class="callout">
+          <strong>Side-by-Side Diff Tool:</strong> Compare two JSON files side-by-side with color-coded additions, deletions, and structural changes on <a href="/" style="color:#5b9eff">JSON OS Diff Workbench</a>.
+        </div>
+
+        <h2>Why Structural JSON Diffing Matters</h2>
+        <p>A standard line diff treats JSON as plain text. If Object A has key <code>"id"</code> on line 2 and Object B has key <code>"id"</code> on line 10, a line diff highlights the entire block as changed. A true <strong>semantic structural JSON diff</strong> parses both inputs into Abstract Syntax Trees (AST) and compares property paths, ignoring key order and whitespace formatting.</p>
+
+        <h3>Types of Diffs Highlighted:</h3>
+        <ul>
+          <li><strong style="color: #22c55e">Added Properties (Green):</strong> Keys present in Document B but missing in Document A.</li>
+          <li><strong style="color: #ef4444">Removed Properties (Red):</strong> Keys present in Document A but removed in Document B.</li>
+          <li><strong style="color: #eab308">Modified Values (Yellow):</strong> Keys present in both documents where string, number, or boolean values differ.</li>
+        </ul>
+
+        <h2>Comparing Large JSON Payloads Efficiently</h2>
+        <p>For multi-megabyte JSON files (e.g. 50,000+ line database dumps), running comparison tools in web workers ensures smooth 60fps UI scrolling without locking up your browser tab. Try <a href="/">JSON OS</a> today to compare JSON files with complete data privacy.</p>
+      </div>
+    </main>
+  </body>
+</html>

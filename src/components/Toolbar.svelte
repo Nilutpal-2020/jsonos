@@ -6,7 +6,7 @@
   import ContextMenu, { type MenuItem } from "./ContextMenu.svelte";
   import HelpDialog from "./HelpDialog.svelte";
 
-  type SideTab = "schema" | "diff" | "query";
+  type SideTab = "schema" | "diff" | "query" | "types" | "anonymize";
   let {
     panelOpen = $bindable(false),
     sideTab = $bindable<SideTab>("schema"),
@@ -265,6 +265,18 @@
       title="MongoDB-style query (⌘⇧K)"
       class:on={panelOpen && sideTab === "query"}
       aria-pressed={panelOpen && sideTab === "query"}>🔎 Query</button
+    >
+    <button
+      onclick={() => openSidePanel("types")}
+      title="Generate TypeScript, Zod, Python, Rust, Go types"
+      class:on={panelOpen && sideTab === "types"}
+      aria-pressed={panelOpen && sideTab === "types"}>Types</button
+    >
+    <button
+      onclick={() => openSidePanel("anonymize")}
+      title="Redact & anonymize PII and secrets"
+      class:on={panelOpen && sideTab === "anonymize"}
+      aria-pressed={panelOpen && sideTab === "anonymize"}>🔒 Redact</button
     >
     <button
       onclick={() => (commandPaletteOpen = true)}
