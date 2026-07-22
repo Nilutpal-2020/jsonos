@@ -12,7 +12,7 @@ const SLOT_FRACTIONS_KEY = 'slotFractions';
 export const MAX_SLOTS = 3;
 const MIN_SLOT_FR = 0.2;
 
-export type SlotView = 'text' | 'tree' | 'table';
+export type SlotView = 'text' | 'tree' | 'table' | 'chart';
 export interface Slot {
   docId: string;
   view: SlotView;

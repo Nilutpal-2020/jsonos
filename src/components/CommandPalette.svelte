@@ -196,6 +196,17 @@
       },
     },
     {
+      id: "view-chart",
+      category: "Action",
+      title: "Switch to Chart View",
+      description: "Render JSON arrays as interactive Bar, Line, Pie, and Doughnut SVG charts",
+      keywords: "chart view bar line pie doughnut graph plot visualize data",
+      icon: "📊",
+      action: () => {
+        workspace.setSlotView(workspace.focusedSlotIndex, "chart");
+      },
+    },
+    {
       id: "toggle-wrap",
       category: "Action",
       title: "Toggle Text Wrap",
