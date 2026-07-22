@@ -10,8 +10,14 @@
   let {
     panelOpen = $bindable(false),
     sideTab = $bindable<SideTab>("schema"),
+    commandPaletteOpen = $bindable(false),
     onCompare,
-  }: { panelOpen: boolean; sideTab: SideTab; onCompare: () => void } = $props();
+  }: {
+    panelOpen: boolean;
+    sideTab: SideTab;
+    commandPaletteOpen?: boolean;
+    onCompare: () => void;
+  } = $props();
 
   function openSidePanel(tab: SideTab) {
     sideTab = tab;
@@ -259,6 +265,11 @@
       title="MongoDB-style query (⌘⇧K)"
       class:on={panelOpen && sideTab === "query"}
       aria-pressed={panelOpen && sideTab === "query"}>🔎 Query</button
+    >
+    <button
+      onclick={() => (commandPaletteOpen = true)}
+      title="Quick Search & Commands (⌘K)"
+      class="search-btn">🔍 Search</button
     >
   </div>
 

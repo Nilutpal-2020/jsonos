@@ -105,6 +105,23 @@
     return out;
   });
 
+  // Auto-detected document property keys for quick query field suggestions.
+  let suggestedKeys = $derived.by<string[]>(() => {
+    if (!targetValue) return [];
+    let obj: any = targetValue;
+    if (Array.isArray(targetValue) && targetValue.length > 0) {
+      obj = targetValue[0];
+    }
+    if (obj && typeof obj === 'object') {
+      return Object.keys(obj).slice(0, 10);
+    }
+    return [];
+  });
+
+  function appendKeyQuery(k: string) {
+    queryText = `{ "${k}": "" }`;
+  }
+
   function copyResult() {
     if (!resultText) return;
     navigator.clipboard?.writeText(resultText).catch(() => {});
@@ -177,6 +194,17 @@
         <button class="chip" onclick={() => (targetText = ap.label)}>
           <span class="chip-path">{ap.label}</span>
           <span class="chip-meta">[{ap.size}]</span>
+        </button>
+      {/each}
+    </div>
+  {/if}
+
+  {#if suggestedKeys.length > 0}
+    <div class="key-suggestions">
+      <span class="key-lbl">Fields:</span>
+      {#each suggestedKeys as k}
+        <button class="key-chip" onclick={() => appendKeyQuery(k)} title="Quick query field {k}">
+          {k}
         </button>
       {/each}
     </div>
@@ -341,6 +369,36 @@
     flex-wrap: wrap;
     padding: 4px 10px 6px;
     border-bottom: 1px solid var(--border);
+  }
+  .key-suggestions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    padding: 4px 10px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+  }
+  .key-lbl {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+  }
+  .key-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    border-radius: 999px;
+    padding: 1px 7px;
+    cursor: pointer;
+    font-size: 10.5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    transition: border-color 80ms, color 80ms;
+  }
+  .key-chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
   }
   .chip {
     display: inline-flex;
