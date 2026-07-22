@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
     <!-- Primary meta -->
-    <title>JSON Editor &amp; Markdown Previewer Online — Format, Validate, Compare, Query, Render · JSON OS</title>
-    <meta name="description" content="Free online JSON editor and Markdown previewer. Format, validate, repair, compare and query JSON; write Markdown with live preview, Mermaid diagrams, KaTeX math and code highlighting. No signup, runs in your browser." />
-    <meta name="keywords" content="json editor, json editor online, online json editor, free json editor, json viewer, json viewer online, json formatter, json beautifier, json prettify, json minifier, json validator, json schema validator, ajv online, json repair, fix json, json compare, json diff, side by side json, json query, mongodb query json, filter json online, json query tool, json tree viewer, json table editor, json to csv, csv export, json transform, json sort keys, json beautify, json lint, jsonlint alternative, jq online, jsonpath, online json tools, browser json editor, offline json tool, local json editor, no upload json editor, markdown editor, markdown editor online, online markdown editor, free markdown editor, markdown preview, markdown previewer, live markdown preview, github flavored markdown, gfm editor, markdown viewer, markdown renderer, markdown to html, mermaid editor online, mermaid live editor, mermaid diagram editor, mermaid preview, flowchart editor, sequence diagram online, gantt chart markdown, katex editor, katex preview, latex math editor online, math markdown editor, syntax highlighting markdown, code block highlighter, markdown with mermaid, markdown with math, markdown with embeds, embed youtube markdown, embed codepen markdown, embed gist markdown, browser markdown editor, offline markdown editor, local markdown editor, no upload markdown editor, markdown notebook" />
+    <title>JSON Schema Validator Online &amp; JSON Editor — Validate, Format, Query, Visualize · JSON OS</title>
+    <meta name="description" content="Free online JSON schema validator and JSON editor. Validate JSON against JSON Schema with Ajv (Draft-07, 2020-12), format, repair, compare, and visualize JSON data in interactive tree and table views. 100% browser-based, no uploads." />
+    <meta name="keywords" content="json schema validator online, online json schema validator, json schema validation online, ajv json schema validator, validate json schema online, json online validator schema, online schema validator, json schema type, json validator schema, json schema format, what is json schema, json schema definition, visualize json data, visualize json, show json, visualise json, online json object viewer, json visualizer, avro schema validator online, json file online viewer, json editor, online json editor, free json editor, json viewer, json formatter, json repair, json diff, json query, jq online" />
     <meta name="author" content="JSON OS" />
     <meta name="application-name" content="JSON OS" />
     <meta name="generator" content="Vite + Svelte" />
@@ -364,10 +364,34 @@
           },
           {
             "@type": "Question",
-            "name": "Can I validate JSON against a schema?",
+            "name": "How do I validate a JSON Schema online with Ajv?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. Open the side panel, pick the Schema tab, and paste a JSON Schema. The active document is continuously validated using Ajv with formats. Errors appear inline with their instance paths."
+              "text": "Open JSON OS, click the side panel (or press Cmd+\\), switch to the Schema tab, and paste your JSON Schema definition. JSON OS uses the high-performance Ajv validation engine to validate your document continuously with line, column, and instancePath error locations."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Which JSON Schema types and formats are supported?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "JSON OS supports all standard JSON Schema types (string, number, integer, boolean, object, array, null) and formats (email, uri, date-time, time, date, ipv4, ipv6, uuid, regex). Preset schema templates are available in the Schema panel."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How can I visualize JSON data online?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "JSON OS includes an interactive JSON visualizer with virtualized tree view, table grid for array data, and multi-column comparison view. You can expand/collapse nodes, search keys, filter arrays, and jump to elements visually."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the difference between Avro Schema and JSON Schema?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "JSON Schema describes and validates human-readable JSON payloads, whereas Apache Avro is a binary serialization format with rigid binary schema definitions. JSON OS provides built-in online JSON Schema validation with Ajv and offers templates for converting Avro schema structures to JSON Schema."
             }
           },
           {

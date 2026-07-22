@@ -208,6 +208,16 @@
   export function applyWrap(prefix: string, suffix?: string) { wrapSelection(prefix, suffix); }
   export function applyLine(prefix: string) { toggleLinePrefix(prefix); }
   export function applyLink() { insertLink(); }
+  export function insertSnippet(snippet: string) {
+    const v = view;
+    if (!v) return;
+    const r = v.state.selection.main;
+    v.dispatch({
+      changes: { from: r.from, to: r.to, insert: snippet },
+      selection: { anchor: r.from + snippet.length },
+    });
+    v.focus();
+  }
 </script>
 
 <div class="md-editor" bind:this={host}></div>

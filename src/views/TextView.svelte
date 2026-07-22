@@ -217,14 +217,59 @@
   export function focus() { view?.focus(); }
 </script>
 
+{#if doc.parse.errors.length > 0}
+  <div class="parse-error-banner">
+    <span class="err-icon">⚠️</span>
+    <span class="err-text">JSON Syntax Error: {doc.parse.errors[0].message}</span>
+    <button class="repair-btn" onclick={() => doc.repair()} title="Auto-fix escaped quotes, comments, trailing commas, JS/Python literals">⚡ Repair JSON</button>
+  </div>
+{/if}
 <div class="text-view" bind:this={host}></div>
 
 <style>
+  .parse-error-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--err-bg);
+    border-bottom: 1px solid var(--err);
+    color: var(--fg);
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  .err-icon { font-size: 14px; }
+  .err-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--err);
+    font-weight: 500;
+  }
+  .repair-btn {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border: 0;
+    border-radius: var(--radius);
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: filter 80ms;
+  }
+  .repair-btn:hover { filter: brightness(1.1); }
+
   .text-view {
+    flex: 1;
     height: 100%;
     width: 100%;
     overflow: hidden;
     background: var(--surface);
+    display: flex;
+    flex-direction: column;
   }
   :global(.cm-editor) { height: 100%; }
   :global(.cm-editor.cm-focused) { outline: none; }

@@ -1,52 +1,68 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import Toolbar from './components/Toolbar.svelte';
-  import TabBar from './components/TabBar.svelte';
-  import ValidationPanel from './components/ValidationPanel.svelte';
-  import SidePanel from './components/SidePanel.svelte';
-  import SlotView from './components/SlotView.svelte';
-  import SlotResizer from './components/SlotResizer.svelte';
-  import { doc, workspace } from './core/store.svelte';
-  import { ui } from './core/ui-prefs.svelte';
-  import { compare } from './core/compare.svelte';
-  import { tool } from './core/tool-router.svelte';
+  import { onMount } from "svelte";
+  import Toolbar from "./components/Toolbar.svelte";
+  import TabBar from "./components/TabBar.svelte";
+  import ValidationPanel from "./components/ValidationPanel.svelte";
+  import SidePanel from "./components/SidePanel.svelte";
+  import SlotView from "./components/SlotView.svelte";
+  import SlotResizer from "./components/SlotResizer.svelte";
+  import CommandPalette from "./components/CommandPalette.svelte";
+  import { doc, workspace } from "./core/store.svelte";
+  import { ui } from "./core/ui-prefs.svelte";
+  import { compare } from "./core/compare.svelte";
+  import { tool } from "./core/tool-router.svelte";
 
   // Lazy-load the markdown tool — keeps marked / mermaid / katex out of the JSON bundle.
   let MarkdownTool = $state<any>(null);
   let mdLoading = $state(false);
-  let mdError = $state('');
+  let mdError = $state("");
   $effect(() => {
-    if (tool.current !== 'md' || MarkdownTool || mdLoading) return;
+    if (tool.current !== "md" || MarkdownTool || mdLoading) return;
     mdLoading = true;
-    import('./markdown/MarkdownTool.svelte')
-      .then((m) => { MarkdownTool = m.default; })
-      .catch((e) => { mdError = String((e as Error).message ?? e); })
-      .finally(() => { mdLoading = false; });
+    import("./markdown/MarkdownTool.svelte")
+      .then((m) => {
+        MarkdownTool = m.default;
+      })
+      .catch((e) => {
+        mdError = String((e as Error).message ?? e);
+      })
+      .finally(() => {
+        mdLoading = false;
+      });
   });
 
-  type SideTab = 'schema' | 'diff' | 'query';
+  type SideTab = "schema" | "diff" | "query";
   let panelOpen = $state(false);
-  let sideTab = $state<SideTab>('schema');
+  let sideTab = $state<SideTab>("schema");
+  let commandPaletteOpen = $state(false);
   let workspaceEl = $state<HTMLDivElement | undefined>();
 
   // Side-panel resize: pixels, persisted, clamped to [PANEL_MIN, viewport*0.5].
-  const PANEL_KEY = 'jsonos.panelWidth';
+  const PANEL_KEY = "jsonos.panelWidth";
   const PANEL_MIN = 280;
   const PANEL_DEFAULT = 380;
   let panelWidthRaw = $state<number>(readPanelWidth());
-  let viewportWidth = $state<number>(typeof window === 'undefined' ? 1024 : window.innerWidth);
+  let viewportWidth = $state<number>(
+    typeof window === "undefined" ? 1024 : window.innerWidth,
+  );
   let panelMax = $derived(Math.floor(viewportWidth * 0.5));
-  let panelWidth = $derived(Math.max(PANEL_MIN, Math.min(panelMax, panelWidthRaw)));
+  let panelWidth = $derived(
+    Math.max(PANEL_MIN, Math.min(panelMax, panelWidthRaw)),
+  );
   let resizing = $state(false);
 
   function readPanelWidth(): number {
     try {
-      const v = parseInt(localStorage.getItem(PANEL_KEY) ?? '', 10);
+      const v = parseInt(localStorage.getItem(PANEL_KEY) ?? "", 10);
       return Number.isFinite(v) && v > 0 ? v : PANEL_DEFAULT;
-    } catch { return PANEL_DEFAULT; }
+    } catch {
+      return PANEL_DEFAULT;
+    }
   }
   function persistPanelWidth(w: number) {
-    try { localStorage.setItem(PANEL_KEY, String(w)); } catch {}
+    try {
+      localStorage.setItem(PANEL_KEY, String(w));
+    } catch {}
   }
 
   function startPanelResize(e: PointerEvent) {
@@ -62,13 +78,13 @@
     };
     const onUp = () => {
       resizing = false;
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-      panelWidthRaw = panelWidth;        // commit clamped value
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      panelWidthRaw = panelWidth; // commit clamped value
       persistPanelWidth(panelWidth);
     };
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
   }
   function resetPanelWidth() {
     panelWidthRaw = PANEL_DEFAULT;
@@ -83,13 +99,24 @@
     const parts: string[] = [];
     for (let i = 0; i < fr.length; i++) {
       parts.push(`minmax(0, ${fr[i]}fr)`);
-      if (i < fr.length - 1) parts.push('6px');
+      if (i < fr.length - 1) parts.push("6px");
     }
-    return parts.join(' ');
+    return parts.join(" ");
   });
 
-  onMount(async () => {
-    await workspace.init();
+  onMount(() => {
+    workspace.init();
+    const handleSideTabEvent = (e: Event) => {
+      const tab = (e as CustomEvent).detail as SideTab;
+      if (tab) {
+        sideTab = tab;
+        panelOpen = true;
+      }
+    };
+    window.addEventListener("jsonos:open-side-tab", handleSideTabEvent);
+    return () => {
+      window.removeEventListener("jsonos:open-side-tab", handleSideTabEvent);
+    };
   });
 
   // Global drag-and-drop: drop a JSON file anywhere on the app.
@@ -97,7 +124,9 @@
   let dragDepth = 0;
   let appDragOver = $state(false);
   function isFileDrag(e: DragEvent): boolean {
-    return !!e.dataTransfer?.types.some((t) => t === 'Files' || t === 'application/json');
+    return !!e.dataTransfer?.types.some(
+      (t) => t === "Files" || t === "application/json",
+    );
   }
   function onDragEnter(e: DragEvent) {
     if (!isFileDrag(e)) return;
@@ -114,7 +143,7 @@
   function onDragOver(e: DragEvent) {
     if (!isFileDrag(e)) return;
     e.preventDefault();
-    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+    if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
   }
   async function onDrop(e: DragEvent) {
     if (!isFileDrag(e)) return;
@@ -136,126 +165,175 @@
     }
     const others = workspace.docs.filter((d) => d.id !== workspace.active?.id);
     if (others.length === 1) {
-      workspace.openSideBySide(workspace.active.id, others[0].id, 'tree');
+      workspace.openSideBySide(workspace.active.id, others[0].id, "tree");
       compare.setPair(0, 1);
       return;
     }
     panelOpen = true;
-    sideTab = 'diff';
+    sideTab = "diff";
   }
 
   function onKey(e: KeyboardEvent) {
     // The Markdown tool owns its own keymap.
-    if (tool.current === 'md') return;
+    if (tool.current === "md") return;
     // If a focused widget already handled it (CodeMirror keymap with
     // Prec.highest, native form controls), don't double-fire.
     if (e.defaultPrevented) return;
     const meta = e.metaKey || e.ctrlKey;
     if (!meta) return;
     const key = e.key.toLowerCase();
-    if (key === 'z' && !e.shiftKey) { e.preventDefault(); doc.undo(); }
-    else if ((key === 'z' && e.shiftKey) || key === 'y') { e.preventDefault(); doc.redo(); }
-    else if (e.key === 's') { e.preventDefault(); doc.download(); }
-    else if (e.key === '/' || (e.shiftKey && e.key === 'F')) { e.preventDefault(); doc.format(2); }
-    else if (e.key === '\\') { e.preventDefault(); panelOpen = !panelOpen; }
-    else if (e.key === 't') { e.preventDefault(); workspace.newDoc(); }
-    else if (e.shiftKey && (e.key === 'w' || e.key === 'W')) { e.preventDefault(); ui.toggleWrap(); }
-    else if (e.shiftKey && (e.key === 'c' || e.key === 'C')) { e.preventDefault(); toggleCompare(); }
-    else if (e.shiftKey && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); panelOpen = true; sideTab = 'query'; }
-    else if (e.key === '1' || e.key === '2' || e.key === '3') {
+    if (key === "z" && !e.shiftKey) {
+      e.preventDefault();
+      doc.undo();
+    } else if ((key === "z" && e.shiftKey) || key === "y") {
+      e.preventDefault();
+      doc.redo();
+    } else if (e.key === "s") {
+      e.preventDefault();
+      doc.download();
+    } else if (e.key === "/" || (e.shiftKey && e.key === "F")) {
+      e.preventDefault();
+      doc.format(2);
+    } else if (e.key === "\\") {
+      e.preventDefault();
+      panelOpen = !panelOpen;
+    } else if (e.key === "t") {
+      e.preventDefault();
+      workspace.newDoc();
+    } else if (e.shiftKey && (e.key === "w" || e.key === "W")) {
+      e.preventDefault();
+      ui.toggleWrap();
+    } else if (e.shiftKey && (e.key === "c" || e.key === "C")) {
+      e.preventDefault();
+      toggleCompare();
+    } else if (e.shiftKey && (e.key === "k" || e.key === "K")) {
+      e.preventDefault();
+      panelOpen = true;
+      sideTab = "query";
+    } else if (!e.shiftKey && (e.key === "k" || e.key === "K")) {
+      e.preventDefault();
+      commandPaletteOpen = true;
+    } else if (e.key === "1" || e.key === "2" || e.key === "3") {
       const n = Number(e.key) - 1;
-      if (workspace.slots[n]) { e.preventDefault(); workspace.focusSlot(n); }
+      if (workspace.slots[n]) {
+        e.preventDefault();
+        workspace.focusSlot(n);
+      }
     }
   }
 </script>
 
 <svelte:window onkeydown={onKey} onresize={onWindowResize} />
 
-{#if tool.current === 'md'}
+{#if tool.current === "md"}
   {#if MarkdownTool}
     {@const Md = MarkdownTool}
     <Md />
   {:else if mdError}
-    <div class="md-loading"><div class="md-error">Failed to load Markdown tool: {mdError}</div></div>
+    <div class="md-loading">
+      <div class="md-error">Failed to load Markdown tool: {mdError}</div>
+    </div>
   {:else}
     <div class="md-loading">Loading Markdown tool…</div>
   {/if}
 {:else}
-<div
-  class="app"
-  class:dragging={appDragOver}
-  ondragenter={onDragEnter}
-  ondragleave={onDragLeave}
-  ondragover={onDragOver}
-  ondrop={onDrop}
-  role="application"
->
-  {#if appDragOver}
-    <div class="drop-overlay">
-      <div class="drop-card">
-        <div class="drop-icon">⤓</div>
-        <div class="drop-title">Drop to load</div>
-        <div class="drop-sub">Loads into <strong>{workspace.active?.name ?? 'current doc'}</strong></div>
-      </div>
-    </div>
-  {/if}
-  <TabBar />
-  <Toolbar bind:panelOpen bind:sideTab onCompare={toggleCompare} />
-
   <div
-    class="layout"
-    class:has-panel={panelOpen}
-    style:--panel-width="{panelWidth}px"
+    class="app"
+    class:dragging={appDragOver}
+    ondragenter={onDragEnter}
+    ondragleave={onDragLeave}
+    ondragover={onDragOver}
+    ondrop={onDrop}
+    role="application"
   >
-    <div class="workspace" bind:this={workspaceEl} style:grid-template-columns={gridTemplate}>
-      {#each workspace.slots as slot, i (i)}
-        <SlotView {slot} index={i} focused={i === workspace.focusedSlotIndex} />
-        {#if i < workspace.slots.length - 1}
-          <SlotResizer leftIndex={i} containerEl={workspaceEl ?? null} />
-        {/if}
-      {/each}
-    </div>
-    {#if panelOpen}
-      <!-- svelte-ignore a11y_no_static_element_interactions -->
+    {#if appDragOver}
+      <div class="drop-overlay">
+        <div class="drop-card">
+          <div class="drop-icon">⤓</div>
+          <div class="drop-title">Drop to load</div>
+          <div class="drop-sub">
+            Loads into <strong>{workspace.active?.name ?? "current doc"}</strong
+            >
+          </div>
+        </div>
+      </div>
+    {/if}
+    <TabBar />
+    <Toolbar
+      bind:panelOpen
+      bind:sideTab
+      bind:commandPaletteOpen
+      onCompare={toggleCompare}
+    />
+
+    <div
+      class="layout"
+      class:has-panel={panelOpen}
+      style:--panel-width="{panelWidth}px"
+    >
       <div
-        class="panel-resizer"
-        class:dragging={resizing}
-        onpointerdown={startPanelResize}
-        ondblclick={resetPanelWidth}
-        role="separator"
-        aria-orientation="vertical"
-        aria-label="Resize side panel"
-        aria-valuemin={PANEL_MIN}
-        aria-valuemax={panelMax}
-        aria-valuenow={panelWidth}
-        title="Drag to resize · double-click to reset"
-      ></div>
-      <div class="side"><SidePanel bind:tab={sideTab} onClose={() => panelOpen = false} /></div>
-    {/if}
-  </div>
+        class="workspace"
+        bind:this={workspaceEl}
+        style:grid-template-columns={gridTemplate}
+      >
+        {#each workspace.slots as slot, i (i)}
+          <SlotView
+            {slot}
+            index={i}
+            focused={i === workspace.focusedSlotIndex}
+          />
+          {#if i < workspace.slots.length - 1}
+            <SlotResizer leftIndex={i} containerEl={workspaceEl ?? null} />
+          {/if}
+        {/each}
+      </div>
+      {#if panelOpen}
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div
+          class="panel-resizer"
+          class:dragging={resizing}
+          onpointerdown={startPanelResize}
+          ondblclick={resetPanelWidth}
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize side panel"
+          aria-valuemin={PANEL_MIN}
+          aria-valuemax={panelMax}
+          aria-valuenow={panelWidth}
+          title="Drag to resize · double-click to reset"
+        ></div>
+        <div class="side">
+          <SidePanel bind:tab={sideTab} onClose={() => (panelOpen = false)} />
+        </div>
+      {/if}
+    </div>
 
-  <ValidationPanel />
+    <ValidationPanel />
+    <CommandPalette bind:open={commandPaletteOpen} />
 
-  <div class="hint-bar" aria-hidden="true">
-    {#if compare.pair}
-      <kbd>⌘⇧C</kbd> unlink ·
-      <kbd>⌘[</kbd> / <kbd>⌘]</kbd> prev / next change ·
-      <kbd>⌘⇧K</kbd> query
-    {:else if workspace.slots.length > 1}
-      <kbd>⌘1</kbd>–<kbd>⌘3</kbd> focus column ·
-      <kbd>⌘\</kbd> panel ·
-      <kbd>⌘⇧K</kbd> query ·
-      <kbd>⌘⇧C</kbd> compare
-    {:else}
-      <kbd>⌘/</kbd> format ·
-      <kbd>⌘⇧W</kbd> wrap ·
-      <kbd>⌘\</kbd> panel ·
-      <kbd>⌘⇧K</kbd> query ·
-      <kbd>⌘⇧C</kbd> compare ·
-      <kbd>?</kbd> help
-    {/if}
+    <div class="hint-bar" aria-hidden="true">
+      {#if compare.pair}
+        <kbd>⌘K</kbd> search ·
+        <kbd>⌘⇧C</kbd> unlink ·
+        <kbd>⌘[</kbd> / <kbd>⌘]</kbd> prev / next change ·
+        <kbd>⌘⇧K</kbd> query
+      {:else if workspace.slots.length > 1}
+        <kbd>⌘K</kbd> search ·
+        <kbd>⌘1</kbd>–<kbd>⌘3</kbd> focus column ·
+        <kbd>⌘\</kbd> panel ·
+        <kbd>⌘⇧K</kbd> query ·
+        <kbd>⌘⇧C</kbd> compare
+      {:else}
+        <kbd>⌘K</kbd> search ·
+        <kbd>⌘/</kbd> format ·
+        <kbd>⌘⇧W</kbd> wrap ·
+        <kbd>⌘\</kbd> panel ·
+        <kbd>⌘⇧K</kbd> query ·
+        <kbd>⌘⇧C</kbd> compare ·
+        <kbd>?</kbd> help
+      {/if}
+    </div>
   </div>
-</div>
 {/if}
 
 <style>
@@ -268,7 +346,9 @@
     color: var(--muted);
     font-size: 13px;
   }
-  .md-error { color: var(--err); }
+  .md-error {
+    color: var(--err);
+  }
   :global(:root),
   :global([data-theme="dark"]) {
     color-scheme: dark;
@@ -279,24 +359,24 @@
     --fg: #e8ecf2;
     --muted: #8b95a5;
     --border: #2a313e;
-    --row-hover: rgba(255,255,255,0.045);
-    --row-hover-strong: rgba(255,255,255,0.085);
+    --row-hover: rgba(255, 255, 255, 0.045);
+    --row-hover-strong: rgba(255, 255, 255, 0.085);
     --accent: #5b9eff;
     --accent-fg: #ffffff;
-    --accent-soft: rgba(91,158,255,0.16);
+    --accent-soft: rgba(91, 158, 255, 0.16);
     --ok: #4ec97a;
-    --ok-soft: rgba(78,201,122,0.16);
+    --ok-soft: rgba(78, 201, 122, 0.16);
     --err: #ff6b66;
-    --err-bg: rgba(255,107,102,0.14);
+    --err-bg: rgba(255, 107, 102, 0.14);
     --warn: #f5cf6a;
     --key: #82b6ff;
     --str: #b9dcff;
     --num: #f5cf6a;
     --bool: #ff8a82;
     --null: #8b95a5;
-    --selection: rgba(91,158,255,0.28);
-    --ring: rgba(91,158,255,0.55);
-    --shadow: 0 20px 60px rgba(0,0,0,0.55);
+    --selection: rgba(91, 158, 255, 0.28);
+    --ring: rgba(91, 158, 255, 0.55);
+    --shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
     --radius: 4px;
     --radius-lg: 8px;
   }
@@ -310,45 +390,62 @@
     --fg: #11151c;
     --muted: #5a6373;
     --border: #d8dde6;
-    --row-hover: rgba(15,23,42,0.04);
-    --row-hover-strong: rgba(15,23,42,0.08);
+    --row-hover: rgba(15, 23, 42, 0.04);
+    --row-hover-strong: rgba(15, 23, 42, 0.08);
     --accent: #2563eb;
     --accent-fg: #ffffff;
-    --accent-soft: rgba(37,99,235,0.14);
+    --accent-soft: rgba(37, 99, 235, 0.14);
     --ok: #16a34a;
-    --ok-soft: rgba(22,163,74,0.14);
+    --ok-soft: rgba(22, 163, 74, 0.14);
     --err: #dc2626;
-    --err-bg: rgba(220,38,38,0.10);
+    --err-bg: rgba(220, 38, 38, 0.1);
     --warn: #b45309;
     --key: #1d4ed8;
     --str: #047857;
     --num: #b45309;
     --bool: #c026d3;
     --null: #6b7280;
-    --selection: rgba(37,99,235,0.22);
-    --ring: rgba(37,99,235,0.45);
-    --shadow: 0 16px 48px rgba(15,23,42,0.18);
+    --selection: rgba(37, 99, 235, 0.22);
+    --ring: rgba(37, 99, 235, 0.45);
+    --shadow: 0 16px 48px rgba(15, 23, 42, 0.18);
     --radius: 4px;
     --radius-lg: 8px;
   }
 
-  :global(html, body, #app) { height: 100%; margin: 0; }
-  :global(html) { background: var(--bg); }
+  :global(html, body, #app) {
+    height: 100%;
+    margin: 0;
+  }
+  :global(html) {
+    background: var(--bg);
+  }
   :global(body) {
     background: var(--bg);
     color: var(--fg);
-    font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font:
+      13px/1.45 system-ui,
+      -apple-system,
+      "Segoe UI",
+      Roboto,
+      sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-feature-settings: "ss01", "cv11", "tnum" 0;
+    font-feature-settings:
+      "ss01",
+      "cv11",
+      "tnum" 0;
     overflow: hidden;
   }
   :global(::selection) {
     background: var(--selection);
     color: var(--fg);
   }
-  :global(*) { box-sizing: border-box; }
-  :global(button) { font-family: inherit; }
+  :global(*) {
+    box-sizing: border-box;
+  }
+  :global(button) {
+    font-family: inherit;
+  }
   :global(:focus-visible) {
     outline: 2px solid var(--ring);
     outline-offset: 1px;
@@ -363,8 +460,13 @@
   }
 
   /* Scrollbars */
-  :global(*::-webkit-scrollbar) { width: 10px; height: 10px; }
-  :global(*::-webkit-scrollbar-track) { background: transparent; }
+  :global(*::-webkit-scrollbar) {
+    width: 10px;
+    height: 10px;
+  }
+  :global(*::-webkit-scrollbar-track) {
+    background: transparent;
+  }
   :global(*::-webkit-scrollbar-thumb) {
     background: var(--border);
     border-radius: 6px;
@@ -376,7 +478,10 @@
     background-clip: content-box;
     border: 2px solid transparent;
   }
-  :global(*) { scrollbar-color: var(--border) transparent; scrollbar-width: thin; }
+  :global(*) {
+    scrollbar-color: var(--border) transparent;
+    scrollbar-width: thin;
+  }
   .app {
     display: flex;
     flex-direction: column;
@@ -397,14 +502,19 @@
     min-height: 0;
     min-width: 0;
   }
-  .side { min-width: 0; min-height: 0; }
+  .side {
+    min-width: 0;
+    min-height: 0;
+  }
 
   /* Mobile: panel becomes full-width overlay; resizer hidden. */
   @media (max-width: 768px) {
     .layout.has-panel {
       grid-template-columns: 1fr;
     }
-    .panel-resizer { display: none; }
+    .panel-resizer {
+      display: none;
+    }
     .side {
       position: fixed;
       inset: 0;
@@ -412,23 +522,40 @@
       background: var(--surface);
       box-shadow: var(--shadow);
     }
-    .hint-bar { display: none; }
+    .hint-bar {
+      display: none;
+    }
   }
   .panel-resizer {
     width: 6px;
     cursor: col-resize;
-    background:
-      linear-gradient(to right, transparent 2px, var(--border) 2px, var(--border) 3px, transparent 3px);
+    background: linear-gradient(
+      to right,
+      transparent 2px,
+      var(--border) 2px,
+      var(--border) 3px,
+      transparent 3px
+    );
     user-select: none;
     transition: background 120ms;
   }
   .panel-resizer:hover {
-    background:
-      linear-gradient(to right, transparent 2px, var(--accent) 2px, var(--accent) 3px, transparent 3px);
+    background: linear-gradient(
+      to right,
+      transparent 2px,
+      var(--accent) 2px,
+      var(--accent) 3px,
+      transparent 3px
+    );
   }
   .panel-resizer.dragging {
-    background:
-      linear-gradient(to right, transparent 1px, var(--accent) 1px, var(--accent) 4px, transparent 4px);
+    background: linear-gradient(
+      to right,
+      transparent 1px,
+      var(--accent) 1px,
+      var(--accent) 4px,
+      transparent 4px
+    );
   }
 
   .hint-bar {
@@ -451,14 +578,24 @@
     padding: 0 5px;
     margin: 0 2px;
     color: var(--fg);
-    font: 10px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font:
+      10px ui-monospace,
+      SFMono-Regular,
+      Menlo,
+      Consolas,
+      monospace;
   }
 
-  .app.dragging > :not(.drop-overlay) { pointer-events: none; }
+  .app.dragging > :not(.drop-overlay) {
+    pointer-events: none;
+  }
   .drop-overlay {
-    position: fixed; inset: 0;
+    position: fixed;
+    inset: 0;
     z-index: 1000;
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: color-mix(in oklab, var(--bg) 50%, transparent);
     backdrop-filter: blur(3px);
     border: 3px dashed var(--accent);
@@ -467,8 +604,13 @@
     animation: drop-pulse 1.2s ease-in-out infinite;
   }
   @keyframes drop-pulse {
-    0%,100% { box-shadow: inset 0 0 0 6px var(--accent-soft); }
-    50%     { box-shadow: inset 0 0 0 12px var(--accent-soft); }
+    0%,
+    100% {
+      box-shadow: inset 0 0 0 6px var(--accent-soft);
+    }
+    50% {
+      box-shadow: inset 0 0 0 12px var(--accent-soft);
+    }
   }
   .drop-card {
     background: var(--surface);
@@ -479,7 +621,19 @@
     text-align: center;
     color: var(--fg);
   }
-  .drop-icon { font-size: 38px; line-height: 1; color: var(--accent); margin-bottom: 6px; }
-  .drop-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-  .drop-sub { font-size: 12px; color: var(--muted); }
+  .drop-icon {
+    font-size: 38px;
+    line-height: 1;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .drop-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .drop-sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
 </style>
