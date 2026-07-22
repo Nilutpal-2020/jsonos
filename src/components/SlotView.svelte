@@ -2,6 +2,7 @@
   import TextView from '../views/TextView.svelte';
   import TreeView from '../views/TreeView.svelte';
   import TableView from '../views/TableView.svelte';
+  import ChartView from '../views/ChartView.svelte';
   import { workspace, MAX_SLOTS, type Slot, type SlotView, type DocStore } from '../core/store.svelte';
   import { compare } from '../core/compare.svelte';
   import { treeExpand } from '../core/tree-expand.svelte';
@@ -46,6 +47,7 @@
       <button class:on={slot.view === 'text'}  onclick={() => setView('text')}  title="Text view">Text</button>
       <button class:on={slot.view === 'tree'}  onclick={() => setView('tree')}  title="Tree view">Tree</button>
       <button class:on={slot.view === 'table'} onclick={() => setView('table')} title="Table view">Table</button>
+      <button class:on={slot.view === 'chart'} onclick={() => setView('chart')} title="Chart view">Chart</button>
     </div>
 
     {#if slot.view === 'tree' && doc}
@@ -75,8 +77,10 @@
         <TextView {doc} slotIndex={index} />
       {:else if slot.view === 'tree'}
         <TreeView {doc} {diffByPath} {diffSide} slotIndex={index} />
-      {:else}
+      {:else if slot.view === 'table'}
         <TableView {doc} />
+      {:else}
+        <ChartView {doc} />
       {/if}
     {/if}
   </div>
