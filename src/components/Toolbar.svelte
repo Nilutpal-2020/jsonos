@@ -6,7 +6,7 @@
   import ContextMenu, { type MenuItem } from "./ContextMenu.svelte";
   import HelpDialog from "./HelpDialog.svelte";
 
-  type SideTab = "schema" | "diff" | "query" | "types" | "anonymize";
+  type SideTab = "schema" | "diff" | "query" | "types" | "anonymize" | "api";
   let {
     panelOpen = $bindable(false),
     sideTab = $bindable<SideTab>("schema"),
@@ -277,6 +277,12 @@
       title="Redact & anonymize PII and secrets"
       class:on={panelOpen && sideTab === "anonymize"}
       aria-pressed={panelOpen && sideTab === "anonymize"}>🔒 Redact</button
+    >
+    <button
+      onclick={() => openSidePanel("api")}
+      title="In-Browser API Client & cURL Sandbox"
+      class:on={panelOpen && sideTab === "api"}
+      aria-pressed={panelOpen && sideTab === "api"}>⚡ API</button
     >
     <button
       onclick={() => (commandPaletteOpen = true)}
