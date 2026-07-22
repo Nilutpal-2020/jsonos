@@ -31,7 +31,7 @@
       });
   });
 
-  type SideTab = "schema" | "diff" | "query";
+  type SideTab = "schema" | "diff" | "query" | "types" | "anonymize";
   let panelOpen = $state(false);
   let sideTab = $state<SideTab>("schema");
   let commandPaletteOpen = $state(false);
