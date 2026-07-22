@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>How to Fix Malformed and Broken JSON Online: Escaped Quotes, Trailing Commas &amp; Repair Guide — JSON OS Blog</title>
+    <meta name="description" content="Learn how to repair malformed JSON online. Step-by-step guide to fixing unescaped quotes, stringified double-quotes, trailing commas, missing colons, single quotes, and Python literals." />
+    <meta name="keywords" content="repair broken json online, fix malformed json online, fix escaped quotes in json, json repair tool, fix trailing comma json, json repair online, fix broken json string" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://jsonos.online/blog/how-to-fix-broken-json-online" />
+    <link rel="alternate" hreflang="en" href="https://jsonos.online/blog/how-to-fix-broken-json-online" />
+    <link rel="alternate" hreflang="x-default" href="https://jsonos.online/blog/how-to-fix-broken-json-online" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#131720" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="JSON OS" />
+    <meta property="og:title" content="How to Fix Malformed and Broken JSON Online: Repair Escaped Quotes &amp; Syntax Quirks" />
+    <meta property="og:description" content="Repair broken JSON payload instantly in your browser. Learn how to clean log files, unescape inner quotes, remove trailing commas, and convert Python dicts to canonical JSON." />
+    <meta property="og:url" content="https://jsonos.online/blog/how-to-fix-broken-json-online" />
+    <meta property="og:image" content="https://jsonos.online/og-image.png" />
+
+    <link rel="stylesheet" href="/_legal.css" />
+    <style>
+      .article-container { max-width: 720px; margin: 0 auto; padding: 56px 24px 64px; }
+      .article-container h1 { font-size: 34px; line-height: 1.2; margin: 0 0 16px; }
+      .article-meta { color: var(--muted, #8b95a5); font-size: 14px; margin-bottom: 48px; border-bottom: 1px solid rgba(127,127,127,0.18); padding-bottom: 24px; }
+      .article-content { line-height: 1.75; color: #d1d5db; font-size: 16px; }
+      @media (prefers-color-scheme: light) { .article-content { color: #374151; } }
+      .article-content h2 { margin: 40px 0 16px; font-size: 24px; color: inherit; }
+      .article-content h3 { margin: 28px 0 12px; font-size: 19px; color: inherit; }
+      .article-content p { margin: 0 0 20px; }
+      .article-content ul, .article-content ol { margin: 0 0 24px; padding-left: 24px; }
+      .article-content li { margin-bottom: 8px; }
+      .article-content pre { background: rgba(0,0,0,0.3); padding: 14px 18px; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 13px; overflow-x: auto; border: 1px solid rgba(127,127,127,0.2); margin-bottom: 24px; }
+      .breadcrumbs { max-width: 720px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
+      .breadcrumbs a { color: inherit; }
+      .callout { background: rgba(37, 99, 235, 0.12); border-left: 4px solid #2563eb; padding: 16px 20px; border-radius: 0 8px 8px 0; margin-bottom: 24px; }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumbs"><a href="/">JSON OS</a> &rsaquo; <a href="/blog/">Blog</a> &rsaquo; How to Fix Malformed and Broken JSON Online</nav>
+    <main class="article-container">
+      <h1>How to Fix Malformed and Broken JSON Online: Escaped Quotes, Trailing Commas &amp; Repair Guide</h1>
+      <div class="article-meta">Published on July 22, 2026 • 6 min read</div>
+
+      <div class="article-content">
+        <p>JSON (JavaScript Object Notation) is the universal data format for modern web APIs, database exports, and configuration files. However, JSON strictness means even a single missing quote, unescaped character, or trailing comma will cause standard parsers like <code>JSON.parse()</code> to crash with unhelpful errors like <code>Unexpected token</code> or <code>Invalid JSON</code>.</p>
+
+        <div class="callout">
+          <strong>Instant 1-Click Repair:</strong> Paste your broken or malformed payload into the <a href="/" style="color:#5b9eff">JSON OS Editor</a> and click <strong>⚡ Repair JSON</strong> to auto-fix quotes, comments, and syntax quirks instantly.
+        </div>
+
+        <h2>Common Causes of Broken JSON &amp; How to Fix Them</h2>
+
+        <h3>1. Escaped Quotes (<code>\"</code>) &amp; Double-Encoded Stringified JSON</h3>
+        <p>When JSON objects are serialized inside log messages or stringified database columns, quote marks are often escaped with backslashes:</p>
+        <pre><code>// Broken / Escaped input:
+{\"name\": \"Alice\", \"age\": 30, \"role\": \"developer\"}</code></pre>
+        <p><strong>Solution:</strong> A forgiving repair parser strips outer quote wrappers, normalizes <code>\"</code> to standard double quotes <code>"</code> outside string values, and re-emits valid JSON.</p>
+
+        <h3>2. Unescaped Inner Double Quotes in String Literals</h3>
+        <p>When user input contains quotes inside string values (e.g. <code>"description": "This is a "quoted" phrase"</code>), standard JSON breaks because the inner quote prematurely terminates the string token.</p>
+        <pre><code>// Broken:
+{"title": "The "Awesome" Guide", "price": 10}
+
+// Repaired Canonical JSON:
+{"title": "The \"Awesome\" Guide", "price": 10}</code></pre>
+
+        <h3>3. Trailing Commas in Objects and Arrays</h3>
+        <p>While trailing commas are allowed in JavaScript and TypeScript literals, RFC 8259 JSON strictly forbids them:</p>
+        <pre><code>// Broken (trailing commas):
+{
+  "items": [1, 2, 3,],
+  "active": true,
+}
+
+// Repaired:
+{
+  "items": [1, 2, 3],
+  "active": true
+}</code></pre>
+
+        <h3>4. Single Quotes and Smart Quotes</h3>
+        <p>Copying JSON from rich text editors or Python dictionary strings often introduces single quotes (<code>'</code>) or smart curly quotes (<code>“ ”</code>):</p>
+        <pre><code>// Python dictionary string:
+{'user_id': 101, 'status': 'active', 'roles': ['admin']}
+
+// Repaired JSON:
+{"user_id": 101, "status": "active", "roles": ["admin"]}</code></pre>
+
+        <h3>5. Python / JS Constants (<code>True</code>, <code>False</code>, <code>None</code>, <code>undefined</code>, <code>NaN</code>)</h3>
+        <p>Python outputs <code>True</code>, <code>False</code>, and <code>None</code> instead of lowercase JSON literals <code>true</code>, <code>false</code>, and <code>null</code>. JSON OS automatically maps Python/JS keywords to canonical JSON identifiers.</p>
+
+        <h2>Summary: Always Use Client-Side Privacy Tools</h2>
+        <p>When dealing with sensitive API responses or production logs, avoid pasting confidential data into third-party cloud repair websites. Always rely on local, client-side web applications like <strong>JSON OS</strong> where processing happens 100% inside your browser session.</p>
+      </div>
+    </main>
+  </body>
+</html>

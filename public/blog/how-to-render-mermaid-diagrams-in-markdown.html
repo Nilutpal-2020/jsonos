@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>How to Render Mermaid Diagrams, Flowcharts &amp; Math in Markdown — JSON OS Blog</title>
+    <meta name="description" content="Learn how to write and render live Mermaid diagrams in Markdown. Tutorial on flowcharts, sequence diagrams, gantt charts, mindmaps, and KaTeX math equations." />
+    <meta name="keywords" content="render mermaid diagrams online, mermaid flowchart syntax guide, markdown mermaid editor online, mermaid sequence diagram markdown, katex math in markdown" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://jsonos.online/blog/how-to-render-mermaid-diagrams-in-markdown" />
+    <link rel="alternate" hreflang="en" href="https://jsonos.online/blog/how-to-render-mermaid-diagrams-in-markdown" />
+    <link rel="alternate" hreflang="x-default" href="https://jsonos.online/blog/how-to-render-mermaid-diagrams-in-markdown" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#131720" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="JSON OS" />
+    <meta property="og:title" content="How to Render Mermaid Diagrams, Flowcharts &amp; Math in Markdown" />
+    <meta property="og:description" content="Create software architecture diagrams, system sequence flows, and LaTeX equations inline with pure Markdown syntax." />
+    <meta property="og:url" content="https://jsonos.online/blog/how-to-render-mermaid-diagrams-in-markdown" />
+    <meta property="og:image" content="https://jsonos.online/og-image.png" />
+
+    <link rel="stylesheet" href="/_legal.css" />
+    <style>
+      .article-container { max-width: 720px; margin: 0 auto; padding: 56px 24px 64px; }
+      .article-container h1 { font-size: 34px; line-height: 1.2; margin: 0 0 16px; }
+      .article-meta { color: var(--muted, #8b95a5); font-size: 14px; margin-bottom: 48px; border-bottom: 1px solid rgba(127,127,127,0.18); padding-bottom: 24px; }
+      .article-content { line-height: 1.75; color: #d1d5db; font-size: 16px; }
+      @media (prefers-color-scheme: light) { .article-content { color: #374151; } }
+      .article-content h2 { margin: 40px 0 16px; font-size: 24px; color: inherit; }
+      .article-content h3 { margin: 28px 0 12px; font-size: 19px; color: inherit; }
+      .article-content p { margin: 0 0 20px; }
+      .article-content ul, .article-content ol { margin: 0 0 24px; padding-left: 24px; }
+      .article-content li { margin-bottom: 8px; }
+      .article-content pre { background: rgba(0,0,0,0.3); padding: 14px 18px; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 13px; overflow-x: auto; border: 1px solid rgba(127,127,127,0.2); margin-bottom: 24px; }
+      .breadcrumbs { max-width: 720px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
+      .breadcrumbs a { color: inherit; }
+      .callout { background: rgba(37, 99, 235, 0.12); border-left: 4px solid #2563eb; padding: 16px 20px; border-radius: 0 8px 8px 0; margin-bottom: 24px; }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumbs"><a href="/">JSON OS</a> &rsaquo; <a href="/blog/">Blog</a> &rsaquo; How to Render Mermaid Diagrams in Markdown</nav>
+    <main class="article-container">
+      <h1>How to Render Mermaid Diagrams, Flowcharts &amp; Math in Markdown</h1>
+      <div class="article-meta">Published on July 22, 2026 • 6 min read</div>
+
+      <div class="article-content">
+        <p>Markdown is the gold standard for developer documentation, READMEs, and technical blog posts. By embedding <strong>Mermaid.js</strong> diagrams and <strong>KaTeX</strong> math equations directly inside standard markdown code blocks, technical documentation stays version-controlled, searchable, and visually engaging without relying on static PNG or SVG image exports.</p>
+
+        <div class="callout">
+          <strong>Markdown Studio:</strong> Try writing live Markdown with instant Mermaid diagram preview and KaTeX math rendering in <a href="/markdown" style="color:#5b9eff">JSON OS Markdown Studio</a>.
+        </div>
+
+        <h2>Supported Mermaid Diagram Types</h2>
+
+        <h3>1. Flowcharts (<code>graph TD</code> / <code>graph LR</code>)</h3>
+        <pre><code>```mermaid
+graph TD
+  A[Client Request] --> B{Valid Payload?}
+  B -- Yes --> C[Database Save]
+  B -- No --> D[Return 400 Error]
+```</code></pre>
+
+        <h3>2. Sequence Diagrams (<code>sequenceDiagram</code>)</h3>
+        <pre><code>```mermaid
+sequenceDiagram
+  autonumber
+  Client->>Server: POST /api/v1/auth
+  Server-->>Client: 200 OK { token }
+```</code></pre>
+
+        <h3>3. Mindmaps (<code>mindmap</code>)</h3>
+        <pre><code>```mermaid
+mindmap
+  root((System Architecture))
+    Frontend
+      Svelte 5
+      CodeMirror 6
+    Backend
+      Cloudflare Workers
+```</code></pre>
+
+        <h2>LaTeX Math Formatting with KaTeX</h2>
+        <p>Render mathematical formulas inline using single dollar signs <code>$E = mc^2$</code> or block math using double dollar signs <code>$$ ... $$</code>:</p>
+        <pre><code>$$
+\frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+$$</code></pre>
+
+        <h2>Conclusion</h2>
+        <p>Combining Markdown with inline Mermaid diagrams and KaTeX formulas turns text documents into interactive visual architecture specifications. Start writing today in <a href="/markdown">JSON OS Markdown Studio</a>.</p>
+      </div>
+    </main>
+  </body>
+</html>
