@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>JSON to Zod Schema Generator Online — Zod Validation Schemas · JSON OS</title>
+    <meta name="description" content="Free online JSON to Zod converter. Generate Zod runtime validation schemas (z.object) and inferred TypeScript types from JSON payloads. 100% browser-based." />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://jsonos.online/tools/json-to-zod" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#131720" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="JSON OS" />
+    <meta property="og:title" content="JSON to Zod Schema Generator Online — JSON OS" />
+    <meta property="og:description" content="Generate Zod runtime validation schemas (z.object) from JSON payloads. 100% local-first." />
+    <meta property="og:url" content="https://jsonos.online/tools/json-to-zod" />
+    <meta property="og:image" content="https://jsonos.online/og-image.png" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "JSON to Zod Converter",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web",
+        "url": "https://jsonos.online/tools/json-to-zod",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "JSON OS", "item": "https://jsonos.online/" },
+          { "@type": "ListItem", "position": 2, "name": "Tools", "item": "https://jsonos.online/tools/" },
+          { "@type": "ListItem", "position": 3, "name": "JSON to Zod", "item": "https://jsonos.online/tools/json-to-zod" }
+        ]
+      }
+    </script>
+
+    <link rel="stylesheet" href="/_legal.css" />
+    <style>
+      .hero { max-width: 880px; margin: 0 auto; padding: 56px 24px 32px; }
+      .hero h1 { font-size: 32px; line-height: 1.2; margin: 0 0 12px; }
+      .hero .lede { font-size: 16px; color: var(--muted, #8b95a5); margin: 0 0 20px; }
+      .cta { display: inline-flex; gap: 8px; align-items: center; background: #2563eb; color: #fff; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; }
+      .cta:hover { filter: brightness(1.08); }
+      .features { max-width: 880px; margin: 0 auto; padding: 8px 24px 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+      .features div { background: rgba(127,127,127,0.06); border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; padding: 16px; }
+      .features h3 { margin: 0 0 6px; font-size: 14px; }
+      .features p { margin: 0; font-size: 13px; color: var(--muted, #6b7280); }
+      .breadcrumbs { max-width: 880px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
+      .breadcrumbs a { color: inherit; }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumbs"><a href="/">JSON OS</a> &rsaquo; <a href="/tools/">Tools</a> &rsaquo; JSON to Zod</nav>
+    <main class="hero">
+      <h1>JSON to Zod Schema Generator Online</h1>
+      <p class="lede">Infer runtime Zod validation schemas (<code>z.object</code>) and <code>z.infer&lt;typeof Schema&gt;</code> types directly from your JSON payloads. Free and local-first.</p>
+      <a class="cta" href="/?tab=types&target=zod">Open JSON to Zod Generator →</a>
+
+      <h2 style="margin-top:36px">Features</h2>
+      <p>Generates <code>export const RootSchema = z.object({ ... })</code> schemas with proper primitive types (<code>z.string()</code>, <code>z.number().int()</code>, <code>z.boolean()</code>, <code>z.array()</code>) and exports corresponding TypeScript types.</p>
+    </main>
+
+    <section class="features">
+      <div><h3>Zod Schemas</h3><p>Generates production-ready <code>z.object</code> validation definitions.</p></div>
+      <div><h3>Zod Infer</h3><p>Exports <code>type Root = z.infer&lt;typeof RootSchema&gt;</code> for seamless TypeScript integration.</p></div>
+      <div><h3>Local Compute</h3><p>Runs in browser memory. No third-party servers.</p></div>
+    </section>
+
+    <footer style="text-align:center;padding:24px;color:var(--muted,#8b95a5);font-size:12px">
+      <a href="/">JSON OS</a> · <a href="/tools/json-to-typescript">JSON to TypeScript</a> · <a href="/tools/json-to-pydantic">JSON to Pydantic</a> · <a href="/privacy.html">Privacy</a>
+    </footer>
+  </body>
+</html>
