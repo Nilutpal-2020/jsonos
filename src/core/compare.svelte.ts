@@ -27,8 +27,16 @@ class CompareStore {
   pair = $state<{ left: number; right: number } | null>(null);
   rules = $state<IgnoreRules>(readRules());
 
-  leftDoc = $derived<DocStore | null>(this.pair ? workspace.slotDoc(this.pair.left) ?? null : null);
-  rightDoc = $derived<DocStore | null>(this.pair ? workspace.slotDoc(this.pair.right) ?? null : null);
+  effectivePair = $derived.by<{ left: number; right: number } | null>(() => {
+    if (this.pair) return this.pair;
+    if (workspace.slots.length >= 2 && workspace.slots[0].docId !== workspace.slots[1].docId) {
+      return { left: 0, right: 1 };
+    }
+    return null;
+  });
+
+  leftDoc = $derived<DocStore | null>(this.effectivePair ? workspace.slotDoc(this.effectivePair.left) ?? null : null);
+  rightDoc = $derived<DocStore | null>(this.effectivePair ? workspace.slotDoc(this.effectivePair.right) ?? null : null);
 
   result = $derived.by<DiffResult | null>(() => {
     const L = this.leftDoc;
@@ -67,14 +75,17 @@ class CompareStore {
 
   /** True if `slotIdx` is part of the active pair. */
   isPaired(slotIdx: number): boolean {
-    return this.pair !== null && (this.pair.left === slotIdx || this.pair.right === slotIdx);
+    if (this.effectivePair) {
+      return this.effectivePair.left === slotIdx || this.effectivePair.right === slotIdx;
+    }
+    return false;
   }
 
   /** Which side of the pair is this slot? */
   side(slotIdx: number): 'left' | 'right' | null {
-    if (!this.pair) return null;
-    if (slotIdx === this.pair.left)  return 'left';
-    if (slotIdx === this.pair.right) return 'right';
+    if (!this.effectivePair) return null;
+    if (slotIdx === this.effectivePair.left)  return 'left';
+    if (slotIdx === this.effectivePair.right) return 'right';
     return null;
   }
 

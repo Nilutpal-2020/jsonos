@@ -26,6 +26,7 @@
       python: 'py',
       rust: 'rs',
       go: 'go',
+      dart: 'dart',
       'json-schema': 'json',
     };
     const filename = `${rootName.toLowerCase() || 'types'}.${extMap[target]}`;
@@ -54,6 +55,7 @@
         <button class:active={target === 'python'} onclick={() => (target = 'python')}>Python</button>
         <button class:active={target === 'rust'} onclick={() => (target = 'rust')}>Rust</button>
         <button class:active={target === 'go'} onclick={() => (target = 'go')}>Go</button>
+        <button class:active={target === 'dart'} onclick={() => (target = 'dart')}>Dart</button>
         <button class:active={target === 'json-schema'} onclick={() => (target = 'json-schema')}>Schema</button>
       </div>
     </div>

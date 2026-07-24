@@ -7,6 +7,7 @@
   import SlotView from "./components/SlotView.svelte";
   import SlotResizer from "./components/SlotResizer.svelte";
   import CommandPalette from "./components/CommandPalette.svelte";
+  import CompareBanner from "./components/CompareBanner.svelte";
   import { doc, workspace } from "./core/store.svelte";
   import { ui } from "./core/ui-prefs.svelte";
   import { compare } from "./core/compare.svelte";
@@ -284,6 +285,7 @@
       bind:commandPaletteOpen
       onCompare={toggleCompare}
     />
+    <CompareBanner {panelOpen} {sideTab} />
 
     <div
       class="layout"
