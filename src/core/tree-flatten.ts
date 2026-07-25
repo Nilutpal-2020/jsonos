@@ -13,7 +13,7 @@ export interface Row {
 }
 
 export function pathKey(path: JsonPath): string {
-  return path.length === 0 ? '$' : path.map((p) => typeof p === 'number' ? `[${p}]` : `.${p}`).join('');
+  return path.length === 0 ? '$' : '$' + path.map((p) => typeof p === 'number' ? `[${p}]` : `.${p}`).join('');
 }
 
 /** Default expanded predicate: shallow nodes open, deep ones closed. */

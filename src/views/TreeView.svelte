@@ -68,7 +68,7 @@
 
   onMount(() => {
     virtual = new Virtualizer<HTMLDivElement, HTMLDivElement>({
-      count: rows.length,
+      count: visibleRows.length,
       getScrollElement: () => scrollEl ?? null,
       estimateSize: () => ui.wrap ? ROW_HEIGHT_WRAPPED : ROW_HEIGHT,
       overscan: 12,
@@ -88,10 +88,10 @@
   // Sync row count to virtualizer
   $effect(() => {
     if (!virtual) return;
-    void rows;
+    void visibleRows;
     virtual.setOptions({
       ...virtual.options,
-      count: rows.length,
+      count: visibleRows.length,
     });
     virtual._willUpdate();
     virtualItems = virtual.getVirtualItems();
@@ -155,26 +155,112 @@
   let editingValueId = $state<string | null>(null);
   let editingKeyId = $state<string | null>(null);
   let draft = $state('');
+  let filterQuery = $state('');
   // After addChild, queue an auto-rename so the new key opens in edit mode.
   let pendingKeyEdit: { rowId: string; original: string } | null = null;
+
+  /** Search / filter rows in real time */
+  let matchingRowIds = $derived.by<Set<string> | null>(() => {
+    if (!filterQuery.trim()) return null;
+    const q = filterQuery.trim().toLowerCase();
+    const set = new Set<string>();
+    for (const r of rows) {
+      const kMatch = typeof r.keyName === 'string' && r.keyName.toLowerCase().includes(q);
+      const vMatch = r.kind === 'leaf' && String(r.value ?? '').toLowerCase().includes(q);
+      if (kMatch || vMatch) {
+        for (let i = 0; i <= r.path.length; i++) {
+          set.add(pathKey(r.path.slice(0, i)));
+        }
+      }
+    }
+    return set;
+  });
+
+  let visibleRows = $derived.by(() => {
+    if (!matchingRowIds) return rows;
+    return rows.filter((r) => matchingRowIds.has(r.id) || r.path.length === 0);
+  });
+
+  /** Path of currently selected row for top breadcrumbs */
+  let selectedPath = $derived.by<JsonPath>(() => {
+    void selection.stamp(active.id);
+    if (!selectedKey) return [];
+    const r = rows.find((row) => row.id === selectedKey);
+    return r ? r.path : [];
+  });
+
+  function selectBreadcrumb(path: JsonPath) {
+    if (path.length === 0) {
+      selection.clear(active.id);
+      return;
+    }
+    treeExpand.expandToPath(active.id, path);
+    selection.set(active.id, path, 'tree');
+  }
+
+  function copyPath(path: JsonPath) {
+    if (path.length === 0) {
+      navigator.clipboard?.writeText('$').catch(() => {});
+      return;
+    }
+    const formatted = '$' + path.map((seg) => (typeof seg === 'number' ? `[${seg}]` : `.${seg}`)).join('');
+    navigator.clipboard?.writeText(formatted).catch(() => {});
+  }
 
   /** Render a value to its inline-edit text form: strings unquoted, others as JSON literals. */
   function valueToDraft(v: JsonValue): string {
     return typeof v === 'string' ? v : JSON.stringify(v);
   }
 
-  /** Commit a value edit. If the original was a string, accept the draft as a literal
-      string unless the user explicitly entered a JSON literal (number/bool/null/quoted). */
+  /** Commit a value edit with automatic boolean, number, null, and literal detection. */
   function parseDraft(draft: string, originalKind: string): JsonValue {
     const trimmed = draft.trim();
-    // Try JSON literals first
-    if (/^(true|false|null|-?\d|"|\[|\{)/.test(trimmed)) {
-      try { return JSON.parse(draft) as JsonValue; } catch { /* fall through */ }
+    if (trimmed.toLowerCase() === 'true') return true;
+    if (trimmed.toLowerCase() === 'false') return false;
+    if (trimmed.toLowerCase() === 'null') return null;
+
+    // Strict number check
+    if (/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(trimmed)) {
+      const n = Number(trimmed);
+      if (Number.isFinite(n)) return n;
     }
+
+    // Try full JSON parse for explicit JSON literals (e.g. quoted string "123", array [1,2], object {"a":1})
+    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+        (trimmed.startsWith('[') && trimmed.endsWith(']')) ||
+        (trimmed.startsWith('{') && trimmed.endsWith('}'))) {
+      try {
+        return JSON.parse(trimmed) as JsonValue;
+      } catch { /* fall through */ }
+    }
+
     if (originalKind === 'string') return draft;
-    // Last try: maybe it's a bare number / bool the regex missed
-    const v = JSON.parse(draft) as JsonValue;
-    return v;
+    return draft;
+  }
+
+  function toggleBool(row: Row) {
+    if (row.kind !== 'leaf' || typeof row.value !== 'boolean') return;
+    const nextVal = !row.value;
+    active.applyValuePatch({ op: 'replace', path: row.path, value: nextVal });
+  }
+
+  function convertType(row: Row, targetKind: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'null') {
+    let nextValue: JsonValue;
+    if (targetKind === 'string') {
+      nextValue = row.value === null ? '' : String(row.value);
+    } else if (targetKind === 'number') {
+      const n = Number(row.value);
+      nextValue = isNaN(n) ? 0 : n;
+    } else if (targetKind === 'boolean') {
+      nextValue = Boolean(row.value);
+    } else if (targetKind === 'object') {
+      nextValue = {};
+    } else if (targetKind === 'array') {
+      nextValue = [];
+    } else {
+      nextValue = null;
+    }
+    active.applyValuePatch({ op: 'replace', path: row.path, value: nextValue });
   }
 
   function startValueEdit(row: Row) {
@@ -243,7 +329,7 @@
 
   // After parse completes and rows refresh, if we queued a key edit, start it now.
   $effect(() => {
-    void rows;
+    void visibleRows;
     if (!pendingKeyEdit) return;
     const { rowId } = pendingKeyEdit;
     if (rows.some((r) => r.id === rowId)) {
@@ -397,6 +483,7 @@
   function buildMenu(row: Row): MenuItem[] {
     const isContainerOpen = row.kind === 'object-open' || row.kind === 'array-open';
     const isLeaf = row.kind === 'leaf';
+    const isBool = isLeaf && typeof row.value === 'boolean';
     const canEditKey = typeof row.keyName === 'string' && row.path.length > 0;
     const canRemove = row.path.length > 0;
 
@@ -409,9 +496,14 @@
         kind: 'item' as const, icon: '✎', label: 'Edit value',
         onSelect: () => startValueEdit(row),
       }] : []),
+      ...(isBool ? [{
+        kind: 'item' as const, icon: '☑', label: `Toggle boolean (${!row.value})`,
+        onSelect: () => toggleBool(row),
+      }] : []),
       { kind: 'divider' },
+      { kind: 'item', icon: '⎘', label: 'Copy JSON path', onSelect: () => copyPath(row.path) },
       { kind: 'item', icon: '✂', label: 'Cut',  hint: '⌘X', disabled: !canRemove, onSelect: () => cutRow(row) },
-      { kind: 'item', icon: '⎘', label: 'Copy', hint: '⌘C', onSelect: () => copyRow(row) },
+      { kind: 'item', icon: '⎘', label: 'Copy value', hint: '⌘C', onSelect: () => copyRow(row) },
       { kind: 'item', icon: '📋', label: 'Paste', hint: '⌘V', onSelect: () => pasteAt(row) },
       { kind: 'item', icon: '⎘', label: 'Duplicate',  hint: '⌘D', disabled: !canRemove, onSelect: () => insertSibling(row, 'duplicate') },
       { kind: 'divider' },
@@ -424,11 +516,14 @@
       { kind: 'divider' },
       { kind: 'item', icon: '⇅', label: 'Sort keys', disabled: row.kind !== 'object-open', onSelect: () => sortRow(row) },
       {
-        kind: 'submenu', icon: '⇄', label: 'Convert to',
+        kind: 'submenu', icon: '⇄', label: 'Convert type to',
         items: [
-          { kind: 'item', label: 'Object  { }', disabled: row.kind === 'object-open', onSelect: () => convertTo(row, 'object') },
-          { kind: 'item', label: 'Array   [ ]', disabled: row.kind === 'array-open',  onSelect: () => convertTo(row, 'array')  },
-          { kind: 'item', label: 'Value   null', disabled: row.kind === 'leaf',       onSelect: () => convertTo(row, 'value')  },
+          { kind: 'item', label: 'String  "abc"', onSelect: () => convertType(row, 'string') },
+          { kind: 'item', label: 'Number  123',   onSelect: () => convertType(row, 'number') },
+          { kind: 'item', label: 'Boolean true/false', onSelect: () => convertType(row, 'boolean') },
+          { kind: 'item', label: 'Object  { }',   onSelect: () => convertType(row, 'object') },
+          { kind: 'item', label: 'Array   [ ]',   onSelect: () => convertType(row, 'array')  },
+          { kind: 'item', label: 'Null    null',  onSelect: () => convertType(row, 'null')   },
         ],
       },
       { kind: 'divider' },
@@ -443,6 +538,20 @@
   }
 
   function rowKeyShortcut(e: KeyboardEvent, row: Row) {
+    if (e.key === ' ' && row.kind === 'leaf' && typeof row.value === 'boolean') {
+      e.preventDefault();
+      toggleBool(row);
+      return;
+    }
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      const target = e.target as HTMLElement | null;
+      if (target && target.tagName === 'INPUT') return;
+      if (row.path.length > 0) {
+        e.preventDefault();
+        removeRow(row);
+        return;
+      }
+    }
     const meta = e.metaKey || e.ctrlKey;
     if (!meta) return;
     const k = e.key.toLowerCase();
@@ -468,9 +577,6 @@
   });
 
   function selectRow(row: Row) {
-    // Selecting the document root would mean "everything"; that's what
-    // Ctrl+A is for. Treat a root click as a no-op so the cross-view
-    // highlight stays scoped to a single key/value.
     if (row.path.length === 0) {
       selection.clear(active.id);
       return;
@@ -490,13 +596,12 @@
     const path = selection.get(active.id);
     if (!path) return;
     treeExpand.expandToPath(active.id, path);
-    // Wait for the virtualizer to absorb the new row count before scrolling.
     requestAnimationFrame(() => {
       if (!virtual) return;
-      virtual.setOptions({ ...virtual.options, count: rows.length });
+      virtual.setOptions({ ...virtual.options, count: visibleRows.length });
       virtual._willUpdate();
       const k = pathKey(path);
-      const idx = rows.findIndex((r) => r.id === k);
+      const idx = visibleRows.findIndex((r) => r.id === k);
       if (idx >= 0) virtual.scrollToIndex(idx, { align: 'center' });
     });
   });
@@ -510,12 +615,10 @@
     active.applyValuePatch({ op: 'replace', path: [], value: snap(value) });
   }
 
-  /** Tree-level Ctrl+A / Ctrl+V / Ctrl+C handler. Fires when focus is inside
-      the tree but not in an input, and no row-specific shortcut handled it. */
+  /** Tree-level Ctrl+A / Ctrl+V / Ctrl+C handler. */
   async function onTreeKey(e: KeyboardEvent) {
     if (e.defaultPrevented) return;
     const target = e.target as HTMLElement | null;
-    // Don't intercept while editing key/value (input handles its own clipboard).
     if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
     const meta = e.metaKey || e.ctrlKey;
     if (!meta) {
@@ -531,8 +634,6 @@
     if (k === 'a') {
       e.preventDefault();
       selection.setAll(active.id, true, 'tree');
-      // Best-effort: also seed the system clipboard so an immediate Ctrl+C
-      // outside the app picks up the doc text without a second keystroke.
       copyAllText();
       return;
     }
@@ -556,7 +657,6 @@
         const txt = await navigator.clipboard.readText();
         value = JSON.parse(txt) as JsonValue;
       } catch {
-        // Fall back to the in-app clipboard if the system one isn't readable.
         if (internalClip) value = internalClip.value;
         else return;
       }
@@ -584,14 +684,11 @@
   }
 
   function onTreeBackgroundPointerDown(e: PointerEvent) {
-    // Click on empty space below rows clears the selection. Don't interfere
-    // with row clicks — those bubble up after handling their own logic.
     const t = e.target as HTMLElement | null;
     if (!t) return;
     if (t.classList.contains('scroll') || t.classList.contains('virt') || t.classList.contains('tree-root')) {
       selection.clear(active.id);
     }
-    // Pull keyboard focus into the tree so Ctrl+A / Ctrl+V land here.
     if (scrollEl && t.tagName !== 'INPUT' && t.tagName !== 'TEXTAREA') {
       scrollEl.focus({ preventScroll: true });
     }
@@ -612,8 +709,46 @@
   {:else if active.parse.value === undefined}
     <EmptyDoc doc={active} />
   {:else}
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div class="tree-header">
+      <div class="breadcrumbs" title="Current selected JSON path">
+        <button class="crumb-btn" class:active={selectedPath.length === 0} onclick={() => selectBreadcrumb([])}>
+          root
+        </button>
+        {#each selectedPath as seg, idx}
+          <span class="crumb-sep">&rsaquo;</span>
+          <button
+            class="crumb-btn"
+            class:active={idx === selectedPath.length - 1}
+            onclick={() => selectBreadcrumb(selectedPath.slice(0, idx + 1))}
+          >
+            {seg}
+          </button>
+        {/each}
+      </div>
+
+      <div class="header-tools">
+        <div class="filter-box">
+          <span class="filter-icon">🔍</span>
+          <input
+            type="text"
+            class="filter-input"
+            placeholder="Filter keys & values..."
+            bind:value={filterQuery}
+          />
+          {#if filterQuery}
+            <button class="clear-btn" onclick={() => (filterQuery = '')}>×</button>
+          {/if}
+        </div>
+        {#if selectedPath.length > 0}
+          <button class="hdr-btn" onclick={() => copyPath(selectedPath)} title="Copy JSON path (.key)">
+            ⎘ Path
+          </button>
+        {/if}
+      </div>
+    </div>
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
       class="scroll"
       bind:this={scrollEl}
@@ -621,10 +756,12 @@
       onkeydown={onTreeKey}
       onpointerdown={onTreeBackgroundPointerDown}
       tabindex="0"
+      role="tree"
+      aria-label="JSON tree viewer"
     >
       <div class="virt" style:height="{totalSize}px">
-        {#each virtualItems as vi (rows[vi.index]?.id ?? vi.index)}
-          {@const row = rows[vi.index]}
+        {#each virtualItems as vi (visibleRows[vi.index]?.id ?? vi.index)}
+          {@const row = visibleRows[vi.index]}
           {#if row}
             {@const ds = diffStatus(row.path)}
             {@const isSel = selectAll || selectedKey === row.id}
@@ -672,8 +809,8 @@
                   {/if}<span class="colon">:</span>
                 {/if}
                 <span class="brace">{row.kind === 'object-open' ? '{' : '['}</span>
+                <span class="count-badge">{row.childCount} {row.kind === 'object-open' ? (row.childCount === 1 ? 'key' : 'keys') : (row.childCount === 1 ? 'item' : 'items')}</span>
                 {#if !open}
-                  <span class="muted"> {row.childCount} {row.kind === 'object-open' ? 'keys' : 'items'} </span>
                   <span class="brace">{row.kind === 'object-open' ? '}' : ']'}</span>
                 {/if}
                 <span class="actions">
@@ -718,9 +855,23 @@
                   />
                 {:else}
                   {@const k = valueKind(row.value)}
-                  <button class="value v-{k}" onclick={() => startValueEdit(row)} title="click to edit">
-                    {renderValue(row.value)}
-                  </button>
+                  {#if k === 'boolean'}
+                    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+                    <!-- svelte-ignore a11y_click_events_have_key_events -->
+                    <label class="bool-toggle-wrap" title="Click to toggle boolean (Space / Click)" onclick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        class="bool-cb"
+                        checked={row.value === true}
+                        onchange={() => toggleBool(row)}
+                      />
+                      <span class="v-boolean">{row.value ? 'true' : 'false'}</span>
+                    </label>
+                  {:else}
+                    <button class="value v-{k}" onclick={() => startValueEdit(row)} title="click to edit">
+                      {renderValue(row.value)}
+                    </button>
+                  {/if}
                   {#if ds === 'changed'}
                     {@const dn = diffAt(row.path)}
                     {#if dn && diffSide === 'right' && dn.before !== undefined}
@@ -823,27 +974,86 @@
   .row.selected:hover { background: color-mix(in oklab, var(--accent-soft) 75%, var(--row-hover-strong)); }
 
   /* ─── diff overlay ──────────────────────────────────────────── */
-  .row.diff-added   { background: color-mix(in oklab, var(--ok)  18%, transparent); }
-  .row.diff-removed { background: color-mix(in oklab, var(--err) 18%, transparent); }
-  .row.diff-changed { background: color-mix(in oklab, var(--warn) 22%, transparent); }
-  .row.diff-moved   { background: color-mix(in oklab, var(--accent) 18%, transparent); }
-  .row.diff-added   { box-shadow: inset 3px 0 0 var(--ok); }
-  .row.diff-removed { box-shadow: inset 3px 0 0 var(--err); }
-  .row.diff-changed { box-shadow: inset 3px 0 0 var(--warn); }
-  .row.diff-moved   { box-shadow: inset 3px 0 0 var(--accent); }
-  .row.diff-removed .value { text-decoration: line-through; opacity: 0.85; }
-  .diff-old {
-    color: var(--muted);
-    font-style: italic;
-    font-size: 11px;
-    margin-left: 8px;
-    padding: 0 6px;
+  .row.diff-added   { background: rgba(34, 197, 94, 0.18) !important; box-shadow: inset 3px 0 0 #22c55e; }
+  .row.diff-removed { background: rgba(239, 68, 68, 0.18) !important; box-shadow: inset 3px 0 0 #ef4444; }
+  .row.diff-changed { background: rgba(245, 158, 11, 0.20) !important; box-shadow: inset 3px 0 0 #f59e0b; }
+  .row.diff-moved   { background: rgba(59, 130, 246, 0.18) !important; box-shadow: inset 3px 0 0 #3b82f6; }
+
+  .row.diff-changed .key,
+  .row.diff-changed .value,
+  .row.diff-changed .colon {
+    background: rgba(245, 158, 11, 0.22);
     border-radius: 3px;
-    background: var(--surface-2);
+    padding: 1px 4px;
+    font-weight: 600;
+  }
+  .row.diff-changed .key { color: #fbbf24 !important; }
+  .row.diff-changed .value { color: #fde047 !important; }
+  .row.diff-changed .value.v-string { color: #fde047 !important; }
+  .row.diff-changed .value.v-number { color: #38bdf8 !important; }
+  .row.diff-changed .value.v-boolean { color: #4ade80 !important; }
+
+  .row.diff-added .key { color: #86efac !important; }
+  .row.diff-added .value { color: #4ade80 !important; }
+
+  .row.diff-removed .key,
+  .row.diff-removed .value {
+    color: #fca5a5 !important;
+    text-decoration: line-through;
+  }
+
+  .diff-old {
+    color: #fde047;
+    font-style: normal;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(245, 158, 11, 0.25);
+    border: 1px solid rgba(245, 158, 11, 0.5);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 280px;
+  }
+
+  /* ─── Light Mode theme adaptations ─── */
+  :global([data-theme="light"]) .row.diff-changed {
+    background: rgba(217, 119, 6, 0.16) !important;
+    box-shadow: inset 3px 0 0 #d97706;
+  }
+  :global([data-theme="light"]) .row.diff-changed .key,
+  :global([data-theme="light"]) .row.diff-changed .value,
+  :global([data-theme="light"]) .row.diff-changed .colon {
+    background: rgba(217, 119, 6, 0.22);
+  }
+  :global([data-theme="light"]) .row.diff-changed .key { color: #b45309 !important; }
+  :global([data-theme="light"]) .row.diff-changed .value { color: #92400e !important; }
+  :global([data-theme="light"]) .row.diff-changed .value.v-string { color: #92400e !important; }
+  :global([data-theme="light"]) .row.diff-changed .value.v-number { color: #0284c7 !important; }
+  :global([data-theme="light"]) .row.diff-changed .value.v-boolean { color: #16a34a !important; }
+
+  :global([data-theme="light"]) .row.diff-added {
+    background: rgba(22, 163, 74, 0.14) !important;
+    box-shadow: inset 3px 0 0 #16a34a;
+  }
+  :global([data-theme="light"]) .row.diff-added .key { color: #15803d !important; }
+  :global([data-theme="light"]) .row.diff-added .value { color: #166534 !important; }
+
+  :global([data-theme="light"]) .row.diff-removed {
+    background: rgba(220, 38, 38, 0.14) !important;
+    box-shadow: inset 3px 0 0 #dc2626;
+  }
+  :global([data-theme="light"]) .row.diff-removed .key,
+  :global([data-theme="light"]) .row.diff-removed .value {
+    color: #b91c1c !important;
+  }
+
+  :global([data-theme="light"]) .diff-old {
+    color: #78350f;
+    background: rgba(217, 119, 6, 0.2);
+    border-color: rgba(217, 119, 6, 0.5);
   }
 
   .row:hover { background: var(--row-hover); }
@@ -916,5 +1126,120 @@
     opacity: 0;
     margin-left: 6px;
     transition: opacity 80ms;
+  }
+
+  /* ─── Tree Header & Breadcrumbs ─── */
+  .tree-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 8px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    user-select: none;
+    flex-wrap: wrap;
+    min-height: 28px;
+  }
+  .breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    overflow-x: auto;
+    white-space: nowrap;
+    max-width: 60%;
+  }
+  .crumb-btn {
+    background: transparent;
+    border: 0;
+    color: var(--muted);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+  .crumb-btn:hover { background: var(--row-hover-strong); color: var(--fg); }
+  .crumb-btn.active { color: var(--accent); font-weight: 600; }
+  .crumb-sep { color: var(--muted); opacity: 0.6; font-size: 11px; }
+
+  .header-tools {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .filter-box {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    gap: 4px;
+  }
+  .filter-icon { font-size: 10px; opacity: 0.6; }
+  .filter-input {
+    border: 0;
+    background: transparent;
+    color: var(--fg);
+    font: inherit;
+    font-size: 11px;
+    outline: none;
+    width: 130px;
+  }
+  .clear-btn {
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0 2px;
+  }
+  .clear-btn:hover { color: var(--fg); }
+  .hdr-btn {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--fg);
+    font: inherit;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .hdr-btn:hover { background: var(--row-hover-strong); border-color: var(--accent); }
+
+  .count-badge {
+    font-size: 10px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: color-mix(in oklab, var(--muted) 15%, transparent);
+    color: var(--muted);
+    margin-left: 4px;
+    margin-right: 4px;
+  }
+
+  .bool-toggle-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    padding: 1px 4px;
+    border-radius: 3px;
+    user-select: none;
+  }
+  .bool-toggle-wrap:hover { background: var(--row-hover-strong); }
+  .bool-cb {
+    cursor: pointer;
+    accent-color: var(--accent);
+    width: 13px;
+    height: 13px;
+    margin: 0;
   }
 </style>

@@ -21,9 +21,17 @@
   function onFocus() { workspace.focusSlot(index); }
 
   function pickDoc(e: Event) {
-    const id = (e.currentTarget as HTMLSelectElement).value;
+    const val = (e.currentTarget as HTMLSelectElement).value;
+    if (val === '__NEW_DOC__') {
+      const d = workspace.newDoc();
+      const next = workspace.slots.slice();
+      next[index] = { ...next[index], docId: d.id };
+      workspace.slots = next;
+      workspace.focusSlot(index);
+      return;
+    }
     const next = workspace.slots.slice();
-    next[index] = { ...next[index], docId: id };
+    next[index] = { ...next[index], docId: val };
     workspace.slots = next;
     workspace.focusSlot(index);
   }
@@ -39,8 +47,12 @@
   <div class="head">
     <select class="doc-pick" value={slot.docId} onchange={pickDoc} title="Doc shown in this column">
       {#each workspace.docs as d (d.id)}
-        <option value={d.id}>{d.name}{d.dirty ? ' •' : ''}</option>
+        {@const openIdx = workspace.slots.findIndex((s) => s.docId === d.id)}
+        <option value={d.id} disabled={openIdx >= 0 && openIdx !== index}>
+          {d.name}{d.dirty ? ' •' : ''}{openIdx >= 0 && openIdx !== index ? ' (in another panel)' : ''}
+        </option>
       {/each}
+      <option value="__NEW_DOC__">＋ New Document…</option>
     </select>
 
     <div class="seg">

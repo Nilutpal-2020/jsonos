@@ -347,10 +347,26 @@ class WorkspaceStore {
     this.persistSlots();
   }
 
-  /** Add a new slot (next to focused) showing a given doc, defaulting to focused doc. */
+  /** Add a new slot (next to focused). Always assigns a distinct or new document to prevent duplicates. */
   addSlot(docId?: string, view: SlotView = 'text') {
     if (this.slots.length >= MAX_SLOTS) return;
-    const id = docId ?? this.active?.id ?? this.docs[0].id;
+    const openDocIds = new Set(this.slots.map((s) => s.docId));
+    let id: string;
+
+    if (docId && !openDocIds.has(docId) && this.docs.some((d) => d.id === docId)) {
+      id = docId;
+    } else {
+      const unusedDoc = this.docs.find((d) => !openDocIds.has(d.id));
+      if (unusedDoc) {
+        id = unusedDoc.id;
+      } else {
+        const fresh = new DocStore();
+        fresh.name = this.nextUntitledName();
+        this.docs = [...this.docs, fresh];
+        id = fresh.id;
+      }
+    }
+
     const insertAt = this.focusedSlotIndex + 1;
     const next = [...this.slots.slice(0, insertAt), { docId: id, view }, ...this.slots.slice(insertAt)];
     this.slots = next;
@@ -361,16 +377,28 @@ class WorkspaceStore {
     this.persistSlots();
   }
 
-  /** Replace slots with [A, B] showing the same view; useful for diff side-by-side. */
-  openSideBySide(idA: string, idB: string, view: SlotView = 'text') {
-    if (idA === idB) {
-      this.setActive(idA);
-      return;
+  /** Replace slots with [A, B] showing side-by-side views. Ensures B is a distinct document. */
+  openSideBySide(idA: string, idB?: string, view: SlotView = 'text') {
+    const docA = this.docs.find((d) => d.id === idA) ?? this.docs[0];
+    let targetBId: string;
+
+    if (idB && idB !== docA.id && this.docs.some((d) => d.id === idB)) {
+      targetBId = idB;
+    } else {
+      const unusedDoc = this.docs.find((d) => d.id !== docA.id);
+      if (unusedDoc) {
+        targetBId = unusedDoc.id;
+      } else {
+        const fresh = new DocStore();
+        fresh.name = this.nextUntitledName();
+        this.docs = [...this.docs, fresh];
+        targetBId = fresh.id;
+      }
     }
-    if (!this.docs.find((d) => d.id === idA) || !this.docs.find((d) => d.id === idB)) return;
+
     this.slots = [
-      { docId: idA, view },
-      { docId: idB, view },
+      { docId: docA.id, view },
+      { docId: targetBId, view },
     ];
     this.slotFractions = [1, 1];
     this.focusedSlotIndex = 0;

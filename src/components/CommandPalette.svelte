@@ -176,9 +176,9 @@
     {
       id: "type-gen",
       category: "Action",
-      title: "Generate TypeScript / Zod / Python / Rust / Go Types",
+      title: "Generate TypeScript / Zod / Python / Rust / Go / Dart Types",
       description: "Infer types and data models from current JSON payload",
-      keywords: "generate types typescript zod python rust go schema model json",
+      keywords: "generate types typescript zod python rust go dart schema model json flutter",
       icon: "⚙️",
       action: () => {
         window.dispatchEvent(new CustomEvent("jsonos:open-side-tab", { detail: "types" }));

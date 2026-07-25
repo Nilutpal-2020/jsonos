@@ -1,10 +1,16 @@
 import type { JsonValue } from './types';
 
-export type TargetLang = 'typescript' | 'zod' | 'python' | 'rust' | 'go' | 'json-schema';
+export type TargetLang = 'typescript' | 'zod' | 'python' | 'rust' | 'go' | 'dart' | 'json-schema';
 
 export interface TypeGenOptions {
   rootName?: string;
   target: TargetLang;
+}
+
+function toCamelCase(str: string): string {
+  const p = toPascalCase(str);
+  if (!p) return 'field';
+  return p.charAt(0).toLowerCase() + p.slice(1);
 }
 
 function toPascalCase(str: string): string {
@@ -225,6 +231,95 @@ function generateGo(val: JsonValue, rootName: string): string {
   return `package main\n\n` + structs.map((s) => s.code).reverse().join('\n\n');
 }
 
+/** Infer Dart model classes (with fromJson and toJson) from JSON value. */
+function generateDart(val: JsonValue, rootName: string): string {
+  const models: { name: string; code: string }[] = [];
+
+  function helper(v: JsonValue, name: string): string {
+    if (v === null) return 'dynamic';
+    if (typeof v === 'boolean') return 'bool';
+    if (typeof v === 'number') return Number.isInteger(v) ? 'int' : 'double';
+    if (typeof v === 'string') return 'String';
+
+    if (Array.isArray(v)) {
+      if (v.length === 0) return 'List<dynamic>';
+      const itemTypes = Array.from(new Set(v.map((item) => helper(item, `${name}Item`))));
+      if (itemTypes.length === 1) return `List<${itemTypes[0]}>`;
+      return 'List<dynamic>';
+    }
+
+    if (typeof v === 'object') {
+      const className = toPascalCase(name);
+      const fields: { key: string; name: string; type: string; isClass: boolean; isList: boolean }[] = [];
+
+      for (const [key, propVal] of Object.entries(v)) {
+        const fieldName = toCamelCase(key);
+        const childName = `${className}${toPascalCase(key)}`;
+        const typeStr = helper(propVal, childName);
+        const isClass = typeof propVal === 'object' && propVal !== null && !Array.isArray(propVal);
+        const isList = Array.isArray(propVal);
+
+        fields.push({
+          key,
+          name: fieldName,
+          type: typeStr,
+          isClass,
+          isList,
+        });
+      }
+
+      const propsCode = fields.map((f) => `  final ${f.type}? ${f.name};`).join('\n');
+      const constrParams = fields.map((f) => `    this.${f.name},`).join('\n');
+      const constructorCode = fields.length > 0
+        ? `  ${className}({\n${constrParams}\n  });`
+        : `  ${className}();`;
+
+      const fromJsonAssigns = fields.map((f) => {
+        if (f.isClass) {
+          return `      ${f.name}: json['${f.key}'] != null ? ${f.type}.fromJson(json['${f.key}'] as Map<String, dynamic>) : null,`;
+        }
+        if (f.isList && f.type.startsWith('List<') && !f.type.includes('dynamic')) {
+          const itemType = f.type.slice(5, -1);
+          const isItemClass = !['String', 'int', 'double', 'bool', 'num', 'dynamic'].includes(itemType);
+          if (isItemClass) {
+            return `      ${f.name}: json['${f.key}'] != null ? (json['${f.key}'] as List).map((i) => ${itemType}.fromJson(i as Map<String, dynamic>)).toList() : null,`;
+          } else {
+            return `      ${f.name}: json['${f.key}'] != null ? List<${itemType}>.from(json['${f.key}']) : null,`;
+          }
+        }
+        return `      ${f.name}: json['${f.key}'] as ${f.type}?,`;
+      }).join('\n');
+
+      const fromJsonCode = `  factory ${className}.fromJson(Map<String, dynamic> json) {\n    return ${className}(\n${fromJsonAssigns}\n    );\n  }`;
+
+      const toJsonAssigns = fields.map((f) => {
+        if (f.isClass) {
+          return `      '${f.key}': ${f.name}?.toJson(),`;
+        }
+        if (f.isList && f.type.startsWith('List<')) {
+          const itemType = f.type.slice(5, -1);
+          const isItemClass = !['String', 'int', 'double', 'bool', 'num', 'dynamic'].includes(itemType);
+          if (isItemClass) {
+            return `      '${f.key}': ${f.name}?.map((i) => i.toJson()).toList(),`;
+          }
+        }
+        return `      '${f.key}': ${f.name},`;
+      }).join('\n');
+
+      const toJsonCode = `  Map<String, dynamic> toJson() {\n    return {\n${toJsonAssigns}\n    };\n  }`;
+
+      const classCode = `class ${className} {\n${propsCode}\n\n${constructorCode}\n\n${fromJsonCode}\n\n${toJsonCode}\n}`;
+      models.push({ name: className, code: classCode });
+      return className;
+    }
+
+    return 'dynamic';
+  }
+
+  helper(val, rootName);
+  return models.map((m) => m.code).reverse().join('\n\n');
+}
+
 /** Infer JSON Schema (Draft-07) from JSON value. */
 function generateJsonSchema(val: JsonValue, rootName: string): string {
   function helper(v: JsonValue): any {
@@ -280,6 +375,8 @@ export function generateTypes(val: JsonValue | undefined, opts: TypeGenOptions):
       return generateRust(val, rootName);
     case 'go':
       return generateGo(val, rootName);
+    case 'dart':
+      return generateDart(val, rootName);
     case 'json-schema':
       return generateJsonSchema(val, rootName);
     default:
