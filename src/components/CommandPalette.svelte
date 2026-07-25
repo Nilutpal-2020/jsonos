@@ -188,8 +188,8 @@
       id: "anonymize",
       category: "Action",
       title: "Redact & Anonymize PII / Secrets",
-      description: "Detect and mask emails, passwords, API keys, JWT tokens, credit cards, IPs",
-      keywords: "redact anonymize mask secrets pii email password credit card ip jwt token",
+      description: "Detect and mask emails, passwords, phone numbers, URLs, credit cards, IPs",
+      keywords: "redact anonymize mask secrets pii email password phone mobile url website link credit card ip jwt token",
       icon: "🔒",
       action: () => {
         window.dispatchEvent(new CustomEvent("jsonos:open-side-tab", { detail: "anonymize" }));
