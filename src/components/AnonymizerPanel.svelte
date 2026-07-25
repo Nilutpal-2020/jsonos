@@ -5,16 +5,24 @@
   let mode = $state<AnonymizeOptions['mode']>('redact');
   let maskEmails = $state(true);
   let maskSecrets = $state(true);
+  let maskNames = $state(true);
   let maskCards = $state(true);
   let maskIps = $state(true);
+  let maskPhones = $state(true);
+  let maskUrls = $state(true);
+  let redactAllValues = $state(false);
 
   let preview = $derived.by(() => {
     return anonymizeJson(doc.parse.value, {
       mode,
       maskEmails,
       maskSecrets,
+      maskNames,
       maskCards,
       maskIps,
+      maskPhones,
+      maskUrls,
+      redactAllValues,
     });
   });
 
@@ -31,7 +39,7 @@
 
 <div class="anon-container">
   <p class="intro">
-    Detect and redact sensitive customer data, passwords, JWT tokens, credit cards, and IP addresses before sharing or logging.
+    Detect and redact sensitive customer data, names, assignees, passwords, JWT tokens, credit cards, phone numbers, web URLs, and IP addresses before sharing or logging.
   </p>
 
   <div class="detect-card" class:has-items={preview.count > 0}>
@@ -61,8 +69,20 @@
       <span>Passwords, API Keys, JWT Tokens, Secrets</span>
     </label>
     <label class="check-label">
+      <input type="checkbox" bind:checked={maskNames} />
+      <span>Names, Assignees, Authors & User PII</span>
+    </label>
+    <label class="check-label">
       <input type="checkbox" bind:checked={maskEmails} />
       <span>Email Addresses</span>
+    </label>
+    <label class="check-label">
+      <input type="checkbox" bind:checked={maskPhones} />
+      <span>Mobile / Phone Numbers</span>
+    </label>
+    <label class="check-label">
+      <input type="checkbox" bind:checked={maskUrls} />
+      <span>Web URLs & Webhook Endpoints</span>
     </label>
     <label class="check-label">
       <input type="checkbox" bind:checked={maskCards} />
@@ -71,6 +91,10 @@
     <label class="check-label">
       <input type="checkbox" bind:checked={maskIps} />
       <span>IP Addresses</span>
+    </label>
+    <label class="check-label highlight-check">
+      <input type="checkbox" bind:checked={redactAllValues} />
+      <span><strong>Redact ALL Values & Payload Data</strong></span>
     </label>
   </div>
 
@@ -176,6 +200,13 @@
     color: var(--fg);
     cursor: pointer;
     user-select: none;
+  }
+  .check-label.highlight-check {
+    margin-top: 6px;
+    padding: 6px 8px;
+    background: var(--accent-soft);
+    border: 1px dashed var(--accent);
+    border-radius: var(--radius);
   }
 
   .toast-banner {
