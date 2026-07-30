@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { DocStore } from '../core/store.svelte';
+  import { SITE_CONFIG } from '../core/site-config';
 
   type Props = {
     doc: DocStore;
@@ -92,6 +93,16 @@
       <span><kbd>⌘⇧K</kbd> query</span>
       <span><kbd>?</kbd> help</span>
     </div>
+
+    <a
+      href={SITE_CONFIG.kofiUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="sponsor-link"
+      title="Support free, local-first open-source tools on Ko-fi"
+    >
+      ☕ Enjoying JSON OS? Support on Ko-fi ↗
+    </a>
   </div>
 
   <input
@@ -104,6 +115,22 @@
 </div>
 
 <style>
+  .sponsor-link {
+    display: inline-block;
+    margin-top: 18px;
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: var(--radius, 4px);
+    border: 1px dashed var(--border);
+    transition: all 0.15s ease;
+  }
+  .sponsor-link:hover {
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.4);
+    background: rgba(245, 158, 11, 0.08);
+  }
   .empty {
     height: 100%;
     width: 100%;
