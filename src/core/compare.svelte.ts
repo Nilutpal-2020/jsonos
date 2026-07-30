@@ -28,9 +28,14 @@ class CompareStore {
   rules = $state<IgnoreRules>(readRules());
 
   effectivePair = $derived.by<{ left: number; right: number } | null>(() => {
-    if (this.pair) return this.pair;
-    if (workspace.slots.length >= 2 && workspace.slots[0].docId !== workspace.slots[1].docId) {
-      return { left: 0, right: 1 };
+    if (!this.pair) return null;
+    const { left, right } = this.pair;
+    if (
+      left < workspace.slots.length &&
+      right < workspace.slots.length &&
+      workspace.slots[left]?.docId !== workspace.slots[right]?.docId
+    ) {
+      return this.pair;
     }
     return null;
   });

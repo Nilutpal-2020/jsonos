@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { tool, TOOLS, type Tool } from '../core/tool-router.svelte';
 
   type Props = { compact?: boolean };
@@ -7,10 +8,27 @@
   let btnEl = $state<HTMLButtonElement | undefined>();
   let open = $state(false);
   let panelPos = $state({ x: 0, y: 0 });
+  let isFirstVisit = $state(false);
 
   let active = $derived(TOOLS.find((t) => t.id === tool.current) ?? TOOLS[0]);
+  let alternate = $derived(TOOLS.find((t) => t.id !== tool.current) ?? TOOLS[1]);
+
+  onMount(() => {
+    try {
+      const seen = localStorage.getItem('jsonos.seenToolHint');
+      if (!seen) {
+        isFirstVisit = true;
+      }
+    } catch {}
+  });
+
+  function dismissHint() {
+    isFirstVisit = false;
+    try { localStorage.setItem('jsonos.seenToolHint', 'true'); } catch {}
+  }
 
   function toggle() {
+    dismissHint();
     if (open) { open = false; return; }
     if (!btnEl) return;
     const r = btnEl.getBoundingClientRect();
@@ -20,8 +38,14 @@
   function close() { open = false; }
 
   function pick(id: Tool) {
+    dismissHint();
     open = false;
     tool.set(id);
+  }
+
+  function switchAlt() {
+    dismissHint();
+    tool.set(alternate.id);
   }
 
   function onKey(e: KeyboardEvent) {
@@ -32,20 +56,35 @@
 
 <svelte:window onkeydown={onKey} />
 
-<button
-  class="switcher"
-  class:compact
-  class:open
-  bind:this={btnEl}
-  onclick={toggle}
-  aria-haspopup="menu"
-  aria-expanded={open}
-  title="Switch tool"
->
-  <span class="active-icon" aria-hidden="true">{active.icon}</span>
-  {#if !compact}<span class="active-name">{active.short}</span>{/if}
-  <span class="chev" aria-hidden="true">▾</span>
-</button>
+<div class="switcher-group">
+  <button
+    class="switcher"
+    class:compact
+    class:open
+    bind:this={btnEl}
+    onclick={toggle}
+    aria-haspopup="menu"
+    aria-expanded={open}
+    title="Switch tool workbench (JSON OS)"
+  >
+    <span class="active-icon" aria-hidden="true">{active.icon}</span>
+    {#if !compact}<span class="active-name">{active.short}</span>{/if}
+    <span class="chev" aria-hidden="true">▾</span>
+  </button>
+
+  {#if !compact}
+    <button
+      class="alt-tool-pill"
+      class:first-hint={isFirstVisit}
+      onclick={switchAlt}
+      title="Switch to {alternate.name}"
+    >
+      <span class="pulse-dot" aria-hidden="true"></span>
+      <span class="alt-icon" aria-hidden="true">{alternate.icon}</span>
+      <span class="alt-name">{alternate.name}</span>
+    </button>
+  {/if}
+</div>
 
 {#if open}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -57,8 +96,8 @@
     style:top="{panelPos.y}px"
   >
     <div class="panel-head">
-      <span class="panel-title">JSON OS · Tools</span>
-      <span class="panel-sub">Switch between workbenches</span>
+      <span class="panel-title">JSON OS · Workbenches</span>
+      <span class="panel-sub">Switch between JSON Workbench & Markdown Studio</span>
     </div>
     {#each TOOLS as t}
       {@const isActive = t.id === tool.current}
@@ -74,18 +113,27 @@
         <span class="tool-text">
           <span class="tool-name">
             {t.name}
-            {#if isActive}<span class="badge">Current</span>{/if}
+            {#if isActive}
+              <span class="badge">Active</span>
+            {:else}
+              <span class="badge switch-badge">Switch</span>
+            {/if}
           </span>
           <span class="tool-desc">{t.desc}</span>
         </span>
         <span class="tool-hint">{t.hint}</span>
       </button>
     {/each}
-    <div class="panel-foot">More tools coming soon</div>
   </div>
 {/if}
 
 <style>
+  .switcher-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
   .switcher {
     display: inline-flex;
     align-items: center;
@@ -121,6 +169,69 @@
   .chev { color: var(--muted); font-size: 10px; line-height: 1; }
   .switcher.open .chev { color: var(--accent); transform: rotate(180deg); }
 
+  .alt-tool-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3.5px 9px;
+    background: var(--surface);
+    border: 1px solid color-mix(in oklab, var(--accent) 30%, var(--border));
+    border-radius: 99px;
+    color: var(--fg);
+    font: 500 11px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    cursor: pointer;
+    user-select: none;
+    transition: all 120ms ease;
+    opacity: 0.88;
+  }
+  .alt-tool-pill:hover {
+    opacity: 1;
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-0.5px);
+  }
+  .alt-icon {
+    font: 600 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: var(--accent);
+  }
+  .alt-name {
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent, #3b82f6);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
+    animation: pulse-ring 2.5s infinite;
+  }
+
+  @keyframes pulse-ring {
+    0% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.6);
+    }
+    70% {
+      box-shadow: 0 0 0 5px rgba(59, 130, 246, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    }
+  }
+
+  .alt-tool-pill.first-hint {
+    border-color: var(--accent);
+    background: color-mix(in oklab, var(--accent-soft) 50%, var(--surface));
+    animation: glow-pulse 3s infinite ease-in-out;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { border-color: color-mix(in oklab, var(--accent) 40%, var(--border)); }
+    50% { border-color: var(--accent); box-shadow: 0 0 8px rgba(59, 130, 246, 0.25); }
+  }
+
   .backdrop {
     position: fixed;
     inset: 0;
@@ -130,7 +241,7 @@
   .panel {
     position: fixed;
     z-index: 200;
-    width: 320px;
+    width: 330px;
     max-width: calc(100vw - 16px);
     background: var(--surface-hi);
     border: 1px solid var(--border);
@@ -162,15 +273,6 @@
     color: var(--muted);
     font-size: 11px;
     margin-top: 1px;
-  }
-  .panel-foot {
-    padding: 8px 10px 4px;
-    border-top: 1px solid var(--border);
-    margin-top: 4px;
-    color: var(--muted);
-    font-size: 10.5px;
-    text-align: center;
-    letter-spacing: 0.02em;
   }
 
   .tool-row {
@@ -222,6 +324,11 @@
     border-radius: 99px;
     font-weight: 700;
   }
+  .switch-badge {
+    background: transparent !important;
+    border: 1px solid var(--accent) !important;
+    color: var(--accent) !important;
+  }
   .tool-desc {
     color: var(--muted);
     font-size: 11.5px;
@@ -240,5 +347,6 @@
   @media (max-width: 540px) {
     .panel { width: calc(100vw - 16px); }
     .tool-hint { display: none; }
+    .alt-name { display: none; }
   }
 </style>
