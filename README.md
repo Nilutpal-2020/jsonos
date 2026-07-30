@@ -46,12 +46,14 @@ Most online JSON editors silently upload your sensitive payloads to a remote ser
   - **Python Pydantic**: Generates `class Model(BaseModel): ...` with Field aliases.
   - **Rust Serde**: Generates `#[derive(Serialize, Deserialize)] pub struct ...`.
   - **Go Structs**: Generates `type Model struct { ... json:"..." }`.
+  - **Dart Model Classes**: Generates null-safe `final String?` models with `fromJson` and `toJson`.
   - **Draft-07 JSON Schema**: Generates formal JSON Schema definitions.
 - 1-click **Copy Code** and **Download File** buttons.
 
 ### 🔒 PII & Secrets Anonymizer
 - Detect and sanitize sensitive payloads before sharing or logging:
-  - **Emails**, **Passwords**, **API Keys**, **JWT Tokens**, **Credit Cards**, and **IP Addresses**.
+  - **Emails**, **Passwords**, **API Keys**, **JWT Tokens**, **Credit Cards**, **IP Addresses**, **Mobile Phone Numbers**, **Web URLs / Endpoints**, and **Names & Assignee PII**.
+  - **Redact ALL Values Mode**: Master toggle to redact 100% of scalar payload data.
   - 3 Modes: **Redact** (`[REDACTED]`), **Mask** (`u***@dom.com`), or **Hash** (`hash_a1b2`).
   - 1-click **"⚡ Redact Payload"** action.
 
@@ -67,16 +69,17 @@ Most online JSON editors silently upload your sensitive payloads to a remote ser
   - Escaped double quotes (`\"`), smart curly quotes (`“` `”`), single quotes (`'`).
   - Unquoted object keys with hyphens `-`, dots `.`, `$`, and `@`.
   - Unescaped HTML entities (`&quot;`, `&amp;`) and text prefixes (e.g. `2026-07-22 INFO {"a": 1}`).
+  - Strips JS/Python comment lines (`//`, `/* */`, `#`) on repair.
   - Coerces Python/JS literals (`True`, `False`, `None`, `undefined`, `NaN`, `Infinity`).
   - Trailing commas, missing colons (`=`), and unclosed brackets.
 
 ### 🔍 Schema Validation & MongoDB Queries
 - **JSON Schema Validation** — Validate payloads with Ajv (Draft-07 & 2020-12) with built-in templates (User Profile, API Response, GeoJSON, Avro).
 - **MongoDB-Style Querying** — Filter arrays with `$match`, `$eq`, `$gt`, `$gte`, `$in`, `$regex`, `$elemMatch`, `$and`, `$or`.
-- **Side-by-Side Compare / Diff** — Sync-scroll comparison with ignore rules (paths, missing keys, case-insensitive).
+- **Side-by-Side Compare / Diff** — Explicit on-demand sync-scroll comparison with path matching (`$`), theme-adaptive difference highlights, and ignore rules.
 
 ### ✍️ Markdown Studio (`?tool=md`)
-- Live Markdown editor & previewer.
+- Live Markdown editor & previewer with quick-switch pill indicator (`● ✎ Markdown Studio`).
 - **Mermaid.js Diagrams**: Flowcharts, Sequence diagrams, Gantt charts, Mindmaps, Class diagrams, ER diagrams.
 - **KaTeX Math Equations**: Inline `$E=mc^2$` and block `$$...$$` rendering.
 - Collapsible **Outline Drawer** and **Document Metrics Footer** (Word count, Reading time).

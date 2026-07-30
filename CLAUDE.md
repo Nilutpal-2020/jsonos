@@ -26,7 +26,7 @@ npm run tail       # wrangler tail
 
 ## Architecture
 
-Browser-first JSON & Markdown workbench. Frontend is **Svelte 5 (runes) + Vite + TypeScript**. Compute-heavy tasks (parse, validate, format, repair, sortKeys) run inside a Web Worker.
+Browser-first JSON & Markdown workbench. Frontend is **Svelte 5 (runes) + Vite + TypeScript**. Compute-heavy tasks (parse, validate, format, repair, sortKeys, type generation) run inside a Web Worker or decoupled core modules.
 
 ### Document Model & State Management
 
@@ -36,25 +36,33 @@ Browser-first JSON & Markdown workbench. Frontend is **Svelte 5 (runes) + Vite +
 
 ### Key Core Modules & Utility Engines
 
-- `src/core/json-repair.ts`: Forgiving JSON repair engine (`preClean` pass + tokenizer lookahead for raw quotes, escaped quotes `\"`, HTML entities, Python/JS literals `True`/`None`/`undefined`, unquoted keys, trailing commas, missing colons).
-- `src/core/type-gen.ts`: Type inference engine inferring TypeScript Interfaces, Zod Schemas, Python Pydantic Models, Rust Serde Structs, Go Structs, and Draft-07 JSON Schema.
-- `src/core/anonymize.ts`: PII & Secrets redactor (detects emails, passwords, JWT tokens, credit cards, IPs; supports Redact, Mask, Hash).
+- `src/core/json-repair.ts`: Forgiving JSON repair engine (`preClean` pass + tokenizer lookahead for raw quotes, escaped quotes `\"`, HTML entities, Python/JS literals `True`/`None`/`undefined`, unquoted keys, trailing commas, missing colons, comment removal).
+- `src/core/type-gen.ts`: Type inference engine inferring TypeScript Interfaces, Zod Schemas, Python Pydantic Models, Rust Serde Structs, Go Structs, **Dart Model Classes** (`final String?`, `fromJson`/`toJson`), and Draft-07 JSON Schema.
+- `src/core/anonymize.ts`: PII & Secrets redactor (detects emails, passwords, JWT tokens, credit cards, IPs, **mobile phone numbers**, **web URLs/domains**, and **names/assignees**; supports Redact, Mask, Hash, and **Redact ALL Values** mode).
 - `src/core/curl-parser.ts`: Bi-directional cURL parser and command generator.
+- `src/core/compare.svelte.ts`: Side-by-side JSON diff comparison engine. Explicitly enabled via `compare.setPair()` on demand to avoid unwanted diff highlights in standard split view mode.
+- `src/core/tool-router.svelte.ts`: Top-level workbench router managing switching between **JSON Workbench** (`tool.current === 'json'`) and **Markdown Studio** (`tool.current === 'md'`).
 
 ### Views & Side Panels
 
 - **Views** (`src/views/`):
   - `TextView.svelte`: CodeMirror 6 text editor with inline parse error repair banner.
-  - `TreeView.svelte`: Virtualized expandable tree view.
+  - `TreeView.svelte`: Virtualized expandable tree view with real-time key/value search filter, breadcrumb navigation, 1-click boolean checkbox toggles, and container count badges.
   - `TableView.svelte`: Sortable spreadsheet grid view with CSV export.
   - `ChartView.svelte`: Interactive SVG Bar, Line, Pie, and Doughnut chart visualizer with summary statistics (**SUM, AVG, MIN, MAX**) and SVG export.
 - **Side Panels** (`src/components/`):
-  - `SchemaPanel.svelte`: AJV JSON Schema validation with preset templates.
+  - `SchemaPanel.svelte`: AJV JSON Schema validation with preset templates (User Profile, API Response, GeoJSON, Avro).
   - `QueryPanel.svelte`: MongoDB `$match` query filter panel.
-  - `TypeGenPanel.svelte`: Code model inference panel (TS, Zod, Python, Rust, Go, Schema).
-  - `AnonymizerPanel.svelte`: PII and secret redaction panel.
+  - `TypeGenPanel.svelte`: Code model inference panel (TS, Zod, Python, Rust, Go, **Dart**, Schema).
+  - `AnonymizerPanel.svelte`: PII, secrets, mobile numbers, domain URLs, and names redaction panel.
   - `ApiPanel.svelte`: In-browser HTTP API Sandbox with cURL import/export, active doc request body loading, and response tab opening.
-  - `DiffPanel.svelte`: Side-by-side JSON diff comparison.
+  - `DiffPanel.svelte`: Side-by-side JSON diff comparison with path & array key rules.
+  - `ToolSwitcher.svelte`: Workbench selector with quick-switch pill indicator (`● ✎ Markdown Studio`) and first-visit visual hint.
+
+### Markdown Studio (`src/markdown/`)
+
+- Lazy-loaded via dynamic `import()` when switching to `tool.current === 'md'`.
+- Integrates `marked`, DOMPurify, `highlight.js`, KaTeX math (`$E=mc^2$`), and Mermaid.js diagrams (Flowcharts, Sequence, Gantt, Mindmap, Class, ER).
 
 ### Worker Boundary
 

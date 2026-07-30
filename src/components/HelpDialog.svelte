@@ -271,15 +271,50 @@
                 <strong>Table</strong> — for arrays of objects. Sort and filter by
                 column, inline-edit cells, export the current view to CSV.
               </li>
+              <li>
+                <strong>Chart</strong> — render arrays as interactive SVG Bar, Line,
+                Pie, and Doughnut charts with summary statistics (SUM, AVG, MIN, MAX)
+                and 1-click SVG export.
+              </li>
             </ul>
           </section>
 
           <section>
-            <h4>Multi-column workspace</h4>
+            <h4>Multi-column workspace &amp; dual workbenches</h4>
             <p>
               Open up to three columns side by side. Each picks its own document
               and view, so you can edit JSON on the left while watching the tree
-              on the right. Drag the gap between columns to resize.
+              on the right. Click the quick-switch pill (<code>● ✎ Markdown Studio</code>)
+              in the top header to toggle between the JSON Workbench and Markdown Studio.
+            </p>
+          </section>
+
+          <section>
+            <h4>Type &amp; schema generation</h4>
+            <p>
+              Open the <strong>Types</strong> side panel to infer strongly-typed models
+              from any active JSON document. Supports <strong>TypeScript Interfaces</strong>,
+              <strong>Zod Schemas</strong>, <strong>Python Pydantic</strong>, <strong>Rust Serde</strong>,
+              <strong>Go Structs</strong>, <strong>Dart Models</strong> (with null-safety, <code>fromJson</code>, and <code>toJson</code>), and <strong>Draft-07 JSON Schema</strong>.
+            </p>
+          </section>
+
+          <section>
+            <h4>PII &amp; secrets anonymizer</h4>
+            <p>
+              Open the <strong>🔒 Redact</strong> side panel to detect and sanitize sensitive payloads
+              before sharing. Sanitize emails, passwords, API keys, JWT tokens, credit cards, IPs,
+              <strong>mobile phone numbers</strong>, <strong>web URLs / endpoints</strong>, and <strong>names &amp; assignees</strong>.
+              Use <strong>Redact ALL Values</strong> to redact 100% of payload values instantly.
+            </p>
+          </section>
+
+          <section>
+            <h4>In-browser API sandbox</h4>
+            <p>
+              Open the <strong>⚡ API</strong> side panel to send HTTP requests, paste cURL commands
+              to auto-populate headers/body, copy formatted cURL, and load API JSON responses directly into
+              a new workbench tab for charting or type generation.
             </p>
           </section>
 
@@ -288,7 +323,7 @@
             <p>
               The <strong>Repair</strong> button runs the document through a
               forgiving tokenizer and re-emits canonical JSON. It fixes the
-              usual suspects: comments, smart quotes, single-quoted strings,
+              usual suspects: comments (`//`, `#`), smart quotes, single-quoted strings,
               unquoted keys, trailing commas, missing commas, hex / octal /
               binary numbers, Python literals (<code>True</code>,
               <code>False</code>, <code>None</code>), unclosed brackets, and
@@ -302,7 +337,7 @@
             <p>
               Open the side panel and pick the <strong>Schema</strong> tab.
               Paste a JSON Schema and the active document is continuously
-              validated against it (Ajv with formats). Errors show up with their
+              validated against it (Ajv with formats, Draft-07 &amp; 2020-12). Errors show up with their
               <code>instancePath</code> so you can jump to the offending node.
             </p>
           </section>
@@ -385,9 +420,19 @@
             <h4>Highlights</h4>
             <ul>
               <li>
-                Tree, text, and table views per column (up to three columns)
+                Tree, text, table, and interactive SVG chart views per column (up to three columns)
               </li>
-              <li>JSON Schema validation in a Web Worker (Ajv, lazy-loaded)</li>
+              <li>
+                Dual workbench support: JSON Workbench &amp; Markdown Studio (Mermaid &amp; KaTeX)
+              </li>
+              <li>
+                1-click Type Generator for TypeScript, Zod, Pydantic, Rust Serde, Go Structs, and Dart
+              </li>
+              <li>
+                PII &amp; Secrets Redactor (emails, keys, JWTs, mobile numbers, domain URLs, names, master redact)
+              </li>
+              <li>In-browser HTTP API Sandbox with cURL import/export</li>
+              <li>JSON Schema validation in a Web Worker (Ajv, Draft-07 &amp; 2020-12)</li>
               <li>
                 Side-by-side compare with ignore rules, sync-scroll, and move
                 detection

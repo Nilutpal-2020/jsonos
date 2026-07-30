@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>JSON Schema Validator Online — Validate JSON Schema with Ajv · JSON OS</title>
-    <meta name="description" content="Free online JSON schema validator. Validate JSON documents against JSON Schema definitions using Ajv (Draft-07 & 2020-12) with full support for types, formats, and required fields. Fast, browser-based, no uploads." />
-    <meta name="keywords" content="json schema validator online, online json schema validator, json schema validation online, ajv json schema validator, validate json schema online, json online validator schema, online schema validator, json schema type, json validator schema, json schema format, json schema definition" />
+    <title>Free JSON Schema Validator (Draft-07 & 2020-12) — Online, No Signup | JSON OS</title>
+    <meta name="description" content="Validate JSON against a schema instantly in your browser. Supports Draft-07 and 2020-12, with built-in templates for common schemas. Free, no upload, no signup required." />
+    <meta name="keywords" content="json schema validator online, online json schema validator, json schema validation online, ajv json schema validator, check json schema, validate a json schema, json schema validator, json validation schema, json online validator schema, online schema validator, json schema format, json schema definition" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <link rel="canonical" href="https://jsonos.online/tools/json-schema-validator" />
     <link rel="alternate" hreflang="en" href="https://jsonos.online/tools/json-schema-validator" />
@@ -17,29 +17,35 @@
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="JSON OS" />
-    <meta property="og:title" content="JSON Schema Validator Online — Ajv Powered Schema Validation · JSON OS" />
-    <meta property="og:description" content="Validate JSON payloads against JSON Schema definitions in real time. Powered by Ajv. Supports Draft-07, Draft 2020-12, types, and formats." />
+    <meta property="og:title" content="Free JSON Schema Validator (Draft-07 & 2020-12) — Online, No Signup" />
+    <meta property="og:description" content="Validate JSON against a schema instantly in your browser. Supports Draft-07 and 2020-12. Free, no upload, no signup required." />
     <meta property="og:url" content="https://jsonos.online/tools/json-schema-validator" />
     <meta property="og:image" content="https://jsonos.online/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="JSON Schema Validator Online — JSON OS" />
-    <meta name="twitter:description" content="Free Ajv-powered JSON Schema validator with format checks and preset schema templates." />
+    <meta name="twitter:title" content="Free JSON Schema Validator (Draft-07 & 2020-12) — Online, No Signup" />
+    <meta name="twitter:description" content="Validate JSON against a schema instantly in your browser. Supports Draft-07 and 2020-12. Free, no upload, no signup required." />
     <meta name="twitter:image" content="https://jsonos.online/og-image.png" />
 
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
-        "name": "JSON Schema Validator Online",
+        "name": "Free JSON Schema Validator",
         "applicationCategory": "DeveloperApplication",
         "applicationSubCategory": "JSONSchemaValidator",
-        "operatingSystem": "Web",
+        "operatingSystem": "Web Browser",
         "url": "https://jsonos.online/tools/json-schema-validator",
         "isPartOf": { "@id": "https://jsonos.online/#software" },
         "isAccessibleForFree": true,
-        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "featureList": [
+          "Ajv Draft-07 and 2020-12 Schema Engine",
+          "Instant line-by-line error highlights",
+          "Built-in templates for common schemas",
+          "100% browser-based privacy"
+        ]
       }
     </script>
     <script type="application/ld+json">
@@ -60,6 +66,14 @@
         "mainEntity": [
           {
             "@type": "Question",
+            "name": "What is JSON Schema validation?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "JSON Schema validation is the process of checking whether a JSON document conforms to a predefined structure (a JSON Schema). It verifies property names, data types, required fields, value ranges, and string formats (such as email or date-time)."
+            }
+          },
+          {
+            "@type": "Question",
             "name": "What is an online JSON schema validator?",
             "acceptedAnswer": {
               "@type": "Answer",
@@ -72,14 +86,6 @@
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "Ajv (Another JSON Schema Validator) is the fastest and most compliant JSON Schema validator for JavaScript and TypeScript. It supports standard specifications including Draft-07 and Draft 2020-12."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Which JSON Schema types and format options are validated?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "All core types (string, number, integer, boolean, object, array, null) and formats (email, uri, date-time, date, time, ipv4, ipv6, uuid, regex) are fully validated."
             }
           }
         ]
@@ -146,6 +152,10 @@
 
     <section class="faq-section">
       <h2>Frequently Asked Questions</h2>
+      <details class="faq-item" open>
+        <summary>What is JSON Schema validation?</summary>
+        <p>JSON Schema validation is the process of checking whether a JSON document conforms to a predefined structure (a JSON Schema). It verifies property names, data types, required fields, value ranges, and string formats (such as email or date-time).</p>
+      </details>
       <details class="faq-item">
         <summary>What is an online JSON schema validator?</summary>
         <p>An online JSON schema validator tests whether a JSON document conforms to a specified JSON Schema structure, verifying data types, required properties, ranges, patterns, and formats without sending data to an external server.</p>
