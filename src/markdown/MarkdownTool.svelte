@@ -8,6 +8,7 @@
   import ContextMenu, { type MenuItem } from '../components/ContextMenu.svelte';
   import { ui } from '../core/ui-prefs.svelte';
   import { mdWorkspace } from './md-store.svelte';
+  import { SITE_CONFIG } from '../core/site-config';
 
   type HelpTab = 'docs' | 'syntax' | 'shortcuts' | 'embeds' | 'about' | 'feedback';
 
@@ -127,6 +128,7 @@
     { kind: 'item', icon: '⇄',  label: 'Embeds & providers', onSelect: () => openHelpAt('embeds') },
     { kind: 'divider' },
     { kind: 'item', icon: 'ⓘ',  label: 'About Markdown Studio', onSelect: () => openHelpAt('about') },
+    { kind: 'item', icon: '☕',  label: 'Support on Ko-fi', hint: '↗', onSelect: () => window.open(SITE_CONFIG.kofiUrl, '_blank', 'noopener') },
     { kind: 'item', icon: '✉',  label: 'Send feedback',         onSelect: () => openHelpAt('feedback') },
     { kind: 'divider' },
     { kind: 'item', icon: '🔒', label: 'Privacy Policy', hint: '↗',
@@ -318,6 +320,17 @@
       </div>
     {/each}
     <button class="new-tab" title="New markdown doc (⌘T)" onclick={() => mdWorkspace.newDoc()} aria-label="new">+</button>
+    <div class="header-spacer"></div>
+    <a
+      href={SITE_CONFIG.kofiUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="header-kofi-btn"
+      title="Support free, local-first open-source tools on Ko-fi"
+    >
+      <span class="kofi-icon">☕</span>
+      <span class="kofi-label">Support on Ko-fi</span>
+    </a>
   </div>
 
   <!-- Toolbar -->
@@ -547,6 +560,43 @@
     height: 100dvh;
     background: var(--bg);
     color: var(--fg);
+  }
+
+  .header-spacer {
+    flex: 1;
+    min-width: 12px;
+  }
+  .header-kofi-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 10px;
+    margin: 4px 10px 4px 4px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: var(--radius, 4px);
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+    align-self: center;
+    height: 24px;
+    line-height: 1;
+  }
+  .header-kofi-btn:hover {
+    color: #ff5e5b;
+    border-color: rgba(255, 94, 91, 0.4);
+    background: rgba(255, 94, 91, 0.08);
+  }
+  @media (max-width: 640px) {
+    .header-kofi-btn .kofi-label {
+      display: none;
+    }
+    .header-kofi-btn {
+      padding: 0 6px;
+    }
   }
 
   .tabs {

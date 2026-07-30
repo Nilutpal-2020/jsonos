@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { SITE_CONFIG } from '../core/site-config';
+
   type Tab = 'docs' | 'syntax' | 'shortcuts' | 'embeds' | 'about' | 'feedback';
 
   let {
@@ -303,6 +305,12 @@
               philosophy: no server, no upload, no account. Documents are kept in IndexedDB on
               your device and never leave it.
             </p>
+            <div class="share-row" style="margin-top: 12px">
+              <a class="share-btn primary-link" href={SITE_CONFIG.kofiUrl} target="_blank" rel="noopener noreferrer" title="Support free, privacy-first developer tools on Ko-fi">
+                <span class="ic" aria-hidden="true">☕</span>
+                <span class="lb">Support on Ko-fi</span>
+              </a>
+            </div>
           </section>
           <section>
             <h4>Highlights</h4>

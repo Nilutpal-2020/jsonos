@@ -2,6 +2,7 @@
   import { doc, workspace } from "../core/store.svelte";
   import { ui } from "../core/ui-prefs.svelte";
   import { compare } from "../core/compare.svelte";
+  import { SITE_CONFIG } from "../core/site-config";
   import ThemeToggle from "./ThemeToggle.svelte";
   import ContextMenu, { type MenuItem } from "./ContextMenu.svelte";
   import HelpDialog from "./HelpDialog.svelte";
@@ -98,46 +99,49 @@
   let helpOpen = $state(false);
   let helpTab = $state<HelpTab>("docs");
 
+  function openHelpAt(tab: HelpTab) {
+    helpTab = tab;
+    helpOpen = true;
+    helpMenu = null;
+  }
+
   function openHelpMenu(e: MouseEvent) {
     const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    helpMenu = { x: r.left, y: r.bottom + 4 };
+    helpMenu = { x: r.right - 220, y: r.bottom + 4 };
   }
   function closeHelpMenu() {
     helpMenu = null;
-  }
-  function openHelpAt(t: HelpTab) {
-    helpTab = t;
-    helpOpen = true;
   }
 
   // TODO: replace with the real repo slug once published.
   const GITHUB_URL = "https://github.com/Nilutpal-2020/jsonos";
 
-  let helpItems: MenuItem[] = [
+  const helpItems: MenuItem[] = [
     {
       kind: "item",
       icon: "📖",
-      label: "Documentation",
+      label: "Documentation & FAQ",
       onSelect: () => openHelpAt("docs"),
     },
     {
       kind: "item",
       icon: "⌨",
       label: "Keyboard shortcuts",
+      hint: "⌘/",
       onSelect: () => openHelpAt("shortcuts"),
     },
-    { kind: "divider" },
     {
       kind: "item",
-      icon: "ⓘ",
+      icon: "ℹ",
       label: "About JSON OS",
       onSelect: () => openHelpAt("about"),
     },
     {
       kind: "item",
-      icon: "↗",
-      label: "Share JSON OS",
-      onSelect: () => openHelpAt("about"),
+      icon: "☕",
+      label: "Support on Ko-fi",
+      hint: "↗",
+      onSelect: () => window.open(SITE_CONFIG.kofiUrl, "_blank", "noopener"),
     },
     {
       kind: "item",

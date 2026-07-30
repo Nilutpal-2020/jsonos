@@ -1,5 +1,6 @@
 <script lang="ts">
   import { workspace } from "../core/store.svelte";
+  import { SITE_CONFIG } from "../core/site-config";
   import ToolSwitcher from "./ToolSwitcher.svelte";
 
   let editingId = $state<string | null>(null);
@@ -130,9 +131,56 @@
     onclick={() => workspace.newDoc()}
     aria-label="new tab">+</button
   >
+  <div class="header-spacer"></div>
+  <a
+    href={SITE_CONFIG.kofiUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="header-kofi-btn"
+    title="Support free, local-first open-source tools on Ko-fi"
+  >
+    <span class="kofi-icon">☕</span>
+    <span class="kofi-label">Support on Ko-fi</span>
+  </a>
 </div>
 
 <style>
+  .header-spacer {
+    flex: 1;
+    min-width: 12px;
+  }
+  .header-kofi-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 10px;
+    margin: 4px 10px 4px 4px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: var(--radius);
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+    align-self: center;
+    height: 24px;
+    line-height: 1;
+  }
+  .header-kofi-btn:hover {
+    color: #ff5e5b;
+    border-color: rgba(255, 94, 91, 0.4);
+    background: rgba(255, 94, 91, 0.08);
+  }
+  @media (max-width: 640px) {
+    .header-kofi-btn .kofi-label {
+      display: none;
+    }
+    .header-kofi-btn {
+      padding: 0 6px;
+    }
+  }
   .tabs {
     display: flex;
     align-items: stretch;

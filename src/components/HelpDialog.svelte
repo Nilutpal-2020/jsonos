@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { SITE_CONFIG } from "../core/site-config";
+
   type Tab = "docs" | "shortcuts" | "about" | "feedback";
 
   let {
@@ -402,17 +404,17 @@
               accounts.
             </p>
             <div class="share-row">
-              <a class="share-btn primary-link" href={GITHUB_URL} target="_blank" rel="noopener noreferrer" title="Open the repository on GitHub">
+              <a class="share-btn primary-link" href={SITE_CONFIG.kofiUrl} target="_blank" rel="noopener noreferrer" title="Support free, privacy-first developer tools on Ko-fi">
+                <span class="ic" aria-hidden="true">☕</span>
+                <span class="lb">Support on Ko-fi</span>
+              </a>
+              <a class="share-btn" href={GITHUB_URL} target="_blank" rel="noopener noreferrer" title="Open the repository on GitHub">
                 <span class="ic" aria-hidden="true">★</span>
                 <span class="lb">Star on GitHub</span>
               </a>
               <a class="share-btn" href="{GITHUB_URL}/issues" target="_blank" rel="noopener noreferrer" title="Report a bug or request a feature">
                 <span class="ic" aria-hidden="true">!</span>
                 <span class="lb">Issues</span>
-              </a>
-              <a class="share-btn" href="{GITHUB_URL}/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer" title="How to contribute">
-                <span class="ic" aria-hidden="true">＋</span>
-                <span class="lb">Contribute</span>
               </a>
             </div>
           </section>
