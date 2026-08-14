@@ -13,14 +13,35 @@
   let pasteError = $state('');
   let fileInput: HTMLInputElement;
 
-  async function pasteFromClipboard() {
+  async function pasteFromClipboard(textOverride?: string) {
     pasteError = '';
     try {
-      const t = await navigator.clipboard.readText();
-      if (t.trim()) doc.load(t);
+      const t = textOverride ?? (await navigator.clipboard.readText());
+      if (t && t.trim()) doc.load(t);
       else pasteError = 'Clipboard is empty.';
     } catch {
-      pasteError = 'Clipboard read denied. Paste into the text view instead.';
+      pasteError = 'Clipboard read denied. Try pasting manually or opening a file.';
+    }
+  }
+
+  function onWindowPaste(e: ClipboardEvent) {
+    const target = e.target as HTMLElement | null;
+    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+    const txt = e.clipboardData?.getData('text/plain');
+    if (txt && txt.trim()) {
+      e.preventDefault();
+      pasteFromClipboard(txt);
+    }
+  }
+
+  function onWindowKeydown(e: KeyboardEvent) {
+    if (e.defaultPrevented) return;
+    const target = e.target as HTMLElement | null;
+    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+    const meta = e.metaKey || e.ctrlKey;
+    if (meta && e.key.toLowerCase() === 'v') {
+      e.preventDefault();
+      pasteFromClipboard();
     }
   }
 
@@ -57,6 +78,8 @@
   }
 </script>
 
+<svelte:window onpaste={onWindowPaste} onkeydown={onWindowKeydown} />
+
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   class="empty"
@@ -74,7 +97,7 @@
     <p class="hint">Paste JSON, drop a file, or open one to get started.</p>
 
     <div class="actions">
-      <button class="primary" onclick={pasteFromClipboard} title="Paste JSON from clipboard">
+      <button class="primary" onclick={() => pasteFromClipboard()} title="Paste JSON from clipboard">
         📋 Paste
       </button>
       <button onclick={() => fileInput.click()} title="Open a JSON file">📂 Open file</button>

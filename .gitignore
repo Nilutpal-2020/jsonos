@@ -75,3 +75,8 @@ implementation-plan.md
 .vercel
 
 *.resolved
+
+*zip
+packages
+vs-code-extension-plan.md
+chrome-extension-plan.md

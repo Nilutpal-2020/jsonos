@@ -5,6 +5,7 @@
   import { ui } from '../core/ui-prefs.svelte';
   import { flatten, pathKey, type Row } from '../core/tree-flatten';
   import { getAt } from '../core/table-shape';
+  import { repairJson } from '../core/json';
   import type { JsonPath, JsonValue } from '../core/types';
   import type { DiffNode } from '../core/diff-engine';
   import ContextMenu, { type MenuItem } from '../components/ContextMenu.svelte';
@@ -352,7 +353,17 @@
   // App-internal clipboard (separate from system clipboard so we can hold a
   // structured JsonValue, plus the source key when copied from an object).
   let internalClip = $state<{ value: JsonValue; key?: string } | null>(null);
-  let menu = $state<{ x: number; y: number; row: Row } | null>(null);
+  let menu = $state<{ x: number; y: number; row?: Row } | null>(null);
+
+  let isFocusedSlot = $derived(
+    slotIndex === undefined || workspace.focusedSlotIndex === slotIndex
+  );
+
+  function isInputTarget(e: Event): boolean {
+    const target = e.target as HTMLElement | null;
+    if (!target) return false;
+    return target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+  }
 
   function snap<T>(v: T): T {
     return v == null || typeof v !== 'object' ? v : ($state.snapshot(v as any) as T);
@@ -366,40 +377,38 @@
     return { parentPath, parent: parent as JsonValue | undefined, lastSeg };
   }
 
-  function nextUniqueKey(parent: Record<string, JsonValue>, base: string): string {
-    if (!(base in parent)) return base;
-    for (let i = 1; i < 10_000; i++) {
-      const cand = `${base}${i}`;
-      if (!(cand in parent)) return cand;
-    }
-    return `${base}_${Date.now()}`;
+  function nextUniqueKey(obj: Record<string, JsonValue>, base = 'newKey'): string {
+    if (!(base in obj)) return base;
+    let i = 1;
+    while (`${base}_${i}` in obj) i++;
+    return `${base}_${i}`;
   }
 
-  /** Insert into the parent of `row`. `where` = before | after | duplicate. */
+
+
   function insertSibling(row: Row, where: 'before' | 'after' | 'duplicate', value?: JsonValue) {
     if (row.path.length === 0) return;
     const { parentPath, parent, lastSeg } = parentInfo(row);
-    if (parent === undefined) return;
+    if (!parent || typeof parent !== 'object') return;
 
     if (Array.isArray(parent)) {
-      const idx = lastSeg as number;
-      const insertAt = where === 'before' ? idx : idx + 1;
+      const idx = typeof lastSeg === 'number' ? lastSeg : parseInt(String(lastSeg), 10);
+      const insertIdx = where === 'before' ? idx : idx + 1;
+      const arr = snap(parent) as JsonValue[];
+      const next = [...arr];
       const v: JsonValue = where === 'duplicate'
-        ? snap(parent[idx] as JsonValue)
-        : (value === undefined ? null : value);
-      const next = [...parent.slice(0, insertAt), v, ...parent.slice(insertAt)];
-      active.applyValuePatch({ op: 'replace', path: parentPath, value: snap(next) });
-      return;
-    }
-
-    if (parent && typeof parent === 'object') {
-      const obj = parent as Record<string, JsonValue>;
-      const key = lastSeg as string;
-      const baseKey = where === 'duplicate' ? `${key} copy` : 'newKey';
+        ? snap(arr[idx])
+        : (value === undefined ? '' : value);
+      next.splice(insertIdx, 0, v);
+      active.applyValuePatch({ op: 'replace', path: parentPath, value: next });
+    } else {
+      const key = String(lastSeg);
+      const obj = snap(parent) as Record<string, JsonValue>;
+      const baseKey = where === 'duplicate' ? key : 'newKey';
       const newKey = nextUniqueKey(obj, baseKey);
       const v: JsonValue = where === 'duplicate'
         ? snap(obj[key])
-        : (value === undefined ? null : value);
+        : (value === undefined ? '' : value);
 
       const next: Record<string, JsonValue> = {};
       const keys = Object.keys(obj);
@@ -410,8 +419,7 @@
       }
       active.applyValuePatch({ op: 'replace', path: parentPath, value: snap(next) });
 
-      // For "before"/"after" empty insertion, queue rename of the new key.
-      if (where !== 'duplicate') {
+      if (where !== 'duplicate' && value === undefined) {
         pendingKeyEdit = { rowId: pathKey([...parentPath, newKey]), original: newKey };
         treeExpand.bump++;
       }
@@ -424,7 +432,6 @@
       value,
       key: typeof row.keyName === 'string' ? row.keyName : undefined,
     };
-    // Best-effort system clipboard too.
     navigator.clipboard?.writeText(JSON.stringify(value, null, 2)).catch(() => {});
   }
 
@@ -434,34 +441,94 @@
     active.applyValuePatch({ op: 'remove', path: row.path });
   }
 
-  /** Paste from internalClip as: a child of an open container row, OR a sibling
-      after a leaf row. Falls back to system clipboard if internalClip empty. */
-  async function pasteAt(row: Row) {
-    let value: JsonValue | null = internalClip?.value ?? null;
-    let key: string | undefined = internalClip?.key;
-    if (internalClip == null) {
+  async function getPastedTextAndValue(e?: ClipboardEvent): Promise<{ text: string; value: JsonValue | undefined } | null> {
+    let txt = e?.clipboardData?.getData('text/plain') ?? '';
+    if (!txt) {
       try {
-        const txt = await navigator.clipboard.readText();
-        value = JSON.parse(txt);
-      } catch { return; }
+        txt = await navigator.clipboard.readText();
+      } catch {
+        /* ignore */
+      }
+    }
+    if (!txt && internalClip != null) {
+      const text = JSON.stringify(internalClip.value, null, 2);
+      return { text, value: internalClip.value };
+    }
+    if (!txt.trim()) return null;
+
+    try {
+      return { text: txt, value: JSON.parse(txt) };
+    } catch {
+      return { text: txt, value: undefined };
+    }
+  }
+
+  function replaceDoc(valueOrText: JsonValue | string) {
+    if (typeof valueOrText === 'string') {
+      active.load(valueOrText);
+    } else {
+      active.applyValuePatch({ op: 'replace', path: [], value: snap(valueOrText) });
+    }
+  }
+
+  async function pasteAt(row: Row, pastedValue?: JsonValue) {
+    let value: JsonValue | undefined = pastedValue;
+    let key: string | undefined = internalClip?.key;
+    if (value === undefined) {
+      const res = await getPastedTextAndValue();
+      if (!res) return;
+      value = res.value !== undefined ? res.value : res.text;
     }
 
-    // Paste into a container as last child
+    if (row.path.length === 0) {
+      replaceDoc(value);
+      return;
+    }
+
     if (row.kind === 'object-open') {
-      const obj = row.value as Record<string, JsonValue>;
+      const obj = snap(row.value) as Record<string, JsonValue>;
       const k = nextUniqueKey(obj, key ?? 'pasted');
-      const next = { ...obj, [k]: snap(value as JsonValue) };
+      const next = { ...obj, [k]: snap(value) };
       active.applyValuePatch({ op: 'replace', path: row.path, value: snap(next) });
       return;
     }
     if (row.kind === 'array-open') {
-      const arr = row.value as JsonValue[];
-      const next = [...arr, snap(value as JsonValue)];
+      const arr = snap(row.value) as JsonValue[];
+      const next = [...arr, snap(value)];
       active.applyValuePatch({ op: 'replace', path: row.path, value: snap(next) });
       return;
     }
-    // Paste as sibling after the current leaf
-    insertSibling(row, 'after', snap(value as JsonValue));
+    insertSibling(row, 'after', snap(value));
+  }
+
+  async function handleSmartPaste(e?: ClipboardEvent, targetRow?: Row) {
+    const res = await getPastedTextAndValue(e);
+    if (!res) return;
+
+    const isDocEmpty = !active.text.trim() || active.parse.value === undefined;
+    const isRootSelected = selectAll || selectedKey === null || selectedKey === '$';
+    const isTargetRoot = targetRow ? targetRow.path.length === 0 : false;
+
+    if (isDocEmpty || isRootSelected || isTargetRoot) {
+      if (e) e.preventDefault();
+      if (res.value !== undefined) replaceDoc(res.value);
+      else if (res.text) active.load(res.text);
+      selection.clear(active.id);
+      return;
+    }
+
+    const row = targetRow ?? (selectedKey ? rowFromPathKey(selectedKey) : undefined);
+    if (!row || row.path.length === 0) {
+      if (e) e.preventDefault();
+      if (res.value !== undefined) replaceDoc(res.value);
+      else if (res.text) active.load(res.text);
+      selection.clear(active.id);
+      return;
+    }
+
+    if (e) e.preventDefault();
+    const valToPaste = res.value !== undefined ? res.value : res.text;
+    await pasteAt(row, valToPaste);
   }
 
   function sortRow(row: Row) {
@@ -469,14 +536,6 @@
     const obj = snap(row.value) as Record<string, JsonValue>;
     const next: Record<string, JsonValue> = {};
     for (const k of Object.keys(obj).sort()) next[k] = obj[k];
-    active.applyValuePatch({ op: 'replace', path: row.path, value: next });
-  }
-
-  function convertTo(row: Row, kind: 'object' | 'array' | 'value') {
-    let next: JsonValue;
-    if (kind === 'object') next = {};
-    else if (kind === 'array') next = [];
-    else next = null;
     active.applyValuePatch({ op: 'replace', path: row.path, value: next });
   }
 
@@ -504,7 +563,11 @@
       { kind: 'item', icon: '⎘', label: 'Copy JSON path', onSelect: () => copyPath(row.path) },
       { kind: 'item', icon: '✂', label: 'Cut',  hint: '⌘X', disabled: !canRemove, onSelect: () => cutRow(row) },
       { kind: 'item', icon: '⎘', label: 'Copy value', hint: '⌘C', onSelect: () => copyRow(row) },
-      { kind: 'item', icon: '📋', label: 'Paste', hint: '⌘V', onSelect: () => pasteAt(row) },
+      { kind: 'item', icon: '📋', label: row.path.length === 0 ? 'Paste & replace document' : 'Paste', hint: '⌘V', onSelect: () => handleSmartPaste(undefined, row) },
+      ...(row.path.length > 0 ? [{
+        kind: 'item' as const, icon: '📋', label: 'Paste & replace document',
+        onSelect: () => handleSmartPaste(),
+      }] : []),
       { kind: 'item', icon: '⎘', label: 'Duplicate',  hint: '⌘D', disabled: !canRemove, onSelect: () => insertSibling(row, 'duplicate') },
       { kind: 'divider' },
       { kind: 'item', icon: '↥', label: 'Insert before', disabled: !canRemove, onSelect: () => insertSibling(row, 'before') },
@@ -531,10 +594,51 @@
     ];
   }
 
+  function buildBackgroundMenu(): MenuItem[] {
+    return [
+      {
+        kind: 'item',
+        icon: '📋',
+        label: 'Paste & replace document',
+        hint: '⌘V',
+        onSelect: () => handleSmartPaste(),
+      },
+      {
+        kind: 'item',
+        icon: '⎘',
+        label: 'Copy all JSON',
+        hint: '⌘C',
+        onSelect: () => copyAllText(),
+      },
+      { kind: 'divider' },
+      {
+        kind: 'item',
+        icon: '⊞',
+        label: 'Expand all',
+        onSelect: () => treeExpand.expandAll(active.id, active.parse.value),
+      },
+      {
+        kind: 'item',
+        icon: '⊟',
+        label: 'Collapse all',
+        onSelect: () => treeExpand.collapseAll(active.id, active.parse.value),
+      },
+    ];
+  }
+
   function openContextMenu(e: MouseEvent, row: Row) {
     e.preventDefault();
     e.stopPropagation();
     menu = { x: e.clientX, y: e.clientY, row };
+  }
+
+  function openBackgroundContextMenu(e: MouseEvent) {
+    const t = e.target as HTMLElement | null;
+    if (t && isInputTarget(e)) return;
+    if (t && (t.tagName === 'BUTTON' || t.closest('button'))) return;
+    e.preventDefault();
+    e.stopPropagation();
+    menu = { x: e.clientX, y: e.clientY };
   }
 
   function rowKeyShortcut(e: KeyboardEvent, row: Row) {
@@ -557,7 +661,7 @@
     const k = e.key.toLowerCase();
     if (k === 'c') { e.preventDefault(); copyRow(row); }
     else if (k === 'x') { e.preventDefault(); cutRow(row); }
-    else if (k === 'v') { e.preventDefault(); pasteAt(row); }
+    else if (k === 'v') { handleSmartPaste(undefined, row); }
     else if (k === 'd') { e.preventDefault(); insertSibling(row, 'duplicate'); }
   }
 
@@ -610,76 +714,46 @@
     navigator.clipboard?.writeText(active.text).catch(() => {});
   }
 
-  /** Replace the whole document with the given JSON value. */
-  function replaceDoc(value: JsonValue) {
-    active.applyValuePatch({ op: 'replace', path: [], value: snap(value) });
+  function onWindowPaste(e: ClipboardEvent) {
+    if (!isFocusedSlot) return;
+    if (isInputTarget(e)) return;
+    handleSmartPaste(e);
   }
 
-  /** Tree-level Ctrl+A / Ctrl+V / Ctrl+C handler. */
-  async function onTreeKey(e: KeyboardEvent) {
+  function onWindowKeydown(e: KeyboardEvent) {
+    if (!isFocusedSlot) return;
+    if (isInputTarget(e)) return;
     if (e.defaultPrevented) return;
-    const target = e.target as HTMLElement | null;
-    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+
     const meta = e.metaKey || e.ctrlKey;
     if (!meta) {
-      if (e.key === 'Escape') {
-        if (selectedKey || selectAll) {
-          e.preventDefault();
-          selection.clear(active.id);
-        }
+      if (e.key === 'Escape' && (selectedKey || selectAll)) {
+        e.preventDefault();
+        selection.clear(active.id);
       }
       return;
     }
+
     const k = e.key.toLowerCase();
-    if (k === 'a') {
+    if (k === 'v') {
+      handleSmartPaste();
+    } else if (k === 'a') {
       e.preventDefault();
       selection.setAll(active.id, true, 'tree');
       copyAllText();
-      return;
-    }
-    if (k === 'c') {
+    } else if (k === 'c') {
       if (selectAll) {
         e.preventDefault();
         copyAllText();
-        return;
-      }
-      if (selectedKey) {
+      } else if (selectedKey) {
         const row = rowFromPathKey(selectedKey);
         if (row) { e.preventDefault(); copyRow(row); }
-        return;
       }
-      return;
-    }
-    if (k === 'v') {
-      e.preventDefault();
-      let value: JsonValue;
-      try {
-        const txt = await navigator.clipboard.readText();
-        value = JSON.parse(txt) as JsonValue;
-      } catch {
-        if (internalClip) value = internalClip.value;
-        else return;
-      }
-      if (selectAll || selectedKey === null) {
-        replaceDoc(value);
-        selection.setAll(active.id, false);
-        return;
-      }
-      const row = rowFromPathKey(selectedKey);
-      if (!row) { replaceDoc(value); return; }
-      if (row.kind === 'object-open' || row.kind === 'array-open') {
-        await pasteAt(row);
-      } else {
-        insertSibling(row, 'after', snap(value));
-      }
-      return;
-    }
-    if (k === 'x') {
+    } else if (k === 'x') {
       if (selectedKey) {
         const row = rowFromPathKey(selectedKey);
         if (row) { e.preventDefault(); cutRow(row); selection.clear(active.id); }
       }
-      return;
     }
   }
 
@@ -701,7 +775,10 @@
   }
 </script>
 
-<div class="tree-root">
+<svelte:window onpaste={onWindowPaste} onkeydown={onWindowKeydown} />
+
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="tree-root" oncontextmenu={openBackgroundContextMenu}>
   {#if active.parse.errors.length && !active.text.trim()}
     <EmptyDoc doc={active} />
   {:else if active.parse.errors.length}
@@ -753,7 +830,7 @@
       class="scroll"
       bind:this={scrollEl}
       onscroll={onScroll}
-      onkeydown={onTreeKey}
+      onkeydown={onWindowKeydown}
       onpointerdown={onTreeBackgroundPointerDown}
       tabindex="0"
       role="tree"
@@ -798,7 +875,7 @@
                       onblur={() => commitKeyEdit(row)}
                       onkeydown={(e) => {
                         if (e.key === 'Enter') { e.preventDefault(); commitKeyEdit(row); }
-                        else if (e.key === 'Escape') cancelEdits();
+                        else if (e.key === 'Escape') editingKeyId = null;
                       }}
                       use:focusInput
                     />
@@ -832,7 +909,7 @@
                       onblur={() => commitKeyEdit(row)}
                       onkeydown={(e) => {
                         if (e.key === 'Enter') { e.preventDefault(); commitKeyEdit(row); }
-                        else if (e.key === 'Escape') cancelEdits();
+                        else if (e.key === 'Escape') editingKeyId = null;
                       }}
                       use:focusInput
                     />
@@ -849,7 +926,7 @@
                     onblur={() => commitValueEdit(row)}
                     onkeydown={(e) => {
                       if (e.key === 'Enter') { e.preventDefault(); commitValueEdit(row); }
-                      else if (e.key === 'Escape') cancelEdits();
+                      else if (e.key === 'Escape') editingValueId = null;
                     }}
                     use:focusInput
                   />
@@ -908,7 +985,7 @@
   <ContextMenu
     x={menu.x}
     y={menu.y}
-    items={buildMenu(menu.row)}
+    items={menu.row ? buildMenu(menu.row) : buildBackgroundMenu()}
     onClose={() => (menu = null)}
   />
 {/if}

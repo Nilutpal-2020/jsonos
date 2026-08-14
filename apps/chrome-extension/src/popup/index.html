@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON OS Redact</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <div class="brand">
+        <img src="/icons/icon48.png" alt="Logo" class="logo-icon" id="logoIcon">
+        <span class="brand-title">JSON OS Redact</span>
+        <span class="brand-badge">Inspector</span>
+      </div>
+      <button class="options-btn" id="openOptionsBtn" title="Open Settings">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Active Tab Inspector Card -->
+    <div class="active-tab-card">
+      <div class="tab-header-row">
+        <div class="tab-domain-badge">
+          <span class="domain-dot"></span>
+          <span id="activeTabDomain">Active Tab</span>
+        </div>
+        <span class="tab-status-text" id="tabStatusText">Ready to scan</span>
+      </div>
+
+      <div class="active-tab-actions">
+        <button class="btn-scan" id="scanPageBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          Scan & Highlight Tab
+        </button>
+        <button class="btn-clear" id="clearPageBtn" title="Clear page highlights">
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <!-- Mode Selector -->
+    <div class="mode-selector">
+      <button class="mode-btn active" data-mode="redact">Redact</button>
+      <button class="mode-btn" data-mode="mask">Mask</button>
+      <button class="mode-btn" data-mode="hash">Hash</button>
+    </div>
+
+    <!-- Detectors Toggles Section -->
+    <div class="detectors-panel">
+      <div class="panel-header">Detectors</div>
+      <div class="detectors-grid">
+        <label class="toggle-item">
+          <span>Emails</span>
+          <input type="checkbox" id="toggleEmails" class="toggle-input" checked>
+          <span class="toggle-switch"></span>
+        </label>
+        <label class="toggle-item">
+          <span>Secrets / Keys</span>
+          <input type="checkbox" id="toggleSecrets" class="toggle-input" checked>
+          <span class="toggle-switch"></span>
+        </label>
+        <label class="toggle-item">
+          <span>Prices / Amounts</span>
+          <input type="checkbox" id="togglePrices" class="toggle-input" checked>
+          <span class="toggle-switch"></span>
+        </label>
+        <label class="toggle-item">
+          <span>Credit Cards</span>
+          <input type="checkbox" id="toggleCards" class="toggle-input" checked>
+          <span class="toggle-switch"></span>
+        </label>
+        <label class="toggle-item">
+          <span>IP Addresses</span>
+          <input type="checkbox" id="toggleIps" class="toggle-input" checked>
+          <span class="toggle-switch"></span>
+        </label>
+        <label class="toggle-item">
+          <span>URLs / Domains</span>
+          <input type="checkbox" id="toggleUrls" class="toggle-input" checked>
+          <span class="toggle-switch"></span>
+        </label>
+        <label class="toggle-item">
+          <span>Phone Numbers</span>
+          <input type="checkbox" id="togglePhones" class="toggle-input">
+          <span class="toggle-switch"></span>
+        </label>
+        <label class="toggle-item">
+          <span>Names</span>
+          <input type="checkbox" id="toggleNames" class="toggle-input">
+          <span class="toggle-switch"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Page / Input Match Summary -->
+    <div class="summary-card" id="summaryCard">
+      <div class="summary-header">
+        <span>MATCH SUMMARY</span>
+        <span id="totalMatchesCount">0 items found</span>
+      </div>
+      <div class="matches-list" id="matchesList">
+        <span class="match-badge">Click "Scan & Highlight Tab" above</span>
+      </div>
+    </div>
+
+    <!-- Manual Paste & Redact Accordion -->
+    <details class="accordion-details">
+      <summary class="accordion-summary">
+        <span>MANUAL TEXTAREA REDACTOR</span>
+        <span>▼</span>
+      </summary>
+      <div class="accordion-content">
+        <div class="editor-section">
+          <div class="input-container">
+            <div class="label-row">
+              <span>INPUT TEXT</span>
+              <span id="inputCharCount">0 chars</span>
+            </div>
+            <textarea id="inputText" placeholder="Paste source code, logs, or text here..." rows="3"></textarea>
+          </div>
+
+          <div class="actions-row">
+            <button class="btn-primary" id="redactBtn">
+              Redact Text
+            </button>
+            <button class="btn-secondary" id="copyBtn" title="Copy Redacted Output">
+              Copy Output
+            </button>
+          </div>
+
+          <div class="output-container">
+            <div class="label-row">
+              <span>REDACTED OUTPUT</span>
+              <span id="outputCharCount">0 chars</span>
+            </div>
+            <textarea id="outputText" readonly placeholder="Redacted result will appear here..." rows="3"></textarea>
+          </div>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="toast" id="toast">Highlights added to page!</div>
+
+  <script type="module" src="popup.ts"></script>
+</body>
+</html>

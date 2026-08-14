@@ -5,6 +5,7 @@
   let mode = $state<AnonymizeOptions['mode']>('redact');
   let maskEmails = $state(true);
   let maskSecrets = $state(true);
+  let maskPrices = $state(true);
   let maskNames = $state(true);
   let maskCards = $state(true);
   let maskIps = $state(true);
@@ -17,6 +18,7 @@
       mode,
       maskEmails,
       maskSecrets,
+      maskPrices,
       maskNames,
       maskCards,
       maskIps,
@@ -39,7 +41,7 @@
 
 <div class="anon-container">
   <p class="intro">
-    Detect and redact sensitive customer data, names, assignees, passwords, JWT tokens, credit cards, phone numbers, web URLs, and IP addresses before sharing or logging.
+    Detect and redact sensitive customer data, names, assignees, passwords, JWT tokens, credit cards, prices, phone numbers, web URLs, and IP addresses before sharing or logging.
   </p>
 
   <div class="detect-card" class:has-items={preview.count > 0}>
@@ -67,6 +69,10 @@
     <label class="check-label">
       <input type="checkbox" bind:checked={maskSecrets} />
       <span>Passwords, API Keys, JWT Tokens, Secrets</span>
+    </label>
+    <label class="check-label">
+      <input type="checkbox" bind:checked={maskPrices} />
+      <span>Prices & Currency Amounts ($100, Rs. 1000)</span>
     </label>
     <label class="check-label">
       <input type="checkbox" bind:checked={maskNames} />
@@ -159,37 +165,44 @@
   .group-title {
     font-size: 11px;
     font-weight: 600;
-    color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.05em;
+    color: var(--muted);
   }
 
   .mode-selector {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .mode-selector button {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     background: var(--surface);
-    color: var(--fg);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 6px 10px;
-    font-size: 12px;
-    cursor: pointer;
-    text-align: left;
+    padding: 3px;
+    gap: 2px;
   }
-  .mode-selector button code {
-    font-size: 11px;
+  .mode-selector button {
+    background: transparent;
+    border: none;
     color: var(--muted);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 6px 4px;
+    border-radius: calc(var(--radius) - 2px);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .mode-selector button:hover {
+    color: var(--fg);
   }
   .mode-selector button.active {
-    border-color: var(--accent);
-    background: var(--accent-soft);
-    color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+  .mode-selector code {
+    font-size: 10px;
+    opacity: 0.85;
   }
 
   .check-label {
@@ -201,39 +214,35 @@
     cursor: pointer;
     user-select: none;
   }
-  .check-label.highlight-check {
-    margin-top: 6px;
-    padding: 6px 8px;
-    background: var(--accent-soft);
-    border: 1px dashed var(--accent);
-    border-radius: var(--radius);
+  .check-label input {
+    cursor: pointer;
+  }
+  .highlight-check {
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border);
+    color: var(--warn, #eab308);
   }
 
   .toast-banner {
-    background: var(--ok-bg, rgba(34, 197, 94, 0.15));
-    border: 1px solid var(--ok, #22c55e);
-    color: var(--ok, #22c55e);
+    font-size: 12px;
+    color: var(--success, #10b981);
+    background: color-mix(in oklab, var(--success, #10b981) 12%, var(--surface));
+    border: 1px solid var(--success, #10b981);
     padding: 8px 12px;
     border-radius: var(--radius);
-    font-size: 12px;
-    font-weight: 600;
-    text-align: center;
   }
 
   .apply-btn {
     margin-top: auto;
     background: var(--accent);
-    color: var(--accent-fg);
-    border: 0;
-    border-radius: var(--radius);
+    color: #fff;
+    border: none;
     padding: 10px;
-    font-weight: 600;
+    border-radius: var(--radius);
     font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    transition: filter 80ms;
-  }
-  .apply-btn:hover:not(:disabled) {
-    filter: brightness(1.1);
   }
   .apply-btn:disabled {
     opacity: 0.5;
