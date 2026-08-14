@@ -14,8 +14,8 @@
   },
   "categories": [
     "Linters",
-    "Other",
-    "Security"
+    "Formatters",
+    "Other"
   ],
   "main": "./out/extension.js",
   "activationEvents": [
