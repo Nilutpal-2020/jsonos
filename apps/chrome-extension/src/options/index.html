@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON OS Redact — Preferences</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="options-container">
+    <header>
+      <img src="/icons/icon48.png" alt="Logo" class="logo-icon">
+      <div>
+        <h1>JSON OS Redact Preferences</h1>
+        <p class="subtitle">Set default redaction options for popup, active tab scanner, and context menu</p>
+      </div>
+    </header>
+
+    <!-- Mode Section -->
+    <div class="section">
+      <div class="section-title">Default Redaction Mode</div>
+      <div class="mode-selector">
+        <button class="mode-btn active" data-mode="redact">Redact ([EMAIL])</button>
+        <button class="mode-btn" data-mode="mask">Mask (j***@ex***.com)</button>
+        <button class="mode-btn" data-mode="hash">Hash (SHA-256)</button>
+      </div>
+    </div>
+
+    <!-- Detectors Section -->
+    <div class="section">
+      <div class="section-title">Active Detectors</div>
+      <div class="toggles-list">
+        <label class="toggle-row">
+          <div class="toggle-info">
+            <span class="toggle-title">Email Addresses</span>
+            <span class="toggle-desc">Detect standard email address formats</span>
+          </div>
+          <input type="checkbox" id="toggleEmails" class="toggle-input" checked>
+          <span class="toggle-switch"></span>
+        </label>
+
+        <label class="toggle-row">
+          <div class="toggle-info">
+            <span class="toggle-title">Secrets & API Keys</span>
+            <span class="toggle-desc">Detect OpenAI, AWS, Stripe, GitHub, Slack tokens, JWTs, and secret assignments</span>
+          </div>
+          <input type="checkbox" id="toggleSecrets" class="toggle-input" checked>
+          <span class="toggle-switch"></span>
+        </label>
+
+        <label class="toggle-row">
+          <div class="toggle-info">
+            <span class="toggle-title">Prices & Currency Amounts</span>
+            <span class="toggle-desc">Detect prices with currency symbols or codes ($100, Rs. 1000, €99.99, ₹50,000)</span>
+          </div>
+          <input type="checkbox" id="togglePrices" class="toggle-input" checked>
+          <span class="toggle-switch"></span>
+        </label>
+
+        <label class="toggle-row">
+          <div class="toggle-info">
+            <span class="toggle-title">Credit Cards</span>
+            <span class="toggle-desc">Detect major credit card number patterns</span>
+          </div>
+          <input type="checkbox" id="toggleCards" class="toggle-input" checked>
+          <span class="toggle-switch"></span>
+        </label>
+
+        <label class="toggle-row">
+          <div class="toggle-info">
+            <span class="toggle-title">IP Addresses</span>
+            <span class="toggle-desc">Detect IPv4 addresses</span>
+          </div>
+          <input type="checkbox" id="toggleIps" class="toggle-input" checked>
+          <span class="toggle-switch"></span>
+        </label>
+
+        <label class="toggle-row">
+          <div class="toggle-info">
+            <span class="toggle-title">URLs & Web Domains</span>
+            <span class="toggle-desc">Detect http/https URLs and domains</span>
+          </div>
+          <input type="checkbox" id="toggleUrls" class="toggle-input" checked>
+          <span class="toggle-switch"></span>
+        </label>
+
+        <label class="toggle-row">
+          <div class="toggle-info">
+            <span class="toggle-title">Phone Numbers</span>
+            <span class="toggle-desc">Detect mobile / international phone formats (off by default to avoid log false positives)</span>
+          </div>
+          <input type="checkbox" id="togglePhones" class="toggle-input">
+          <span class="toggle-switch"></span>
+        </label>
+
+        <label class="toggle-row">
+          <div class="toggle-info">
+            <span class="toggle-title">Names & Assignees</span>
+            <span class="toggle-desc">Detect key-value name assignments (name: John)</span>
+          </div>
+          <input type="checkbox" id="toggleNames" class="toggle-input">
+          <span class="toggle-switch"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="save-bar">
+      <span class="status-msg" id="statusMsg">Preferences saved!</span>
+      <button class="btn-save" id="saveBtn">Save Preferences</button>
+    </div>
+  </div>
+
+  <script type="module" src="options.ts"></script>
+</body>
+</html>
