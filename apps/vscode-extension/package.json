@@ -1,0 +1,168 @@
+{
+  "name": "jsonos-redact-vscode",
+  "displayName": "JSON OS Redact",
+  "description": "Zero-network client-side PII & secrets detection, live warning diagnostics, and on-demand file/project redaction.",
+  "version": "0.1.0",
+  "publisher": "jsonos",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nilutpal-2020/jsonos.git"
+  },
+  "icon": "icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters",
+    "Other",
+    "Security"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "jsonosRedact.redactCurrentFile",
+        "title": "JSON OS Redact: Redact Current File",
+        "category": "JSON OS Redact"
+      },
+      {
+        "command": "jsonosRedact.redactAllValuesInFile",
+        "title": "JSON OS Redact: Redact ALL Values in Current File",
+        "category": "JSON OS Redact"
+      },
+      {
+        "command": "jsonosRedact.redactSelection",
+        "title": "JSON OS Redact: Redact Selection",
+        "category": "JSON OS Redact"
+      },
+      {
+        "command": "jsonosRedact.redactProject",
+        "title": "JSON OS Redact: Redact Project...",
+        "category": "JSON OS Redact"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "jsonosRedact.redactSelection",
+          "when": "editorHasSelection",
+          "group": "modification@1"
+        },
+        {
+          "command": "jsonosRedact.redactCurrentFile",
+          "group": "modification@2"
+        },
+        {
+          "command": "jsonosRedact.redactAllValuesInFile",
+          "group": "modification@3"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "jsonosRedact.redactCurrentFile",
+          "group": "modification@1"
+        },
+        {
+          "command": "jsonosRedact.redactAllValuesInFile",
+          "group": "modification@2"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "JSON OS Redact",
+      "properties": {
+        "jsonosRedact.mode": {
+          "type": "string",
+          "enum": [
+            "redact",
+            "mask",
+            "hash"
+          ],
+          "default": "redact",
+          "description": "Redaction mode: 'redact' ([EMAIL]), 'mask' (u***@dom.com), or 'hash' (SHA-256 hash)"
+        },
+        "jsonosRedact.liveSuggestions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable live PII & secrets warning squiggly diagnostics as you type"
+        },
+        "jsonosRedact.redactAllValues": {
+          "type": "boolean",
+          "default": false,
+          "description": "JSON files: Treat every string and number value as sensitive, regardless of key/pattern"
+        },
+        "jsonosRedact.maskEmails": {
+          "type": "boolean",
+          "default": true,
+          "description": "Detect and flag email addresses"
+        },
+        "jsonosRedact.maskSecrets": {
+          "type": "boolean",
+          "default": true,
+          "description": "Detect and flag passwords, API keys, JWTs, and secret assignments"
+        },
+        "jsonosRedact.maskPrices": {
+          "type": "boolean",
+          "default": true,
+          "description": "Detect and flag prices and currency amounts ($100, Rs. 1000, €99.99)"
+        },
+        "jsonosRedact.maskCards": {
+          "type": "boolean",
+          "default": true,
+          "description": "Detect and flag credit card numbers"
+        },
+        "jsonosRedact.maskIps": {
+          "type": "boolean",
+          "default": true,
+          "description": "Detect and flag IPv4 addresses"
+        },
+        "jsonosRedact.maskUrls": {
+          "type": "boolean",
+          "default": true,
+          "description": "Detect and flag web URLs and endpoints"
+        },
+        "jsonosRedact.maskPhones": {
+          "type": "boolean",
+          "default": false,
+          "description": "Detect and flag mobile phone numbers (disabled by default to prevent log false positives)"
+        },
+        "jsonosRedact.maskNames": {
+          "type": "boolean",
+          "default": false,
+          "description": "Detect and flag key-value name assignments (name: John)"
+        },
+        "jsonosRedact.excludeGlobs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/node_modules/**",
+            "**/.git/**",
+            "**/dist/**",
+            "**/build/**",
+            "**/*.lock"
+          ],
+          "description": "File patterns excluded from live scanning and project redaction"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "dependencies": {
+    "@jsonos/redact-core": "file:../../packages/redact-core"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.3"
+  }
+}

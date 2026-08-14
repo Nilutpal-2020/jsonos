@@ -77,6 +77,7 @@ implementation-plan.md
 *.resolved
 
 *zip
+*.vsix
 packages
 vs-code-extension-plan.md
 chrome-extension-plan.md
