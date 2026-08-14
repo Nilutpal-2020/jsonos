@@ -11,7 +11,9 @@
     "gen-icons": "node scripts/gen-icons.mjs",
     "gen-ext-icons": "node scripts/gen-extension-icons.mjs",
     "build:ext": "npm --prefix apps/chrome-extension run build",
-    "package:ext": "node scripts/package-extension.mjs"
+    "package:ext": "node scripts/package-extension.mjs",
+    "build:vscode": "npm --prefix apps/vscode-extension run compile",
+    "package:vscode": "node scripts/package-vscode-extension.mjs"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.0.0",

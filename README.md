@@ -118,6 +118,12 @@ npm run dev          # http://localhost:5173
 # Typecheck and build production bundle
 npm run check
 npm run build        # Output in dist/
+
+# .vsix file generate
+npm run package:vscode
+
+# chrome extension package
+npm run package:ext
 ```
 
 > **Requirements**: Node.js ≥ 20 recommended.
