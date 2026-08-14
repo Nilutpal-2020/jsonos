@@ -40,6 +40,35 @@
 </script>
 
 <div class="anon-container">
+  <!-- VS Code Extension Promo Banner -->
+  <div class="vscode-promo-card">
+    <div class="promo-header">
+      <span class="promo-badge">VS CODE EXTENSION</span>
+      <span class="promo-status">⚡ Available Now</span>
+    </div>
+    <div class="promo-body">
+      <strong>JSON OS Redact for VS Code</strong>
+      <p>Detect & redact PII, secrets, API keys, and prices live in your editor as you code!</p>
+    </div>
+    <div class="promo-actions">
+      <a
+        href="https://marketplace.visualstudio.com/items?itemName=jsonos.jsonos-redact-vscode"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="promo-btn primary"
+      >
+        Install from Marketplace ↗
+      </a>
+      <a
+        href="vscode:extension/jsonos.jsonos-redact-vscode"
+        class="promo-btn secondary"
+        title="Open directly in VS Code application"
+      >
+        Open in VS Code ⚡
+      </a>
+    </div>
+  </div>
+
   <p class="intro">
     Detect and redact sensitive customer data, names, assignees, passwords, JWT tokens, credit cards, prices, phone numbers, web URLs, and IP addresses before sharing or logging.
   </p>
@@ -122,6 +151,92 @@
     padding: 12px;
     overflow-y: auto;
   }
+
+  .vscode-promo-card {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(59, 130, 246, 0.08) 100%);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: var(--radius);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  }
+
+  .promo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .promo-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #60a5fa;
+    text-transform: uppercase;
+  }
+
+  .promo-status {
+    font-size: 10px;
+    font-weight: 600;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .promo-body strong {
+    font-size: 12px;
+    color: var(--fg);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .promo-body p {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.4;
+    margin: 0;
+  }
+
+  .promo-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  .promo-btn {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: calc(var(--radius) - 2px);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+  }
+
+  .promo-btn.primary {
+    background: var(--accent, #2563eb);
+    color: #ffffff;
+  }
+
+  .promo-btn.primary:hover {
+    background: #1d4ed8;
+  }
+
+  .promo-btn.secondary {
+    background: var(--surface);
+    color: var(--fg);
+    border: 1px solid var(--border);
+  }
+
+  .promo-btn.secondary:hover {
+    background: var(--border);
+  }
+
   .intro {
     font-size: 12px;
     color: var(--muted);

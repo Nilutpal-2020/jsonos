@@ -408,6 +408,10 @@
                 <span class="ic" aria-hidden="true">☕</span>
                 <span class="lb">Support on Ko-fi</span>
               </a>
+              <a class="share-btn" href="https://marketplace.visualstudio.com/items?itemName=jsonos.jsonos-redact-vscode" target="_blank" rel="noopener noreferrer" title="Install JSON OS Redact from VS Code Marketplace">
+                <span class="ic" aria-hidden="true">⚡</span>
+                <span class="lb">VS Code Extension</span>
+              </a>
               <a class="share-btn" href={GITHUB_URL} target="_blank" rel="noopener noreferrer" title="Open the repository on GitHub">
                 <span class="ic" aria-hidden="true">★</span>
                 <span class="lb">Star on GitHub</span>

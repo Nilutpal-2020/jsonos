@@ -6,8 +6,8 @@
 
     <!-- Primary meta -->
     <title>JSON Schema Validator Online, JSON Editor &amp; Type Generator — Validate, Format, Query, Chart &amp; Redact · JSON OS</title>
-    <meta name="description" content="Free online JSON schema validator, JSON editor, type generator, and API sandbox. Validate JSON with Ajv (Draft-07, 2020-12), generate TypeScript/Zod/Pydantic/Serde/Go models, redact PII, import cURL commands, and visualize JSON in Bar/Line/Pie charts. 100% browser-based." />
-    <meta name="keywords" content="json schema validator online, online json schema validator, json schema validation online, ajv json schema validator, validate json schema online, json online validator schema, online schema validator, json schema type, json validator schema, json schema format, what is json schema, json schema definition, visualize json data, visualize json, show json, visualise json, online json object viewer, json visualizer, avro schema validator online, json file online viewer, json to typescript online, json to zod, json to python pydantic, json to rust serde, json to go struct, curl to json online, curl parser online, anonymize json online, redact pii json, json chart visualizer, bar chart json online, pie chart json, line chart json online, api sandbox online, json editor, online json editor, free json editor, json viewer, json formatter, json repair, json diff, json query, jq online" />
+    <meta name="description" content="Free online JSON schema validator, JSON editor, type generator, PII redactor, and VS Code extension (JSON OS Redact). Validate JSON with Ajv (Draft-07, 2020-12), generate TypeScript/Zod/Pydantic/Serde/Go models, redact secrets &amp; prices, import cURL commands, and visualize JSON in Bar/Line/Pie charts. 100% browser-based and local-first." />
+    <meta name="keywords" content="json schema validator online, online json schema validator, json schema validation online, ajv json schema validator, validate json schema online, json online validator schema, online schema validator, json schema type, json validator schema, json schema format, what is json schema, json schema definition, visualize json data, visualize json, show json, visualise json, online json object viewer, json visualizer, avro schema validator online, json file online viewer, json to typescript online, json to zod, json to python pydantic, json to rust serde, json to go struct, curl to json online, curl parser online, anonymize json online, redact pii json, json os redact, vscode redact extension, vscode pii redacting extension, vscode secrets detector, redact pii vscode, anonymize text vscode, price redaction tool, redact currency amounts, chrome extension redact pii, json chart visualizer, bar chart json online, pie chart json, line chart json online, api sandbox online, json editor, online json editor, free json editor, json viewer, json formatter, json repair, json diff, json query, jq online" />
     <meta name="author" content="JSON OS" />
     <meta name="application-name" content="JSON OS" />
     <meta name="generator" content="Vite + Svelte" />
@@ -101,13 +101,16 @@
         },
         "hasPart": [
           { "@id": "https://jsonos.online/#software-json" },
-          { "@id": "https://jsonos.online/#software-markdown" }
+          { "@id": "https://jsonos.online/#software-markdown" },
+          { "@id": "https://jsonos.online/#software-vscode" }
         ],
         "featureList": [
           "Online JSON editor and viewer",
           "JSON formatter (beautify) and minifier",
           "JSON validator with inline error markers",
           "JSON Schema validation (Ajv) with format checks",
+          "PII & Secrets Redactor (emails, passwords, API keys, prices, credit cards, IPs, URLs, phone numbers, names)",
+          "JSON OS Redact VS Code Extension — Live warning squiggles, quick fixes, and on-demand file/project redaction directly in VS Code",
           "MongoDB-style query engine ($eq $ne $gt $gte $lt $lte $in $nin $regex $exists $type $mod $size $all $elemMatch $and $or $nor $not)",
           "Filter JSON arrays and validate single documents with live results",
           "Side-by-side compare with sync-scroll, move detection, and ignore rules (paths, null=missing, case-insensitive, trim)",
@@ -132,6 +135,26 @@
         ],
         "softwareHelp": "https://jsonos.online/#help",
         "permissions": "browser-storage"
+      }
+    </script>
+
+    <!-- Structured data: SoftwareApplication (VS Code Extension tool) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "@id": "https://jsonos.online/#software-vscode",
+        "name": "JSON OS Redact — VS Code Extension",
+        "alternateName": ["JSON OS Redact VS Code", "VS Code PII & Secrets Redactor"],
+        "applicationCategory": "DeveloperApplication",
+        "applicationSubCategory": "IDEExtension",
+        "operatingSystem": "Windows, macOS, Linux",
+        "url": "https://marketplace.visualstudio.com/items?itemName=jsonos.jsonos-redact-vscode",
+        "isPartOf": { "@id": "https://jsonos.online/#software" },
+        "description": "Zero-network VS Code extension for live PII and secrets warning diagnostics, quick fixes, side-by-side diff previews, and project-wide batch redactions.",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "publisher": { "@id": "https://jsonos.online/#org" }
       }
     </script>
 
@@ -336,6 +359,22 @@
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "Yes. JSON OS is free, requires no account, and works entirely in your browser."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is JSON OS Redact available as a VS Code extension?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. JSON OS Redact is available on the Visual Studio Marketplace as a zero-network VS Code extension (jsonos.jsonos-redact-vscode). It provides live warning squiggles as you type, quick fixes (Cmd+.), side-by-side diff previews, and project-wide batch redactions directly inside VS Code."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does JSON OS Redact anonymize PII, secrets, and prices?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "JSON OS Redact detects emails, passwords, API keys (OpenAI, AWS, Stripe, GitHub, JWTs), credit cards, IPv4 addresses, phone numbers, prices/currency amounts ($100, Rs. 1000), web URLs, and user names. You can choose between Redact ([REDACTED]), Mask (u***@dom.com), or Hash (SHA-256) modes. All processing runs 100% locally on your machine with zero server uploads."
             }
           },
           {
