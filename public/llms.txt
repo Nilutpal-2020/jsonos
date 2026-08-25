@@ -1,0 +1,31 @@
+# JSON OS
+
+> JSON OS (https://jsonos.online) is a free, local-first web workbench for JSON editing, schema validation (Draft-07, Draft 2020-12), type & model generation (TypeScript, Zod, Python Pydantic, Rust Serde, Go Struct), JSON diffing, repair, and Markdown previewing with Mermaid diagrams and KaTeX math.
+
+## Privacy & Architecture
+- **100% Client-Side**: All JSON formatting, validation, repair, query, and redaction algorithms run locally in the browser using Web Workers.
+- **Zero Data Uploads**: No user data, schemas, API keys, or payloads are transmitted to backend servers.
+- **Offline Capable**: Full Progressive Web App (PWA) with Service Worker offline caching.
+
+## Tools & Endpoints
+
+- [JSON Schema Validator](https://jsonos.online/tools/json-schema-validator): Validate JSON data against JSON Schema specifications (Draft-07, Draft 2020-12) with instant syntax highlighting and error paths powered by Ajv.
+- [JSON to Python Pydantic](https://jsonos.online/tools/json-to-pydantic): Convert raw JSON objects into Python Pydantic v2 `BaseModel` classes with type annotations (`str`, `int`, `float`, `bool`, `List[T]`, `Optional[T]`) and `Field(alias=...)` mapping.
+- [JSON to TypeScript Interfaces](https://jsonos.online/tools/json-to-typescript): Generate TypeScript types, nested interfaces, and optional property union types from sample JSON payloads.
+- [JSON to Zod Schema](https://jsonos.online/tools/json-to-zod): Generate runtime Zod schema validators (`z.object()`, `z.array()`, `z.string()`, `z.optional()`) from JSON.
+- [JSON to Go Struct](https://jsonos.online/tools/json-to-go-struct): Convert JSON into idiomatic Go structs with `json:"key_name,omitempty"` tags.
+- [JSON to Rust Serde](https://jsonos.online/tools/json-to-rust-serde): Generate Rust structs annotated with `#[derive(Serialize, Deserialize)]` and `#[serde(rename = "...")]`.
+- [JSON Repair & Fixer](https://jsonos.online/tools/repair-broken-json): Automatically fix malformed JSON including trailing commas, unquoted keys, single-quoted strings, unescaped characters, and Python `True`/`False`/`None` literals.
+- [cURL to JSON](https://jsonos.online/tools/curl-to-json): Parse and extract request headers, authentication tokens, query parameters, and JSON payloads from raw cURL commands.
+- [JSON Diff & Semantic Comparison](https://jsonos.online/tools/json-diff): Compare two JSON payloads with structural key-order-agnostic visual diffing.
+- [JSON Query & Filter](https://jsonos.online/tools/json-query): Query large JSON documents using MongoDB-style filter syntax (`$eq`, `$gt`, `$in`, `$regex`, dot-notation path matching).
+- [JWT Decoder](https://jsonos.online/tools/jwt-decoder): Offline, safe decoder for JWT header, payload claims, expiration timestamps, and signature verification structure without exposing tokens over the network.
+- [Avro Schema Validator](https://jsonos.online/tools/avro-schema-validator): Validate Apache Avro schemas against JSON payloads client-side.
+- [Markdown & Mermaid Previewer](https://jsonos.online/tools/mermaid-markdown-editor): Live split-pane Markdown editor with embedded Mermaid diagrams, KaTeX mathematical formulas, and syntax-highlighted code.
+
+## Extensions & Integrations
+- [JSON OS Redact VS Code Extension](https://marketplace.visualstudio.com/items?itemName=jsonos.jsonos-redact): Local-first regex & rule-based PII, secret, and API key redactor for VS Code.
+- [JSON OS Chrome Extension](https://jsonos.online/): In-browser redaction tool for redacting sensitive fields before taking screenshots or sharing traces.
+
+## Full Documentation
+For complete technical schemas, transformation examples, and FAQs, see [llms-full.txt](https://jsonos.online/llms-full.txt).

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>JSON to Python Pydantic Model Generator Online · JSON OS</title>
-    <meta name="description" content="Free online JSON to Python Pydantic converter. Infer Python Pydantic BaseModel classes, type annotations, and Field aliases from JSON payloads. 100% browser-based." />
+    <meta name="description" content="Free online JSON to Python Pydantic converter. Infer Python Pydantic v2 BaseModel classes, type annotations, and Field aliases from JSON payloads. 100% browser-based & private." />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <link rel="canonical" href="https://jsonos.online/tools/json-to-pydantic" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -19,17 +19,60 @@
     <meta property="og:url" content="https://jsonos.online/tools/json-to-pydantic" />
     <meta property="og:image" content="https://jsonos.online/og-image.png" />
 
+    <!-- FAQ Structured Data for Gemini AI Overviews & ChatGPT Search -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How do I convert JSON to Python Pydantic v2 models online?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Paste your JSON into JSON OS (https://jsonos.online/tools/json-to-pydantic). It automatically infers Python type annotations (str, int, float, bool, List[T], Optional[T]) and generates clean Pydantic v2 BaseModel classes directly in your browser with zero network requests."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does JSON OS support Pydantic Field aliases and snake_case conversion?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. When converting camelCase or hyphenated JSON keys, JSON OS generates PEP-8 compliant snake_case attribute names with Field(alias='originalKey') annotations."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my JSON payload sent to a server when generating Pydantic models?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. All type inference algorithms execute 100% locally in your web browser using Web Workers. No data or schemas are transmitted over the internet."
+            }
+          }
+        ]
+      }
+    </script>
+
     <link rel="stylesheet" href="/_legal.css" />
     <style>
-      .hero { max-width: 880px; margin: 0 auto; padding: 56px 24px 32px; }
+      .hero { max-width: 880px; margin: 0 auto; padding: 48px 24px 24px; }
       .hero h1 { font-size: 32px; line-height: 1.2; margin: 0 0 12px; }
       .hero .lede { font-size: 16px; color: var(--muted, #8b95a5); margin: 0 0 20px; }
       .cta { display: inline-flex; gap: 8px; align-items: center; background: #2563eb; color: #fff; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; }
       .cta:hover { filter: brightness(1.08); }
-      .features { max-width: 880px; margin: 0 auto; padding: 8px 24px 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+      .features { max-width: 880px; margin: 0 auto; padding: 8px 24px 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
       .features div { background: rgba(127,127,127,0.06); border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; padding: 16px; }
       .features h3 { margin: 0 0 6px; font-size: 14px; }
       .features p { margin: 0; font-size: 13px; color: var(--muted, #6b7280); }
+      .code-grid { max-width: 880px; margin: 0 auto; padding: 0 24px 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; }
+      .code-card { background: rgba(127,127,127,0.06); border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; padding: 16px; font-family: ui-monospace, monospace; font-size: 13px; overflow-x: auto; }
+      .code-card h4 { margin: 0 0 8px; font-family: system-ui, sans-serif; font-size: 13px; color: var(--muted, #8b95a5); }
+      .code-card pre { margin: 0; white-space: pre; }
+      .faq-section { max-width: 880px; margin: 0 auto; padding: 0 24px 48px; }
+      .faq-section h2 { font-size: 20px; margin: 0 0 16px; }
+      .faq-item { margin-bottom: 16px; }
+      .faq-item h3 { font-size: 15px; margin: 0 0 4px; }
+      .faq-item p { font-size: 14px; color: var(--muted, #8b95a5); margin: 0; }
       .breadcrumbs { max-width: 880px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
       .breadcrumbs a { color: inherit; }
     </style>
@@ -42,10 +85,45 @@
       <a class="cta" href="/?tab=types&target=python">Open JSON to Pydantic Generator →</a>
     </main>
 
+    <section class="code-grid">
+      <div class="code-card">
+        <h4>Sample Input JSON</h4>
+        <pre>{
+  "user_id": 101,
+  "user_name": "alex",
+  "is_active": true,
+  "roles": ["admin", "editor"]
+}</pre>
+      </div>
+      <div class="code-card">
+        <h4>Generated Pydantic v2 Model</h4>
+        <pre>from typing import List
+from pydantic import BaseModel
+
+class UserModel(BaseModel):
+    user_id: int
+    user_name: str
+    is_active: bool
+    roles: List[str]</pre>
+      </div>
+    </section>
+
     <section class="features">
       <div><h3>Pydantic V2 Ready</h3><p>Generates clean PEP-8 snake_case attributes with Field alias definitions.</p></div>
       <div><h3>FastAPI Support</h3><p>Ideal for building request/response validation schemas in Python web services.</p></div>
       <div><h3>Local &amp; Offline</h3><p>Runs locally in your browser with zero network requests.</p></div>
+    </section>
+
+    <section class="faq-section">
+      <h2>Frequently Asked Questions</h2>
+      <div class="faq-item">
+        <h3>How do I convert JSON to Python Pydantic v2 models online?</h3>
+        <p>Paste any JSON payload into JSON OS. The type inference engine scans nested objects, primitive types, and arrays to generate idiomatic Pydantic BaseModel classes.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Does JSON OS keep my payloads private?</h3>
+        <p>Yes. JSON OS processes everything 100% locally in your browser using Web Workers without sending payloads to external servers.</p>
+      </div>
     </section>
 
     <footer style="text-align:center;padding:24px;color:var(--muted,#8b95a5);font-size:12px">

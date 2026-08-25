@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>cURL to JSON Importer &amp; API Client Online · JSON OS</title>
-    <meta name="description" content="Free online cURL to JSON importer and HTTP client. Import cURL commands from DevTools or Postman, execute requests, inspect headers, and load JSON into a workbench." />
+    <meta name="description" content="Free online cURL to JSON importer and HTTP client. Import cURL commands from DevTools or Postman, execute requests, inspect headers, and load JSON into a workbench. 100% private." />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <link rel="canonical" href="https://jsonos.online/tools/curl-to-json" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -19,17 +19,52 @@
     <meta property="og:url" content="https://jsonos.online/tools/curl-to-json" />
     <meta property="og:image" content="https://jsonos.online/og-image.png" />
 
+    <!-- FAQ Structured Data for Gemini & ChatGPT Search -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How do I convert a cURL command into a JSON payload online?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Paste your cURL command into JSON OS (https://jsonos.online/tools/curl-to-json). The parser extracts the URL, headers, authorization tokens, query params, and JSON request body automatically."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I test and send HTTP requests from JSON OS?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. JSON OS includes a built-in API sandbox to execute requests, inspect response headers, and load response JSON directly into the editor for formatting, diffing, and schema validation."
+            }
+          }
+        ]
+      }
+    </script>
+
     <link rel="stylesheet" href="/_legal.css" />
     <style>
-      .hero { max-width: 880px; margin: 0 auto; padding: 56px 24px 32px; }
+      .hero { max-width: 880px; margin: 0 auto; padding: 48px 24px 24px; }
       .hero h1 { font-size: 32px; line-height: 1.2; margin: 0 0 12px; }
       .hero .lede { font-size: 16px; color: var(--muted, #8b95a5); margin: 0 0 20px; }
       .cta { display: inline-flex; gap: 8px; align-items: center; background: #2563eb; color: #fff; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; }
       .cta:hover { filter: brightness(1.08); }
-      .features { max-width: 880px; margin: 0 auto; padding: 8px 24px 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+      .features { max-width: 880px; margin: 0 auto; padding: 8px 24px 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
       .features div { background: rgba(127,127,127,0.06); border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; padding: 16px; }
       .features h3 { margin: 0 0 6px; font-size: 14px; }
       .features p { margin: 0; font-size: 13px; color: var(--muted, #6b7280); }
+      .code-grid { max-width: 880px; margin: 0 auto; padding: 0 24px 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; }
+      .code-card { background: rgba(127,127,127,0.06); border: 1px solid rgba(127,127,127,0.18); border-radius: 8px; padding: 16px; font-family: ui-monospace, monospace; font-size: 13px; overflow-x: auto; }
+      .code-card h4 { margin: 0 0 8px; font-family: system-ui, sans-serif; font-size: 13px; color: var(--muted, #8b95a5); }
+      .code-card pre { margin: 0; white-space: pre; }
+      .faq-section { max-width: 880px; margin: 0 auto; padding: 0 24px 48px; }
+      .faq-section h2 { font-size: 20px; margin: 0 0 16px; }
+      .faq-item { margin-bottom: 16px; }
+      .faq-item h3 { font-size: 15px; margin: 0 0 4px; }
+      .faq-item p { font-size: 14px; color: var(--muted, #8b95a5); margin: 0; }
       .breadcrumbs { max-width: 880px; margin: 0 auto; padding: 14px 24px 0; font-size: 12px; color: var(--muted, #8b95a5); }
       .breadcrumbs a { color: inherit; }
     </style>
@@ -42,10 +77,34 @@
       <a class="cta" href="/?tab=api">Open cURL to JSON API Client →</a>
     </main>
 
+    <section class="code-grid">
+      <div class="code-card">
+        <h4>cURL Input Command</h4>
+        <pre>curl -X POST https://api.example.com/v1/auth \
+  -H 'Content-Type: application/json' \
+  -d '{"client_id": "app_44", "grant_type": "password"}'</pre>
+      </div>
+      <div class="code-card">
+        <h4>Parsed JSON Body &amp; Headers</h4>
+        <pre>{
+  "client_id": "app_44",
+  "grant_type": "password"
+}</pre>
+      </div>
+    </section>
+
     <section class="features">
       <div><h3>cURL Command Parser</h3><p>Parses single-line &amp; multi-line cURL strings (<code>-X POST</code>, <code>-H</code>, <code>-d</code>).</p></div>
       <div><h3>Workbench Integration</h3><p>Loads API JSON responses into workbench tabs with 1-click.</p></div>
       <div><h3>Private &amp; Offline</h3><p>Stores request history locally in IndexedDB.</p></div>
+    </section>
+
+    <section class="faq-section">
+      <h2>Frequently Asked Questions</h2>
+      <div class="faq-item">
+        <h3>How do I import a cURL command to JSON?</h3>
+        <p>In Chrome/Firefox DevTools, right-click any network request and select "Copy as cURL". Paste it into JSON OS to automatically parse headers, parameters, and payloads.</p>
+      </div>
     </section>
 
     <footer style="text-align:center;padding:24px;color:var(--muted,#8b95a5);font-size:12px">

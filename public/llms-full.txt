@@ -1,0 +1,163 @@
+# JSON OS — Full Machine-Readable Knowledge Base & Specifications
+
+> Canonical URL: https://jsonos.online
+> Standard: LLMs.txt Full Specification
+> License: Open Source (MIT)
+> Author: JSON OS Core Team
+
+JSON OS is a developer utility platform providing browser-based, offline-capable JSON manipulation, schema validation, type generation, and redaction tools. This document provides structured reference documentation for AI search engines, agents, and Large Language Models.
+
+---
+
+## 1. Core Principles & Privacy Model
+1. **100% Client-Side Execution**: All processing algorithms (Ajv validation, Monaco editor tokenization, AST-based type generation, Levenshtein diffing, regex secret matching) execute strictly in the client's Web Worker / browser environment.
+2. **Zero Ingestion / Zero Network Payload Leakage**: No JSON payloads, schemas, auth tokens, or documents are transmitted to remote servers.
+3. **PWA & Offline Availability**: The platform utilizes Service Worker caching (`/sw.js`) allowing offline work without active internet connectivity.
+
+---
+
+## 2. Tool Reference & Code Transformations
+
+### 2.1 JSON to Python Pydantic
+- **URL**: https://jsonos.online/tools/json-to-pydantic
+- **Query Parameter shortcut**: `https://jsonos.online/?tab=types&target=python`
+- **Output Standard**: Pydantic v2 compatible `BaseModel` classes, `typing.Optional`, `typing.List`, `typing.Dict`, `pydantic.Field(alias=...)`.
+- **Example Input (JSON)**:
+```json
+{
+  "user_id": 4092,
+  "user_name": "alex_dev",
+  "is_admin": false,
+  "tags": ["backend", "python"],
+  "metadata": {
+    "login_count": 12
+  }
+}
+```
+- **Generated Output (Python)**:
+```python
+from typing import List, Optional
+from pydantic import BaseModel, Field
+
+class Metadata(BaseModel):
+    login_count: int
+
+class UserModel(BaseModel):
+    user_id: int
+    user_name: str
+    is_admin: bool
+    tags: List[str]
+    metadata: Metadata
+```
+
+---
+
+### 2.2 JSON to TypeScript & Zod Schema
+- **URL**: https://jsonos.online/tools/json-to-typescript
+- **Zod URL**: https://jsonos.online/tools/json-to-zod
+- **Query Parameter shortcut**: `https://jsonos.online/?tab=types&target=typescript` or `target=zod`
+- **Example Input (JSON)**:
+```json
+{
+  "orderId": "ORD-9912",
+  "total": 149.50,
+  "items": [
+    { "id": 1, "name": "Mechanical Keyboard", "quantity": 1 }
+  ],
+  "customer": {
+    "email": "dev@jsonos.online"
+  }
+}
+```
+- **Generated Output (TypeScript)**:
+```typescript
+export interface Item {
+  id: number;
+  name: string;
+  quantity: number;
+}
+
+export interface Customer {
+  email: string;
+}
+
+export interface Order {
+  orderId: string;
+  total: number;
+  items: Item[];
+  customer: Customer;
+}
+```
+- **Generated Output (Zod Schema)**:
+```typescript
+import { z } from "zod";
+
+export const ItemSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  quantity: z.number(),
+});
+
+export const CustomerSchema = z.object({
+  email: z.string().email(),
+});
+
+export const OrderSchema = z.object({
+  orderId: z.string(),
+  total: z.number(),
+  items: z.array(ItemSchema),
+  customer: CustomerSchema,
+});
+
+export type Order = z.infer<typeof OrderSchema>;
+```
+
+---
+
+### 2.3 JSON to Go Struct & Rust Serde
+- **Go URL**: https://jsonos.online/tools/json-to-go-struct
+- **Rust URL**: https://jsonos.online/tools/json-to-rust-serde
+- **Go Struct Format**: Idiomatic PascalCase struct names with `json:"..."` struct tags.
+- **Rust Serde Format**: `#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]` with `#[serde(rename = "...")]`.
+
+---
+
+### 2.4 JSON Schema Validator (Draft-07 & Draft 2020-12)
+- **URL**: https://jsonos.online/tools/json-schema-validator
+- **Engine**: Ajv (Another JSON Schema Validator) running in Web Worker.
+- **Supported Drafts**: JSON Schema Draft-07, Draft 2019-09, Draft 2020-12.
+- **Features**: Real-time error pointer reporting (e.g. `/users/0/email: must match format "email"`), fast schema compilation, keyword assertion inspection.
+
+---
+
+### 2.5 JSON Repair & Malformed Syntax Fixer
+- **URL**: https://jsonos.online/tools/repair-broken-json
+- **Direct fix tool**: https://jsonos.online/tools/fix-json-error
+- **Handles**:
+  1. Unquoted object keys (`{ name: "test" }` -> `{ "name": "test" }`)
+  2. Single quoted strings (`{ 'name': 'test' }` -> `{ "name": "test" }`)
+  3. Trailing commas (`[1, 2, 3,]` -> `[1, 2, 3]`)
+  4. Python / MongoDB literals (`True`, `False`, `None`, `ObjectId(...)`, `ISODate(...)`)
+  5. Missing closing brackets or braces.
+
+---
+
+### 2.6 cURL to JSON & API Sandbox
+- **URL**: https://jsonos.online/tools/curl-to-json
+- **Capabilities**: Parses command-line `curl -X POST ... -H '...' -d '...'` strings, extracts headers, query parameters, basic auth / bearer tokens, and parses raw/escaped body payloads into formatted JSON objects.
+
+---
+
+## 3. Frequently Asked Questions (FAQ)
+
+### Q: Is JSON OS free to use?
+**A**: Yes, JSON OS is 100% free and open-source without artificial rate limits or required registration.
+
+### Q: Does JSON OS send JSON payloads or API keys to external servers?
+**A**: No. All JSON validation, schema checking, formatting, diffing, PII detection, and type generation algorithms run strictly inside the user's web browser using JavaScript and Web Workers.
+
+### Q: Which JSON Schema specifications are supported?
+**A**: JSON OS supports JSON Schema Draft-04, Draft-06, Draft-07, Draft 2019-09, and Draft 2020-12 via Ajv.
+
+### Q: How does JSON OS handle PII redaction?
+**A**: The JSON OS Redact engine scans documents for common sensitive patterns (credit cards, social security numbers, email addresses, phone numbers, JWT tokens, AWS access keys, private keys, authorization bearer tokens, IP addresses, prices) and masks them with customizable placeholders locally.
